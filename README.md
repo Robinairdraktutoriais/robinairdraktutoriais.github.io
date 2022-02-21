@@ -1,6 +1,6 @@
 # Robin airdrak tutoriais (demo site)
 
-Silly demo site to be used for [Netlify Drop](https://app.netlify.com/drop).
+subscribe jn [youtube](https://youtube.com/c/RobinAirdraktutoriais).
 
 Preview demo site [right here](https://robinairdraktutoriais.github.io/).
 
