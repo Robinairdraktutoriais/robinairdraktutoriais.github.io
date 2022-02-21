@@ -1,6 +1,6 @@
 # Robin airdrak tutoriais (demo site)
 
-subscribe jn [youtube](https://youtube.com/c/RobinAirdraktutoriais).
+subscribe in [youtube](https://youtube.com/c/RobinAirdraktutoriais)
 
 Preview demo site [right here](https://robinairdraktutoriais.github.io/).
 
