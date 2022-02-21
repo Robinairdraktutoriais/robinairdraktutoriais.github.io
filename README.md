@@ -1,4 +1,4 @@
-# Thanos JS (demo site)
+# Robin airdrak tutoriais (demo site)
 
 Silly demo site to be used for [Netlify Drop](https://app.netlify.com/drop).
 
