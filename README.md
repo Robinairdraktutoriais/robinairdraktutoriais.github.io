@@ -15,3 +15,5 @@ Tutorial de instalação:
 
 
 <a href="https://devuploads.com/drxpp7612yym">DOWNLOAD AQUI</a>
+
+<a href="README2.md">abrir segunda página</a>
