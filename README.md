@@ -1,4 +1,13 @@
-background=color"black"
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+background-color: #d24dff
+}
+</style>
+</head>
+</html>
 
 CineVS+ APK MOD v10.4 Filmes e Séries
 
