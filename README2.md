@@ -1,13 +1,3 @@
-<html>
-<head>
-<style>
-body {
-background-color: #9B59B6
-}
-</style>
-</head>
-</html>
-
 CineVS+ APK MOD v10.4 Filmes e Séries
 
 Um aplicativo de streaming ideal para quem está procurando assistir filmes, séries e desenhos gratuitamente. Um serviço que vem conquistando cada vez mais fãs. Com uma ampla seleção de conteúdos, tudo em um só lugar, o CineVS+ se tornou uma opção cada vez mais popular entre os brasileiros.
