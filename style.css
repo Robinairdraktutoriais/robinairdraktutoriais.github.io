@@ -1,0 +1,73 @@
+navegação {
+  largura :  100 % ;
+  cor de fundo :  rgb ( 0 , 0 , 0 );
+  cor : branco;
+  transição : largura 0,25 s ;
+}
+
+corpo {
+  margem :  0
+}
+
+ol {
+  largura :  100 % ;
+  exibição : flexível;
+  tipo-de-estilo-de-lista : nenhum;
+  margem :  0 px ;
+  preenchimento :  0 px ;
+}
+
+. b1 {
+  largura :  100 % ;
+  preenchimento :  1 rem ;
+  cor de fundo : preto;
+  cor : branco;
+  tamanho da fonte :  1 rem ;
+  cursor : ponteiro;
+  borda :  0 px ;
+}
+. navegação aberta {
+  exibição : nenhuma;
+}
+. b1 : pairar {
+  cor de fundo : vermelho;
+}
+@media  somente tela e ( largura mínima :  601 px ) {
+	. link de navegação {
+		exibir :  "bloco" ;
+	}
+	navegação {
+		largura :  100 % ;
+		altura mínima :  3 rem ;
+	}
+}
+@media  somente tela e ( largura máxima :  600 px ){
+  . navegação aberta {
+    exibição : flexível;
+  }
+  navegação {
+    altura mínima :  100 vh ;
+    largura :  32 px ;
+  }
+  @keyframes alterar_largura {
+  	de { largura :  32 px }
+  	para { largura :  33 % }
+  }
+  nav : pairar {
+  	largura :  33 % ;
+  	/* animação: change_width 2s linear; */
+  }
+  nav : hover  li {
+  	exibição : bloco;
+  }
+  ol {
+    exibição : bloco;
+  }
+  li {
+    largura : 100 % ;
+    exibição : nenhuma;
+  }
+  . b1 {
+    alinhamento de texto : esquerda;
+  }
+    }
