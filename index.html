@@ -1,52 +1,184 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Menu para site</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-  <script src="https://kit.fontawesome.com/42c8de28f3.js" crossorigin="anonymous"></script>
-  <link rel="stylesheet" type="text/css" href="./css/style.css">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Folha de estilo de CSS Linkado -->
+    <link rel="stylesheet" href="assets/css/reset.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/menu.css">
+    <link rel="stylesheet" href="assets/css/title.css">
+    <link rel="stylesheet" href="assets/css/skills.css">
+    <link rel="stylesheet" href="assets/css/experience.css">
+    <link rel="stylesheet" href="assets/css/formcontato.css">
+    <link rel="stylesheet" href="assets/css/footer.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Fonte do Projeto Raleway -->
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@500&display=swap" rel="stylesheet">
+
+    <title>Portifólio Pessoal - Guilherme Dalla Rosa</title>
 </head>
 <body>
-  <div id="container">
-          <div id="nav-container">
-            <div class="bg"></div>
-            <div class="button" tabindex="0">
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-            </div>
-          <div id="nav-content" tabindex="0">
+    <!-- Sessão de Menu  -->
+    <section class="menu">
+        <header class="menu__titulo">
+            <img src="assets/img/panda_emoji.svg">
+            <h3 class="menu__title__text">Massacrua Dev</h3>
+        </header>
+        <nav>
+            <ul class="menu__list">
+                <li class="menu__list__item"><a href="#sobremim">Sobre mim</a></li>
+                <li class="menu__list__item"><a href="#xp">Projetos</a></li>
+                <li class="menu__list__item"><a href="#skills">Skills</a></li>
+                <li class="menu__list__item"><a href="#formacao">Formações e Cursos</a></li>
+                <li class="menu__list__item menu__list__item-contato"><a href="#contato">Contato</a></li>
+            </ul>
+        </nav>
+    </section>
 
-  <div id="container-menu">
-    <div id="menu-left">
-    <div class="back-cicle"> 
-      <div class="back-cicle-center"> 
-          <div class="itens-display">
-              <h2>CIDADE DE</h2>
-              <h1>SÃO PAULO</h1>
-              <div class="data">
-                  <p>Domingo</p>
-                  <p>24 de Novembro, 2019</p>
-              </div>
-              <h1>30<SUP>o</SUP><i class="fa fa-cloud-sun"></i></h1>
-          </div>
-      </div> 
-    </div>
-    <div class="menu-icons">
-      <div class="icon-circle city-hall"><i class="fa fa-home"></i><span>CITY HALL</span></div>
-      <div class="icon-circle businesses"><i class="fa fa-briefcase"></i><span>BUSINESSES</span></div>
-      <div class="icon-circle places"><i class="fa fa-map-marker-alt"></i><span>PLACES</span></div>
-      <div class="icon-circle news"><i class="fa fa-newspaper"></i><span>NEWS</span></div>
-      <div class="icon-circle food"><i class="fa fa-hamburger"></i><span>FOOD</span></div>
-      <div class="icon-circle reports"><i class="fa fa-flag"></i><span>REPORTS</span></div>
-    </div>
-  </div>
-  </div>
-</div>
-</div>
-</div>
+<!-- Sessão de Header/Title/Hero -->
+    <section class="title">
+        <div class="title__div">
+            <img class="title__photo" src="assets/img/valorant-happy-frog-spray.png">
+            <div class="title__container" id="#sobremim">
+                <h2 class="title__bio">Olá, meu nome é <strong>Guilherme Dalla Rosa</strong>, sou desenvolvedor web Front-End.</h2>
+                <h3 class="title__subsection">Sou estudante de Engenharia de Software, estou participando do projeto Oracle ONE na Alura com foco em React.</h3>
+                <ul class="title__network">
+                    <!-- Ponha os links de suas redes sociais favoritas -->
+                    <li class="title__network__item"><a href="https://github.com/Massacrua" target="_blank">Github <img class="title__network__item-img" src="assets/img/github.svg"> </a></li>
+                    <li class="title__network__item"><a href="https://www.linkedin.com/in/guilherme-dalla-rosa/" target="_blank">Linkedin <img class="title__network__item-img" src="assets/img/linkedin.png"></a></li>
+                    <li class="title__network__item"><a href="" target="_blank">Currículo <img class="title__network__item-img" src="assets/img/curriculo-icone.png"></a></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sessão de Skills/Habilidades -->
+    <section class="skills">
+        <h3 class="skills__title" id="skills">Skills</h3>
+        <div class="skills__line">
+            <div class="skills__box">
+                <ul class="skills__box__list">
+                    <li class="skills__img"><img src="assets\img\htlm.png"></li>
+                    <li class="skills__name">HTML</li>
+                </ul>
+            </div>
+
+            <div class="skills__box">
+                <ul class="skills__box__list">
+                    <li class="skills__img"> <img src="assets/img/css_icon.png" alt=""></li>
+                    <li class="skills__name">CSS</li>
+                </ul>
+            </div>
+
+            <div class="skills__box">
+                <ul class="skills__box__list">
+                    <li class="skills__img"> <img src="assets/img/js_icon.png" alt=""> </li>
+                    <li class="skills__name">JavaScript</li>
+                </ul>
+            </div>
+
+            <div class="skills__box">
+                <ul class="skills__box__list">
+                    <li class="skills__img"> <img src="assets/img/react_icon.png" alt=""> </li>
+                    <li class="skills__name">React</li>
+                </ul>
+            </div>
+
+            <div class="skills__box">
+                <ul class="skills__box__list">
+                    <li class="skills__img"> <img src="assets/img/github.svg" alt="" class="skills__img-img"> </li>
+                    <li class="skills__name">Git / Github</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sessão de Experiência Profissional/Projetos-->
+    <section class="experience">
+        <h2 class="experience__section__title" id="xp">Experiência Profissional</h2>
+        <div class="experiencie__box">
+            <!-- Insira a logo/captura de seu projeto/trabalho -->
+            <img class="experience__img" src="assets/img/decodificador_img.png">
+            <div class="experience__info">
+                <h2 class="experience__title">Decodificador de texto</h2>
+                <h3 class="experience__text">Challenge Alura Codificador </h3>
+                <div class="experience__description">
+                    <!-- Insira a link para demonstração do projeto no Github e/ou GithubPages -->
+                    <span class="experience__repo"><a href="https://github.com/Massacrua/Decodificador-OracleOne" target="_blank"><button class="experiencia__botao--repo experiencia__botao" >Repositório</button></a></span>
+                    <span class="experience__demo"><a href="https://massacrua.github.io/Decodificador-OracleOne/" target="_blank"><button class="experiencia__botao--demo experiencia__botao">Ver demo</button></a></span>
+                </div>
+            </div>
+        </div>  
+
+        <div class="experiencie__box experiencie__box--right">
+            <!-- Insira a logo/captura de seu projeto/trabalho -->
+            <img class="experience__img" src="assets/img/loud_website.png">
+            <div class="experience__info">
+                <h2 class="experience__title">Clone LOUD.gg</h2>
+                <h3 class="experience__text">EM DESENVOLVIMENTO</h3>
+                <div class="experience__description">
+                    <!-- Insira a link para demonstração do projeto no Github e/ou GithubPages -->
+                    <span class="experience__repo"><a href="" target="_blank"><button class="experiencia__botao--repo experiencia__botao">Repositório</button></a></span>
+                    <span class="experience__demo"><a href="" target="_blank"><button class="experiencia__botao--demo experiencia__botao">Ver demo</button></a></span>
+                </div>
+            </div>
+        </div>  
+    </section>
+
+        <!-- Sessão de Contato -->
+    <section class="formcontato">
+        <div id="contato" class="formcontato__contacto">
+            <div class="formcontato--esquerda">
+                <img class="formcontato__img" src="assets/img/contact_image.png">
+            </div>
+            <div class="formcontato__text">
+                <h2 class="formcontato__title">Contato</h2>
+                <h3 class="formcontato__subtext">Quer entrar em contato comigo?</h3>
+                <h3 class="formcontato__subtext">Preencha o formulário ao lado e entrarei em contato o mais rápido possível. </h3>
+                <form class="formcontato__form" data-form>
+                    <div class="inputbox">
+                        <input class="formcontato__input" type="text" id="nome" placeholder="Nome" required maxlength="50" minlength="3" name="nome">
+                        <span class="msg__erro"></span>
+                    </div>
+
+                    <div class="inputbox">
+                        <input class="formcontato__input" type="email" id="email" placeholder="Email" required name="email" minlength="5">
+                        <span class="msg__erro"></span>
+                    </div>
+
+                    <div class="inputbox">
+                        <input class="formcontato__input" type="text" id="assunto" placeholder="Assunto" required maxlength="50" name="assunto">
+                        <span class="msg__erro"></span>
+                    </div>
+
+                    <div class="inputbox">
+                        <textarea class="formcontato__textarea" rows="5" cols="40" id="mensagem" name="mensagem" placeholder="Sua mensagem" required maxlength="800" name="mensagem" minlength="15"></textarea>
+                        <span class="msg__erro"></span>
+                    </div>
+
+                    <button class="formcontato__botao">Enviar mensagem</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sessão de Footer/Rodapé-->
+    <section class="footer">
+        <div class="footer__rodape">
+            <p>Desenvolvido por Massacrua</p>
+            <p>junho/2023</p>
+        </div>
+    </section>
+
+
+
+    <!-- Script Linkado do seu documento de JavaScript -->
+<script src="validate.js"></script>
 </body>
 </html>
