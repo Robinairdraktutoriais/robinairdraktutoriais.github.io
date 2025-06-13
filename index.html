@@ -1,16 +1,36 @@
-<aside class="sidebar">
-  <nav>
-    <ul>
-      <li><a href="#">Home</a></li>
-      <li><a href="#">About</a></li>
-      <li><a href="#">Services</a></li>
-      <li><a href="#">Contact</a></li>
-    </ul>
-  </nav>
-</aside>
-<main class="main-content">
-  <section>
-    <!-- Main content of your website goes here -->
-    <h1>Welcome to My Website</h1>
-  </section>
-</main>
+.sidebar {
+  width: 200px; /* Set a width for the sidebar */
+  height: 100vh; /* Fill the viewport height */
+  background-color: #f0f0f0; /* A light background color */
+  position: fixed; /* Keep the sidebar fixed */
+  top: 0; /* Align to the top */
+  left: 0; /* Align to the left */
+  padding: 20px;
+}
+
+.sidebar nav ul {
+  list-style: none; /* Remove bullet points */
+  padding: 0; /* Remove default padding */
+  margin: 0; /* Remove default margin */
+}
+
+.sidebar nav ul li {
+  margin-bottom: 10px; /* Add spacing between links */
+}
+
+.sidebar nav ul li a {
+  text-decoration: none; /* Remove underlines */
+  color: #333; /* Set a color for the text */
+  display: block; /* Make the link fill the list item */
+  padding: 8px; /* Add some padding */
+  border-radius: 5px;
+}
+
+.sidebar nav ul li a:hover {
+  background-color: #ccc; /* Change background on hover */
+}
+
+.main-content {
+  margin-left: 200px; /* Offset the main content */
+  padding: 20px;
+}
