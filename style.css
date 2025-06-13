@@ -1,28 +1,27 @@
-body { 
-	background: #EEE; 
-	overflow-x:hidden;
-}
-.clearfix:before,
-.clearfix:after {
-    content: " ";
-    display: table;
+*,*:before,*:after {
+	box-sizing: border-box;
 }
 
-.clearfix:after {
-    clear: both;
-}
-.clearfix {
-    *zoom: 1;
+:after {
+	content: "";
 }
 
-.container {
-    position: relative;
-    margin: 0px auto;
-    padding: 50px 0;
-    clear: both;
+section {
+  position: relative;
+  left: 100px;
 }
-@media only screen and (min-width: 1200px) {
-    .container {
-        width: 1210px;
-    }
+
+h1 { 
+  margin:80px 0 10px 0;
+  font-size: 52px;
+  font-family: 'Montserrat', sans-serif;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0px #DC143C,
+	2px 2px 0px #DC143C,
+	3px 3px 0px #DC143C,
+	4px 4px 0px #DC143C;
+}
+
+h2 {
+  font-size: 24px;
 }
