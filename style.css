@@ -1,28 +1,28 @@
-// Custom utility classes
-$spacer: 5px;
+:root
+  --background: #9c88ff
+  --navbar-width: 256px
+  --navbar-width-min: 80px
+  --navbar-dark-primary: #18283b
+  --navbar-dark-secondary: #2c3e50
+  --navbar-light-primary: #f5f6fa
+  --navbar-light-secondary: #8392a5
 
-$padding-1: 5px;
-$padding-2: 15px;
-$padding-3: 25px;
-$padding-4: 35px;
-$padding-5: 45px;
+html, body
+  margin: 0
+  background: var(--background)
 
-$spacer-1: $spacer * 1;
-$spacer-2: $spacer * 2;
-$spacer-3: $spacer * 3;
-$spacer-4: $spacer * 5;
-$spacer-5: $spacer * 7;
+#nav-toggle:checked
+  & ~ #nav-header
+    width: calc(var(--navbar-width-min) - 16px)
 
-.p-1 {
-	padding: $padding-1 !important;
-}
+  & ~#nav-content, & ~ #nav-footer
+    width: var(--navbar-width-min)
+  
+  & ~ #nav-header
+    #nav-title
+      opacity: 0
+      pointer-events: none
+      transition: opacity .1s
 
-.p-2 {
-	padding: $padding-2 !important;
-}
-
-.p-3 {
-	padding: $padding-3 !important;
-}
-
-.p-4 {
+    label[for="nav-toggle"]
+      left: calc(50% - 8px)
