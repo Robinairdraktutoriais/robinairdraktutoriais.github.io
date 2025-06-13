@@ -1,23 +1,28 @@
-<div data-component="navbar">
-
-<nav class="navbar p-0 fixed-top">
-      <button class="navbar-toggler navbar-toggler-left rounded-0 border-0" type="button" data-toggle="collapse" data-target="#megamenu-dropdown" aria-controls="megamenu-dropdown" aria-expanded="false" aria-label="Toggle navigation">
-        <i class="fa fa-bars"></i><span class="ml-3">Advanced</span>
-      </button>
-  
-  <div><a class="navbar-brand px-1" href="#"><img src="http://kris.agentfire2.com/wp-content/mu-plugins/agentfire-shared-library/img/agentfire.svg" class="d-inline-block mt-1" alt="AgentFire Logo" height="40"></a>
-
-  <div class="right-links float-right mr-4">
-    <a href="#" class="home"><i class="fa fa-home mr-3"></i></a>
-    
-    <div class="d-inline dropdown rounded-0 mx-3">
-      <a class="dropdown-toggle" id="tools" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#"><i class="fa fa-wrench" aria-hidden="true"></i></a>
-      <div class="dropdown-menu dropdown-menu-right rounded-0 text-center" aria-labelledby="tools">
-        <a class="dropdown-item px-2" href="#">Recompile CSS</a>
-      </div>
-    </div> <!-- /.dropdown -->
-    
-    <div class="d-inline dropdown mr-3">
-      <a class="dropdown-toggle" id="notifications" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#"><span>10</span><i class="fa fa-bell"></i></a>
-      <div class="dropdown-menu dropdown-menu-right rounded-0 pt-0" aria-labelledby="notifications">
-        <div class="list-group">
+#nav-bar
+  input#nav-toggle(type='checkbox')
+  #nav-header
+    a#nav-title(href='https://codepen.io' target='_blank').
+      C#[i.fab.fa-codepen]DEPEN
+    label(for='nav-toggle')
+      span#nav-toggle-burger
+    hr
+  #nav-content
+    .nav-button #[i.fas.fa-palette]#[span Your Work]
+    .nav-button #[i.fas.fa-images]#[span Assets]
+    .nav-button #[i.fas.fa-thumbtack]#[span Pinned Items]
+    hr
+    .nav-button #[i.fas.fa-heart]#[span Following]
+    .nav-button #[i.fas.fa-chart-line]#[span Trending]
+    .nav-button #[i.fas.fa-fire]#[span Challenges]
+    .nav-button #[i.fas.fa-magic]#[span Spark]
+    hr
+    .nav-button #[i.fas.fa-gem]#[span Codepen Pro]
+    #nav-content-highlight
+  input#nav-footer-toggle(type='checkbox')
+  #nav-footer
+    #nav-footer-heading
+      #nav-footer-avatar
+        img(src='https://gravatar.com/avatar/4474ca42d303761c2901fa819c4f2547')
+      #nav-footer-titlebox
+        a#nav-footer-title(href='https://codepen.io/uahnbu/pens/public' target='_blank') uahnbu
+        span#nav-footer-subtitle Admin
