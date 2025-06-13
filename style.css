@@ -1,38 +1,30 @@
-body {
-		color: #000;
-		font: 12px Verdana, sans-serif;
-		}
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 
-#conteudo {
-		loading="lazy" width: 70%;
-		float: right;
-		text-align: center;
-		}
+*,
+*::after,
+*::before {
+    box-sizing: inherit;
+}
 
-#menu {
-		loading="lazy" width: 30%;
-		margin: 0; padding: 0;
-		float: left;
-		}
+label,
+button {
+    cursor: pointer;
+}
 
-#menu ul li {
-		margin: 0; padding: 0px;
-		border-bottom: 1px solid #CCC;
-		text-align: left;
-		list-style-type: none;
-		}
+figure {
+    margin-inline: 0;
+    margin-block: 0.25rem;
+}
 
-#menu a:link {
-		background: #F5F5F5;
-		color: #666;
-		font-weight: bold;
-		text-decoration: none;
-		padding: 8px;
-		display: block;
-		}
+h1,
+h2,
+h3,
+h4,
+p {
+    margin: 0;
+    font-size: inherit;
+    line-height: 1.1;
+}
 
-
-#menu a:hover {
-		background: #E5F0FF;
-		color: #039;
-		}
+input[type="checkbox"] {
+    display: none;
