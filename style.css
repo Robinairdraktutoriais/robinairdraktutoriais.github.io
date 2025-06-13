@@ -1,27 +1,28 @@
-@import "bourbon";
-@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,600);
+// Custom utility classes
+$spacer: 5px;
 
-body{
-  font-family: "Lato";
-  font-size: 100%; 
-	overflow-y: scroll; 
- font-family: sans-serif; 
- -ms-text-size-adjust: 100%; 
- -webkit-text-size-adjust: 100%; 
-  -ms-text-size-adjust: 100%;
-  -webkit-text-size-adjust: 100%;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale; 
-  text-rendering: optimizeLegibility;
-  background-color: #fefefe;
-}
-a{
-  text-decoration: none;
-  @include transition(all 0.6s ease);
-  
-  &:hover{
-     @include transition(all 0.6s ease);
-  }
+$padding-1: 5px;
+$padding-2: 15px;
+$padding-3: 25px;
+$padding-4: 35px;
+$padding-5: 45px;
+
+$spacer-1: $spacer * 1;
+$spacer-2: $spacer * 2;
+$spacer-3: $spacer * 3;
+$spacer-4: $spacer * 5;
+$spacer-5: $spacer * 7;
+
+.p-1 {
+	padding: $padding-1 !important;
 }
 
-.app{
+.p-2 {
+	padding: $padding-2 !important;
+}
+
+.p-3 {
+	padding: $padding-3 !important;
+}
+
+.p-4 {
