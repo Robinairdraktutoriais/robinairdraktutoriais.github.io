@@ -1,27 +1,28 @@
-@import "compass/css3";
-
-*, :before, :after{ box-sizing: border-box; }
-// FONTS
-$sans: 'Source Sans Pro', Helvetica, Arial, sans-serif;
-
-// COLORS
-$orange: #DF4500;
-$gray: #35302D;
-$gray-shine: #3C3735;
-$white-off: #DFDBD9;
-
-// REUSABLE STYLES
-.unstyled{ list-style: none; padding: 0; margin: 0;
-  a{ text-decoration: none; }
+body { 
+	background: #EEE; 
+	overflow-x:hidden;
 }
-.list-inline{ overflow: hidden;
-  li{ float: left; }
+.clearfix:before,
+.clearfix:after {
+    content: " ";
+    display: table;
 }
 
-// HEADER STYLES
-.header{
-  position: fixed;
-  left: 0; top: 0; bottom: 0;
-  width: 17.5em;
-  background: $gray;
+.clearfix:after {
+    clear: both;
+}
+.clearfix {
+    *zoom: 1;
+}
+
+.container {
+    position: relative;
+    margin: 0px auto;
+    padding: 50px 0;
+    clear: both;
+}
+@media only screen and (min-width: 1200px) {
+    .container {
+        width: 1210px;
+    }
 }
