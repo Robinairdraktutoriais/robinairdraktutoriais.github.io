@@ -1,27 +1,27 @@
-@color-1st: #ffea92;
-@color-2nd: #5bc995;
-
-@menu-width-desktop: 240px;
-@menu-width-tablet: 90px;
-@menu-width-smartphone: 230px;
-
-@icon-url-base: "http://www.entypo.com/images/";
-@icon-url-dashboard: "@{icon-url-base}/gauge.svg";
-@icon-url-customers: "@{icon-url-base}/briefcase.svg";
-@icon-url-users: "@{icon-url-base}/users.svg";
-@icon-url-settings: "@{icon-url-base}/tools.svg";
+@import "bourbon";
+@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,600);
 
 body{
-	background:@color-1st;
-	margin:0;
-	font-family:"Open Sans", Helvetica Neue, Helvetica, Arial, sans-serif;
-	color:#fff;
-	padding-left:@menu-width-desktop;
+  font-family: "Lato";
+  font-size: 100%; 
+	overflow-y: scroll; 
+ font-family: sans-serif; 
+ -ms-text-size-adjust: 100%; 
+ -webkit-text-size-adjust: 100%; 
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale; 
+  text-rendering: optimizeLegibility;
+  background-color: #fefefe;
+}
+a{
+  text-decoration: none;
+  @include transition(all 0.6s ease);
+  
+  &:hover{
+     @include transition(all 0.6s ease);
+  }
 }
 
-main{
-	position:relative;
-	height:100vh;
-	
-	.helper{
-		background:rgba(0,0,0,0.2);
+.app{
