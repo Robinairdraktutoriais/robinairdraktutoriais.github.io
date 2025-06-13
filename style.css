@@ -1,28 +1,27 @@
-.nav__cont {
-  position: fixed;
-  width: 60px;
-  top:0;
-  height: 100vh;
-  z-index: 100;
-  background-color: #202020;
-  overflow:hidden;
-  transition:width .3s ease;
-  cursor:pointer;
-  box-shadow:4px 7px 10px rgba(0,0,0,.4);
-  &:hover {
-    width:200px;
-  }
-  @media screen and (min-width: 600px) {
-    width: 80px;
-  }
+@color-1st: #ffea92;
+@color-2nd: #5bc995;
+
+@menu-width-desktop: 240px;
+@menu-width-tablet: 90px;
+@menu-width-smartphone: 230px;
+
+@icon-url-base: "http://www.entypo.com/images/";
+@icon-url-dashboard: "@{icon-url-base}/gauge.svg";
+@icon-url-customers: "@{icon-url-base}/briefcase.svg";
+@icon-url-users: "@{icon-url-base}/users.svg";
+@icon-url-settings: "@{icon-url-base}/tools.svg";
+
+body{
+	background:@color-1st;
+	margin:0;
+	font-family:"Open Sans", Helvetica Neue, Helvetica, Arial, sans-serif;
+	color:#fff;
+	padding-left:@menu-width-desktop;
 }
 
-.nav {
-  list-style-type: none;
-  color:white;
-  &:first-child {
-    padding-top:1.5rem;
-  }
-}
-
-.nav__items {
+main{
+	position:relative;
+	height:100vh;
+	
+	.helper{
+		background:rgba(0,0,0,0.2);
