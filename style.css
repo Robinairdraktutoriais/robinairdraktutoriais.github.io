@@ -1,28 +1,60 @@
-:root
-  --background: #9c88ff
-  --navbar-width: 256px
-  --navbar-width-min: 80px
-  --navbar-dark-primary: #18283b
-  --navbar-dark-secondary: #2c3e50
-  --navbar-light-primary: #f5f6fa
-  --navbar-light-secondary: #8392a5
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
 
-html, body
-  margin: 0
-  background: var(--background)
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 1em;
+    text-align: center;
+}
 
-#nav-toggle:checked
-  & ~ #nav-header
-    width: calc(var(--navbar-width-min) - 16px)
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
 
-  & ~#nav-content, & ~ #nav-footer
-    width: var(--navbar-width-min)
-  
-  & ~ #nav-header
-    #nav-title
-      opacity: 0
-      pointer-events: none
-      transition: opacity .1s
+nav li {
+    display: inline-block;
+    margin-right: 20px;
+}
 
-    label[for="nav-toggle"]
-      left: calc(50% - 8px)
+nav a {
+    color: #fff;
+    text-decoration: none;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2em;
+}
+
+section {
+    background-color: #f7f7f7;
+    padding: 2em;
+    margin-bottom: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1, h2 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+button {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #444;
+}
