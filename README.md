@@ -1,6 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
     <body style="background-color: black; color: white;">
         <!-- Conteúdo da página -->
     </body>
