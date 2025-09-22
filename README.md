@@ -1,3 +1,21 @@
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <nav>
+        <ul>
+          <li><a href="#home">Home</a></li>
+          <li><a href="#about">Sobre Nós</a></li>
+          <li><a href="#services">Serviços</a></li>
+          <li><a href="#contact">Contato</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="content">
+      <!-- Conteúdo principal do site aqui -->
+    </div>
+  </div>
+</body>
+
 YOUTUBE RVX 
 
 ESSE E UM MOD DO YOUTUBE COMPLETO E TOTALMENTE SEM ANÚNCIOS ONDE VOCES PODEM ASSISTIR VÍDEOS LIVES SEM TER NENHUM TIPO DE ANÚNCIO 
