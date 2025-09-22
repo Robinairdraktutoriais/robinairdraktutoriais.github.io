@@ -1,8 +1,4 @@
-<body>
-  <div class="container">
-    <div class="sidebar">
-      <nav>
-        <ul>
+
           <li><a href="#home">Home</a></li>
           <li><a href="#about">Sobre Nós</a></li>
           <li><a href="#services">Serviços</a></li>
@@ -13,8 +9,6 @@
     <div class="content">
       <!-- Conteúdo principal do site aqui -->
     </div>
-  </div>
-</body>
 
 YOUTUBE RVX 
 
