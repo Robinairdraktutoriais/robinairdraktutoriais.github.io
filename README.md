@@ -1,10 +1,3 @@
-<details>
-<summary>Aba Lateral</summary>
-Conteúdo da aba lateral
-</details>
-
-
-
 YOUTUBE RVX 
 
 ESSE E UM MOD DO YOUTUBE COMPLETO E TOTALMENTE SEM ANÚNCIOS ONDE VOCES PODEM ASSISTIR VÍDEOS LIVES SEM TER NENHUM TIPO DE ANÚNCIO 
