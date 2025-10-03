@@ -10,3 +10,5 @@ INSTALANDO O MICRO G ELE IRA FUNCIONAR POR COMPLETO SEM NENHUM TIPO DE ERRO, OS 
 
 
 <a href="https://seulink.digital/umYmg" target="_blank" rel="noopener noreferrer">MICRO G</a>
+
+<a href="https://whatsapp.com/channel/0029VaFchLYIt5s3b3b4qY0Z/100" target="_blank" rel="noopener noreferrer">COMO PASSAR PELO ENCURTADOR</a>
