@@ -1,60 +1,89 @@
 body {
-    font-family: Arial, sans-serif;
     margin: 0;
-    padding: 0;
+    font-family: sans-serif;
 }
 
+/* Estilos para o cabeçalho e botão do menu */
 header {
     background-color: #333;
-    color: #fff;
-    padding: 1em;
-    text-align: center;
+    color: white;
+    padding: 1rem;
 }
 
-nav ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-nav li {
-    display: inline-block;
-    margin-right: 20px;
-}
-
-nav a {
-    color: #fff;
-    text-decoration: none;
-}
-
-main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2em;
-}
-
-section {
-    background-color: #f7f7f7;
-    padding: 2em;
-    margin-bottom: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-h1, h2 {
-    color: #333;
-    margin-bottom: 10px;
-}
-
-button {
-    background-color: #333;
-    color: #fff;
+#abrir-menu {
+    font-size: 2rem;
+    background: none;
     border: none;
-    padding: 10px 20px;
-    font-size: 16px;
+    color: white;
     cursor: pointer;
 }
 
-button:hover {
-    background-color: #444;
+/* Estilos para o menu lateral */
+#menu-lateral {
+    height: 100%;
+    width: 0; /* Menu fechado por padrão */
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+    padding-top: 60px;
+    transition: 0.5s;
+}
+
+#menu-lateral.aberto {
+    width: 250px; /* Largura do menu aberto */
+}
+
+#fechar-menu {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+#menu-lateral nav ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#menu-lateral nav ul li a {
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+}
+
+#menu-lateral nav ul li a:hover {
+    color: #f1f1f1;
+}
+
+/* Estilos para o conteúdo principal */
+#conteudo-principal {
+    margin-left: 0;
+    padding: 16px;
+    transition: margin-left 0.5s;
+}
+
+#conteudo-principal.empurrado {
+    margin-left: 250px; /* Empurra o conteúdo quando o menu está aberto */
+}
+
+/* Media Query para telas menores */
+@media screen and (max-width: 768px) {
+    #menu-lateral.aberto {
+        width: 100%;
+    }
+    #conteudo-principal.empurrado {
+        margin-left: 0;
+    }
 }
