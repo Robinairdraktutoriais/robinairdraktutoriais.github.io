@@ -8,6 +8,9 @@ const logLive = document.getElementById("log-live");
 const logDead = document.getElementById("log-dead");
 const logError = document.getElementById("log-error");
 
+const startBtn = document.getElementById("startBtn");
+
+/* ---------- UI ---------- */
 function updateStats() {
   liveEl.textContent = state.live;
   deadEl.textContent = state.dead;
@@ -36,9 +39,12 @@ function log(card, msg, status) {
   if (status === "error") logError.appendChild(div);
 }
 
+/* ---------- CHECKER ---------- */
 async function startChecker() {
   if (state.checking) return;
+
   state.checking = true;
+  startBtn.disabled = true;
 
   resetUI();
 
@@ -60,4 +66,8 @@ async function startChecker() {
   }
 
   state.checking = false;
+  startBtn.disabled = false;
 }
+
+/* ---------- EVENTO ---------- */
+startBtn.addEventListener("click", startChecker);
