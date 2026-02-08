@@ -1,8 +1,12 @@
 const cardsInput = document.getElementById("cards");
+
 const liveEl = document.getElementById("live");
 const deadEl = document.getElementById("dead");
 const errorEl = document.getElementById("error");
-const logBox = document.getElementById("log");
+
+const logLive = document.getElementById("log-live");
+const logDead = document.getElementById("log-dead");
+const logError = document.getElementById("log-error");
 
 function updateStats() {
   liveEl.textContent = state.live;
@@ -14,16 +18,22 @@ function resetUI() {
   state.live = 0;
   state.dead = 0;
   state.error = 0;
-  logBox.innerHTML = "";
+
+  logLive.innerHTML = "";
+  logDead.innerHTML = "";
+  logError.innerHTML = "";
+
   updateStats();
 }
 
-function log(card, msg, cls) {
+function log(card, msg, status) {
   const div = document.createElement("div");
-  div.className = cls;
   div.textContent = `${card} ➜ ${msg}`;
-  logBox.appendChild(div);
-  logBox.scrollTop = logBox.scrollHeight;
+  div.className = status;
+
+  if (status === "live") logLive.appendChild(div);
+  if (status === "dead") logDead.appendChild(div);
+  if (status === "error") logError.appendChild(div);
 }
 
 async function startChecker() {
