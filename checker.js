@@ -18,7 +18,6 @@ async function checkCard(line) {
   const [cc] = line.split("|");
 
   if (!cc || !luhn(cc)) {
-    state.dead++;
     return { status: "DEAD", msg: "Luhn Fail" };
   }
 
