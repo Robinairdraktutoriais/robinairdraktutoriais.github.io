@@ -1,44 +1,78 @@
-function luhnCheck(card) {
-  let sum = 0;
-  let alternate = false;
+let live = 0, dead = 0, error = 0;
 
+function luhn(card) {
+  let s = 0, a = false;
   for (let i = card.length - 1; i >= 0; i--) {
-    let n = parseInt(card.charAt(i), 10);
-    if (alternate) {
+    let n = parseInt(card[i]);
+    if (a) {
       n *= 2;
       if (n > 9) n -= 9;
     }
-    sum += n;
-    alternate = !alternate;
+    s += n;
+    a = !a;
   }
-  return sum % 10 === 0;
+  return s % 10 === 0;
 }
 
-function getBrand(card) {
-  if (/^4/.test(card)) return "VISA";
-  if (/^5[1-5]/.test(card)) return "MASTERCARD";
-  if (/^3[47]/.test(card)) return "AMEX";
-  if (/^6/.test(card)) return "ELO / DISCOVER";
-  return "DESCONHECIDA";
-}
-
-function checkCards() {
-  const input = document.getElementById("cards").value.trim();
-  const result = document.getElementById("result");
-  result.innerHTML = "";
-
-  input.split("\n").forEach(line => {
-    const [card, mm, yy, cvv] = line.split("|");
-
-    if (!card || card.length < 13) {
-      result.innerHTML += `<div class="dead">${line} ❌ FORMATO INVÁLIDO</div>`;
-      return;
-    }
-
-    if (luhnCheck(card)) {
-      result.innerHTML += `<div class="live">${line} ✅ Luhn OK | ${getBrand(card)}</div>`;
-    } else {
-      result.innerHTML += `<div class="dead">${line} ❌ Luhn FAIL</div>`;
-    }
+// 🔹 API MOCK
+function fakeApi(card) {
+  return new Promise(resolve => {
+    const delay = 800 + Math.random() * 700;
+    setTimeout(() => {
+      const rand = Math.random();
+      if (rand > 0.75) resolve("LIVE");
+      else if (rand > 0.15) resolve("DEAD");
+      else resolve("ERROR");
+    }, delay);
   });
+}
+
+async function startChecker() {
+  live = dead = error = 0;
+  updateStats();
+  document.getElementById("log").innerHTML = "";
+
+  const lines = document.getElementById("cards").value.trim().split("\n");
+
+  for (const line of lines) {
+    if (!line) continue;
+
+    const [cc] = line.split("|");
+
+    if (!luhn(cc)) {
+      dead++;
+      log(line, "DEAD | Luhn Fail", "dead");
+      continue;
+    }
+
+    log(line, "Checking...", "error");
+
+    const res = await fakeApi(cc);
+
+    if (res === "LIVE") {
+      live++;
+      log(line, "LIVE | Mock Approved", "live");
+    } else if (res === "DEAD") {
+      dead++;
+      log(line, "DEAD | Mock Declined", "dead");
+    } else {
+      error++;
+      log(line, "ERROR | Timeout", "error");
+    }
+
+    updateStats();
+  }
+}
+
+function log(card, msg, cls) {
+  const div = document.createElement("div");
+  div.className = cls;
+  div.textContent = `${card} ➜ ${msg}`;
+  document.getElementById("log").appendChild(div);
+}
+
+function updateStats() {
+  document.getElementById("live").textContent = live;
+  document.getElementById("dead").textContent = dead;
+  document.getElementById("error").textContent = error;
 }
