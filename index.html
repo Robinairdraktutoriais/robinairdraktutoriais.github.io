@@ -1,41 +1,41 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Robin airdrak tutoriais</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checker Educacional</title>
+<style>
+body {
+  background: #0f0f0f;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+}
+textarea, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background: #1e1e1e;
+  color: #fff;
+  border: 1px solid #333;
+}
+.result {
+  margin-top: 15px;
+  font-size: 14px;
+}
+.live { color: #00ff88; }
+.dead { color: #ff4444; }
+</style>
 </head>
+
 <body>
+<h2>Checker de Cartões (Educacional)</h2>
 
-    <header>
-        <button id="abrir-menu">&#9776;</button>
-    </header>
+<textarea id="cards" rows="6" placeholder="4444555566667777|12|2028|123"></textarea>
+<button onclick="checkCards()">CHECK</button>
 
-    <aside id="menu-lateral">
-        <button id="fechar-menu">&times;</button>
-        <nav>
-            <ul>
-                <li><a href="#">Início</a></li>
-                <li><a href="#">Sobre</a></li>
-                <li><a href="#">Serviços</a></li>
-                <li><a href="#">Contato</a></li>
+<div class="result" id="result"></div>
 
-<li><a href="rvx.html" target="_blank">YOUTUBE RVX</a></li>
-
-            </ul>
-        </nav>
-    </aside>
-
-    <main id="conteudo-principal">
-        <h1>Ola, me chamo João, antigo dev/ modder de whatsapp entre outros apks, mais conhecido virtualmente por rtmods </h1>
-        <p>Este e o meu site oficial completo com todos os conteúdos novos que irei estar divulgando para vocês.</p>
-</p>só não irá ter vídeos mais no canal, por motivos que muitos conteúdos de aplicativos não podem ser divulgado mais no meu canal do YouTube.</p>
-</p>espero que entendam e se poder continuem me apoiando por aqui.</p>
-<h1>bom vamos ao que interessa.</h1>
-</p>no menu lateral vocês irão ter acesso as outras páginas com alguns dos conteúdos que podem lhe interessar.</p>
-    </main>
-
+<script src="checker.js"></script>
 </body>
 </html>
