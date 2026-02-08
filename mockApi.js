@@ -5,8 +5,8 @@ function mockCheck(card) {
 
     setTimeout(() => {
       const r = Math.random();
-      if (r > 0.78) resolve({ status: "LIVE", msg: "Approved" });
-      else if (r > 0.12) resolve({ status: "DEAD", msg: "Declined" });
+      if (r > 0.78) resolve({ status: "LIVE", msg: "Mock Approved" });
+      else if (r > 0.12) resolve({ status: "DEAD", msg: "Mock Declined" });
       else resolve({ status: "ERROR", msg: "Timeout" });
     }, delay);
   });
