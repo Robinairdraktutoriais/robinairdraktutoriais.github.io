@@ -1,21 +1,23 @@
 function luhn(card) {
-  let s = 0, a = false;
+  let sum = 0;
+  let alt = false;
+
   for (let i = card.length - 1; i >= 0; i--) {
     let n = parseInt(card[i]);
-    if (a) {
+    if (alt) {
       n *= 2;
       if (n > 9) n -= 9;
     }
-    s += n;
-    a = !a;
+    sum += n;
+    alt = !alt;
   }
-  return s % 10 === 0;
+  return sum % 10 === 0;
 }
 
 async function checkCard(line) {
   const [cc] = line.split("|");
 
-  if (!luhn(cc)) {
+  if (!cc || !luhn(cc)) {
     state.dead++;
     return { status: "DEAD", msg: "Luhn Fail" };
   }
