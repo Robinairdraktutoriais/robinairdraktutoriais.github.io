@@ -4,5 +4,5 @@ const state = {
   error: 0,
   checking: false,
   delayMin: 800,
-  delayMax: 1500,
+  delayMax: 1500
 };
