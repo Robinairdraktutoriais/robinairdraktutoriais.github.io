@@ -106,18 +106,28 @@
     }
 
     async function loadProfile() {
-      const { data } = await _supabase.from('smm.profiles').select('balance').eq('id', currentUser.id).single()
+      const { data, error } = await _supabase.from('smm.profiles').select('balance').eq('id', currentUser.id).single()
+      if (error) console.log('Erro ao carregar perfil:', error)
       document.getElementById('balance').textContent = parseFloat(data?.balance || 0).toFixed(2).replace('.', ',')
     }
 
     async function loadServices() {
       const { data, error } = await _supabase.from('smm.services').select('*').eq('is_active', true)
+
       if (error) {
-        console.log('Erro ao carregar serviços:', error)
-        document.getElementById('category').innerHTML = '<option>Erro ao carregar</option>'
+        console.log('ERRO SUPABASE:', error)
+        document.getElementById('category').innerHTML = '<option>Erro: ' + error.message + '</option>'
+        showMsg('Erro ao carregar serviços: ' + error.message)
         return
       }
-      services = data || []
+
+      if (!data || data.length === 0) {
+        document.getElementById('category').innerHTML = '<option>Nenhum serviço encontrado</option>'
+        showMsg('Nenhum serviço ativo no banco. Rode o SQL de INSERT.', true)
+        return
+      }
+
+      services = data
       const categories = [...new Set(services.map(s => s.category))]
       document.getElementById('category').innerHTML = '<option value="">Selecione</option>' + categories.map(c => `<option>${c}</option>`).join('')
     }
@@ -125,6 +135,9 @@
     document.getElementById('category').addEventListener('change', (e) => {
       const filtered = services.filter(s => s.category === e.target.value)
       document.getElementById('service').innerHTML = '<option value="">Selecione</option>' + filtered.map(s => `<option value="${s.id}">${s.name}</option>`).join('')
+      document.getElementById('limits').textContent = ''
+      document.getElementById('total').textContent = '0,00'
+      selectedService = null
     })
 
     document.getElementById('service').addEventListener('change', (e) => {
@@ -133,6 +146,7 @@
         document.getElementById('limits').textContent = `Min: ${selectedService.min_order} | Max: ${selectedService.max_order}`
         document.getElementById('quantity').min = selectedService.min_order
         document.getElementById('quantity').max = selectedService.max_order
+        document.getElementById('quantity').value = selectedService.min_order
         calcTotal()
       }
     })
@@ -167,6 +181,7 @@
         e.target.reset()
         document.getElementById('total').textContent = '0,00'
         document.getElementById('limits').textContent = ''
+        document.getElementById('service').innerHTML = '<option>Selecione categoria</option>'
         selectedService = null
         await loadProfile()
         await loadOrders()
@@ -174,12 +189,14 @@
     })
 
     async function loadOrders() {
-      const { data } = await _supabase
+      const { data, error } = await _supabase
      .from('smm.orders')
      .select('*, smm.services(name)')
      .eq('user_id', currentUser.id)
      .order('created_at', { ascending: false })
      .limit(15)
+
+      if (error) console.log('Erro ao carregar pedidos:', error)
 
       const list = document.getElementById('orders-list')
       if (!data || data.length === 0) {
@@ -203,7 +220,7 @@
       msgDiv.textContent = text
       msgDiv.className = `text-sm p-3 rounded-lg ${error? 'bg-red-900/50 text-red-300' : 'bg-green-900/50 text-green-300'}`
       msgDiv.classList.remove('hidden')
-      setTimeout(() => msgDiv.classList.add('hidden'), 4000)
+      setTimeout(() => msgDiv.classList.add('hidden'), 5000)
     }
 
     document.getElementById('logout').onclick = async () => {
