@@ -17,6 +17,7 @@
           <p class="text-xs text-gray-400">Saldo disponível</p>
           <p class="font-bold text-green-400">R$ <span id="balance">0,00</span></p>
         </div>
+        <a href="adicionar-saldo.html" class="bg-green-600 hover:bg-green-700 px-3 py-2 rounded-lg text-sm">+ Saldo</a>
         <button id="logout" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm">Sair</button>
       </div>
     </div>
@@ -110,7 +111,12 @@
     }
 
     async function loadServices() {
-      const { data } = await _supabase.from('smm.services').select('*').eq('active', true)
+      const { data, error } = await _supabase.from('smm.services').select('*').eq('is_active', true)
+      if (error) {
+        console.log('Erro ao carregar serviços:', error)
+        document.getElementById('category').innerHTML = '<option>Erro ao carregar</option>'
+        return
+      }
       services = data || []
       const categories = [...new Set(services.map(s => s.category))]
       document.getElementById('category').innerHTML = '<option value="">Selecione</option>' + categories.map(c => `<option>${c}</option>`).join('')
@@ -160,17 +166,20 @@
         showMsg('Pedido enviado com sucesso!', false)
         e.target.reset()
         document.getElementById('total').textContent = '0,00'
+        document.getElementById('limits').textContent = ''
+        selectedService = null
+        await loadProfile()
         await loadOrders()
       }
     })
 
     async function loadOrders() {
       const { data } = await _supabase
-      .from('smm.orders')
-      .select('*, smm.services(name)')
-      .eq('user_id', currentUser.id)
-      .order('created_at', { ascending: false })
-      .limit(15)
+     .from('smm.orders')
+     .select('*, smm.services(name)')
+     .eq('user_id', currentUser.id)
+     .order('created_at', { ascending: false })
+     .limit(15)
 
       const list = document.getElementById('orders-list')
       if (!data || data.length === 0) {
@@ -181,8 +190,8 @@
       list.innerHTML = data.map(o => `
         <div class="bg-gray-800 p-3 rounded-lg text-sm border border-gray-700">
           <div class="flex justify-between items-start">
-            <span class="font-semibold">${o.smm.services.name}</span>
-            <span class="text-xs px-2 py-1 rounded ${o.status === 'completed'? 'bg-green-900 text-green-300' : o.status === 'pending'? 'bg-yellow-900 text-yellow-300' : 'bg-gray-700 text-gray-300'}">${o.status}</span>
+            <span class="font-semibold">${o.smm.services?.name || 'Serviço removido'}</span>
+            <span class="text-xs px-2 py-1 rounded ${o.status === 'completed'? 'bg-green-900 text-green-300' : o.status === 'pending'? 'bg-yellow-900 text-yellow-300' : o.status === 'processing'? 'bg-blue-900 text-blue-300' : 'bg-gray-700 text-gray-300'}">${o.status}</span>
           </div>
           <p class="text-gray-400 text-xs mt-1">Qtd: ${o.quantity} | R$ ${parseFloat(o.charge).toFixed(2)}</p>
         </div>
@@ -194,7 +203,7 @@
       msgDiv.textContent = text
       msgDiv.className = `text-sm p-3 rounded-lg ${error? 'bg-red-900/50 text-red-300' : 'bg-green-900/50 text-green-300'}`
       msgDiv.classList.remove('hidden')
-      setTimeout(() => msgDiv.classList.add('hidden'), 3000)
+      setTimeout(() => msgDiv.classList.add('hidden'), 4000)
     }
 
     document.getElementById('logout').onclick = async () => {
