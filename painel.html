@@ -12,13 +12,13 @@
   <nav class="bg-gray-900 border-b border-gray-800 px-4 py-3 sticky top-0 z-10">
     <div class="max-w-7xl mx-auto flex justify-between items-center">
       <h1 class="text-xl font-bold">Painel SMM</h1>
-      <div class="flex items-center gap-4">
-        <div class="text-right hidden sm:block">
-          <p class="text-xs text-gray-400">Saldo disponível</p>
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="text-right">
+          <p class="text-xs text-gray-400">Saldo</p>
           <p class="font-bold text-green-400">R$ <span id="balance">0,00</span></p>
         </div>
         <a href="adicionar-saldo.html" class="bg-green-600 hover:bg-green-700 px-3 py-2 rounded-lg text-sm">+ Saldo</a>
-        <button id="logout" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm">Sair</button>
+        <button id="logout" class="bg-red-600 hover:bg-red-700 px-3 sm:px-4 py-2 rounded-lg text-sm">Sair</button>
       </div>
     </div>
   </nav>
@@ -105,7 +105,10 @@
 
     async function loadProfile() {
       const { data, error } = await _supabase.from('profiles').select('balance').eq('id', currentUser.id).single()
-      if (error) console.log('Erro ao carregar perfil:', error)
+      if (error) {
+        console.log('Erro ao carregar perfil:', error)
+        return
+      }
       document.getElementById('balance').textContent = parseFloat(data?.balance || 0).toFixed(2).replace('.', ',')
     }
 
@@ -114,14 +117,14 @@
 
       if (error) {
         console.log('ERRO SUPABASE:', error)
-        document.getElementById('category').innerHTML = '<option>Erro: ' + error.message + '</option>'
+        document.getElementById('category').innerHTML = '<option>Erro ao carregar</option>'
         showMsg('Erro ao carregar serviços: ' + error.message)
         return
       }
 
       if (!data || data.length === 0) {
         document.getElementById('category').innerHTML = '<option>Nenhum serviço encontrado</option>'
-        showMsg('Nenhum serviço ativo no banco. Rode o SQL de INSERT.', true)
+        showMsg('Nenhum serviço ativo no banco.', true)
         return
       }
 
@@ -165,6 +168,12 @@
       const qty = parseInt(document.getElementById('quantity').value)
       const charge = (qty / 1000) * selectedService.rate_per_1000
 
+      // Pega saldo atual antes de enviar
+      const { data: profile } = await _supabase.from('profiles').select('balance').eq('id', currentUser.id).single()
+      if (parseFloat(profile.balance) < charge) {
+        return showMsg('Saldo insuficiente. Adicione saldo primeiro.')
+      }
+
       const { error } = await _supabase.from('orders').insert({
         user_id: currentUser.id,
         service_id: selectedService.id,
@@ -188,11 +197,11 @@
 
     async function loadOrders() {
       const { data, error } = await _supabase
-     .from('orders')
-     .select('*, services(name)')
-     .eq('user_id', currentUser.id)
-     .order('created_at', { ascending: false })
-     .limit(15)
+    .from('orders')
+    .select('*, services(name)')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false })
+    .limit(15)
 
       if (error) console.log('Erro ao carregar pedidos:', error)
 
