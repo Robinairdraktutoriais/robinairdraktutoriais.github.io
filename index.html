@@ -1,54 +1,129 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Checker Pro | Mock</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel SMM - Entrar</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex items-center justify-center p-4">
 
-<body>
+  <div class="w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl p-8 shadow-2xl">
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-white">Painel SMM</h1>
+      <p class="text-gray-400 mt-2">Acesse sua conta</p>
+    </div>
 
-<div class="container">
-  <h1>💳 CARD CHECKER PRO</h1>
+    <form id="auth-form" class="space-y-4">
+      <div>
+        <input
+          type="email"
+          id="email"
+          required
+          placeholder="seu@email.com"
+          class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
+        >
+      </div>
 
-  <textarea
-    id="cards"
-    placeholder="4444555566667777|12|2028|123&#10;5555666677778888|01|2027|321">
-  </textarea>
+      <div>
+        <input
+          type="password"
+          id="password"
+          required
+          minlength="6"
+          placeholder="Sua senha"
+          class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
+        >
+      </div>
 
-  <!-- BOTÃO CORRETO -->
-  <button id="startBtn" type="button">START CHECK</button>
+      <div id="message" class="hidden text-sm p-3 rounded-lg"></div>
 
-  <div class="stats">
-    <span>LIVE: <b id="live">0</b></span>
-    <span>DEAD: <b id="dead">0</b></span>
-    <span>ERROR: <b id="error">0</b></span>
+      <button
+        type="submit"
+        id="login-btn"
+        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
+      >
+        Entrar
+      </button>
+
+      <button
+        type="button"
+        id="signup-btn"
+        class="w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 rounded-lg transition border border-gray-700"
+      >
+        Criar conta gratuita
+      </button>
+    </form>
   </div>
 
-  <div class="logs">
-    <div class="log-box">
-      <h3 class="live">LIVE</h3>
-      <div class="log" id="log-live"></div>
-    </div>
+  <script>
+    // TROCAR AQUI DEPOIS COM SUAS CHAVES DO SUPABASE
+    const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co'
+    const SUPABASE_ANON_KEY = 'SUA_ANON_KEY_AQUI'
 
-    <div class="log-box">
-      <h3 class="dead">DEAD</h3>
-      <div class="log" id="log-dead"></div>
-    </div>
+    const { createClient } = supabase
+    const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-    <div class="log-box">
-      <h3 class="error">ERROR</h3>
-      <div class="log" id="log-error"></div>
-    </div>
-  </div>
-</div>
+    const authForm = document.getElementById('auth-form')
+    const emailInput = document.getElementById('email')
+    const passwordInput = document.getElementById('password')
+    const loginBtn = document.getElementById('login-btn')
+    const signupBtn = document.getElementById('signup-btn')
+    const messageDiv = document.getElementById('message')
 
-<!-- JS SEMPRE NO FINAL -->
-<script src="state.js"></script>
-<script src="mockApi.js"></script>
-<script src="checker.js"></script>
-<script src="app.js"></script>
+    function showMsg(text, error = true) {
+      messageDiv.textContent = text
+      messageDiv.className = `text-sm p-3 rounded-lg ${error? 'bg-red-900/50 text-red-300 border border-red-800' : 'bg-green-900/50 text-green-300 border border-green-800'}`
+      messageDiv.classList.remove('hidden')
+    }
 
+    // Se já tá logado, manda pro painel
+    _supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) window.location.href = 'painel.html'
+    })
+
+    // Login
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      loginBtn.disabled = true
+      loginBtn.textContent = 'Entrando...'
+
+      const { error } = await _supabase.auth.signInWithPassword({
+        email: emailInput.value,
+        password: passwordInput.value,
+      })
+
+      if (error) {
+        showMsg(error.message === 'Invalid login credentials'? 'Email ou senha incorretos' : error.message)
+        loginBtn.disabled = false
+        loginBtn.textContent = 'Entrar'
+      } else {
+        window.location.href = 'painel.html'
+      }
+    })
+
+    // Cadastro
+    signupBtn.addEventListener('click', async () => {
+      if (!emailInput.value ||!passwordInput.value) return showMsg('Preencha email e senha')
+
+      signupBtn.disabled = true
+      signupBtn.textContent = 'Criando...'
+
+      const { error } = await _supabase.auth.signUp({
+        email: emailInput.value,
+        password: passwordInput.value,
+      })
+
+      if (error) {
+        showMsg(error.message)
+      } else {
+        showMsg('Conta criada! Faça login agora.', false)
+      }
+
+      signupBtn.disabled = false
+      signupBtn.textContent = 'Criar conta gratuita'
+    })
+  </script>
 </body>
 </html>
