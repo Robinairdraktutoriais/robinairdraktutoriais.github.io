@@ -12,17 +12,20 @@
     h1 { margin-bottom: 20px; color: #22d3ee; }
     .card { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; font-size: 14px; }
     th { background: #0f172a; color: #22d3ee; }
-    button { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    button { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 2px; }
     .btn-green { background: #22c55e; color: #0f172a; }
     .btn-red { background: #ef4444; color: white; }
     .btn-blue { background: #3b82f6; color: white; }
-    select, input { padding: 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; }
+    select, input { padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; width: 100%; margin: 8px 0; }
     .status-pending { color: #facc15; font-weight: bold; }
     .status-completed { color: #22c55e; font-weight: bold; }
     .status-cancelled { color: #ef4444; font-weight: bold; }
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+    .erro { color: #ef4444; margin-top: 10px; font-weight: bold; }
+    .ok { color: #22c55e; margin-top: 10px; font-weight: bold; }
+    a { color: #38bdf8; }
   </style>
 </head>
 <body>
@@ -31,9 +34,10 @@
     
     <div id="login" class="card">
       <h3>Login Admin</h3>
-      <input type="email" id="email" placeholder="Email admin" style="margin: 10px 0; width: 100%;">
-      <input type="password" id="senha" placeholder="Senha" style="margin: 10px 0; width: 100%;">
-      <button class="btn-blue" onclick="loginAdmin()">Entrar</button>
+      <input type="email" id="email" placeholder="Email admin">
+      <input type="password" id="senha" placeholder="Senha">
+      <button class="btn-blue" id="btnEntrar">Entrar</button>
+      <div id="msgErro" class="erro"></div>
     </div>
 
     <div id="painel" style="display:none;">
@@ -50,16 +54,18 @@
         <h3>Adicionar Saldo</h3>
         <input type="text" id="userIdSaldo" placeholder="ID do usuário">
         <input type="number" id="valorSaldo" placeholder="Valor R$" step="0.01">
-        <button class="btn-green" onclick="addSaldo()">Adicionar</button>
+        <button class="btn-green" id="btnAddSaldo">Adicionar</button>
+        <div id="msgSaldo" class="ok"></div>
       </div>
 
       <div class="card">
-        <h3>Últimos Pedidos</h3>
+        <h3>Últimos 50 Pedidos</h3>
+        <button class="btn-blue" id="btnAtualizar">Atualizar Lista</button>
         <table>
           <thead>
             <tr>
               <th>Data</th>
-              <th>User ID</th>
+              <th>User</th>
               <th>Serviço</th>
               <th>Link</th>
               <th>Qtd</th>
@@ -75,37 +81,65 @@
   </div>
 
 <script>
-const supabaseUrl = 'https://niedwjyzvmkgwfdwhacf.supabase.co';
-const supabaseKey = 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh';
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+// ========== TROCA SÓ ESSAS 2 LINHAS ==========
+const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co'; 
+const SUPABASE_KEY = 'COLA_AQUI_SUA_ANON_KEY_QUE_COMECA_COM_eyJhbGciOiJIUzI1Ni'; // <-- TROCA ESSA
+const ADMIN_EMAIL = 'robinultimate23@gmail.com'; // <-- TROCA ESSA
+// ============================================
 
-// COLOCA SEU EMAIL AQUI - SÓ ESSE EMAIL VAI ENTRAR
-const ADMIN_EMAIL = 'seuemail@gmail.com';
+let supabase;
+window.addEventListener('DOMContentLoaded', () => {
+  try {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  } catch (e) {
+    document.getElementById('msgErro').innerText = 'ERRO Supabase: ' + e.message;
+  }
+  
+  document.getElementById('btnEntrar').addEventListener('click', loginAdmin);
+  document.getElementById('btnAddSaldo').addEventListener('click', addSaldo);
+  document.getElementById('btnAtualizar').addEventListener('click', carregarDados);
+});
 
 async function loginAdmin() {
-  const email = document.getElementById('email').value;
+  const email = document.getElementById('email').value.trim();
   const senha = document.getElementById('senha').value;
+  const msgErro = document.getElementById('msgErro');
+  msgErro.innerText = 'Verificando...';
   
-  if (email !== ADMIN_EMAIL) {
-    alert('Acesso negado');
+  if (!email || !senha) {
+    msgErro.innerText = 'Preenche email e senha';
+    return;
+  }
+  
+  if (email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    msgErro.innerText = 'Acesso negado: email não é admin';
     return;
   }
   
   const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
-  if (error) return alert('Erro: ' + error.message);
   
+  if (error) {
+    msgErro.innerText = 'Erro: ' + error.message;
+    return;
+  }
+  
+  msgErro.innerText = '';
   document.getElementById('login').style.display = 'none';
   document.getElementById('painel').style.display = 'block';
   carregarDados();
 }
 
 async function carregarDados() {
-  // Pedidos
-  const { data: pedidos } = await supabase
+  const { data: pedidos, error } = await supabase
     .from('orders')
     .select('*')
     .order('created_at', { ascending: false })
     .limit(50);
+  
+  if (error) {
+    alert('Erro ao carregar pedidos: ' + error.message);
+    return;
+  }
   
   const tbody = document.getElementById('tabelaPedidos');
   tbody.innerHTML = '';
@@ -129,14 +163,14 @@ async function carregarDados() {
         <td>${data}</td>
         <td title="${p.user_id}">${p.user_id.substring(0,8)}...</td>
         <td>${p.service_id}</td>
-        <td><a href="${p.link}" target="_blank">Ver</a></td>
+        <td><a href="${p.link}" target="_blank">Abrir</a></td>
         <td>${p.quantity}</td>
-        <td>R$ ${p.charge}</td>
+        <td>R$ ${parseFloat(p.charge).toFixed(2)}</td>
         <td class="status-${p.status}">${p.status}</td>
         <td>
           ${p.status === 'pending' ? `
-            <button class="btn-green" onclick="mudarStatus('${p.id}', 'completed')">✓ Entregue</button>
-            <button class="btn-red" onclick="mudarStatus('${p.id}', 'cancelled')">✗ Cancelar</button>
+            <button class="btn-green" onclick="mudarStatus('${p.id}', 'completed', '${p.user_id}', ${p.charge})">Entregue</button>
+            <button class="btn-red" onclick="mudarStatus('${p.id}', 'cancelled', '${p.user_id}', ${p.charge})">Cancelar</button>
           ` : '-'}
         </td>
       </tr>
@@ -148,34 +182,58 @@ async function carregarDados() {
   document.getElementById('faturamento').innerText = faturamento.toFixed(2);
 }
 
-async function mudarStatus(id, status) {
-  if (!confirm(`Mudar status para ${status}?`)) return;
+async function mudarStatus(id, status, userId, valor) {
+  if (!confirm(`Confirma mudar para ${status}?`)) return;
   
-  const { error } = await supabase
-    .from('orders')
-    .update({ status })
-    .eq('id', id);
-    
+  const { error } = await supabase.from('orders').update({ status }).eq('id', id);
   if (error) return alert('Erro: ' + error.message);
   
-  // Se cancelar, estorna o saldo
   if (status === 'cancelled') {
-    const { data: pedido } = await supabase.from('orders').select('*').eq('id', id).single();
-    await supabase.from('profiles')
-      .update({ balance: supabase.rpc('increment', { x: pedido.charge }) })
-      .eq('id', pedido.user_id);
+    const { data: perfil } = await supabase.from('profiles').select('balance').eq('id', userId).single();
+    await supabase.from('profiles').update({ balance: perfil.balance + parseFloat(valor) }).eq('id', userId);
+    alert('Pedido cancelado e saldo estornado!');
+  } else {
+    alert('Status atualizado!');
   }
   
-  alert('Status atualizado!');
   carregarDados();
 }
 
 async function addSaldo() {
-  const userId = document.getElementById('userIdSaldo').value;
+  const userId = document.getElementById('userIdSaldo').value.trim();
   const valor = parseFloat(document.getElementById('valorSaldo').value);
+  const msgSaldo = document.getElementById('msgSaldo');
+  msgSaldo.innerText = '';
   
-  if (!userId || !valor) return alert('Preenche tudo');
+  if (!userId || !valor || valor <= 0) {
+    msgSaldo.innerText = 'Preenche ID e valor válido';
+    msgSaldo.className = 'erro';
+    return;
+  }
   
-  const { error } = await supabase.rpc('add_balance', { user_id: userId, amount: valor });
+  const { data: perfil, error: erro1 } = await supabase.from('profiles').select('balance').eq('id', userId).single();
+  if (erro1) {
+    msgSaldo.innerText = 'Usuário não encontrado';
+    msgSaldo.className = 'erro';
+    return;
+  }
+  
+  const { error } = await supabase.from('profiles').update({ balance: perfil.balance + valor }).eq('id', userId);
   if (error) {
-    // Se não tiver a função, faz update direto
+    msgSaldo.innerText = 'Erro: ' + error.message;
+    msgSaldo.className = 'erro';
+    return;
+  }
+  
+  msgSaldo.innerText = `R$ ${valor.toFixed(2)} adicionado com sucesso!`;
+  msgSaldo.className = 'ok';
+  document.getElementById('userIdSaldo').value = '';
+  document.getElementById('valorSaldo').value = '';
+}
+
+setInterval(() => {
+  if (document.getElementById('painel').style.display !== 'none') carregarDados();
+}, 30000);
+</script>
+</body>
+</html>
