@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adicionar Saldo - SMM Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50 p-4">
+  <div class="max-w-md mx-auto">
+    <header class="bg-white p-4 rounded-xl shadow-md mb-4 flex justify-between items-center">
+      <h1 class="text-lg font-bold">Adicionar Saldo</h1>
+      <a href="painel.html" class="text-blue-600 text-sm">Voltar</a>
+    </header>
+
+    <div class="bg-white p-6 rounded-xl shadow-md">
+      <div class="mb-4">
+        <p class="text-sm text-slate-500">Saldo atual</p>
+        <p class="text-2xl font-bold text-green-600">R$ <span id="saldo">0,00</span></p>
+      </div>
+
+      <form id="addForm" class="space-y-4">
+        <div>
+          <label class="text-sm font-medium">Valor para adicionar</label>
+          <div class="grid grid-cols-3 gap-2 mt-2 mb-2">
+            <button type="button" onclick="setValor(10)" class="border p-2 rounded">R$ 10</button>
+            <button type="button" onclick="setValor(25)" class="border p-2 rounded">R$ 25</button>
+            <button type="button" onclick="setValor(50)" class="border p-2 rounded">R$ 50</button>
+          </div>
+          <input id="valor" type="number" min="5" step="0.01" placeholder="Ou digite outro valor" class="w-full p-2 border rounded" required>
+        </div>
+        <button type="submit" class="w-full bg-green-600 text-white p-3 rounded-lg font-semibold">Gerar Pix</button>
+      </form>
+
+      <div id="pixArea" class="hidden mt-6 text-center">
+        <p class="text-sm mb-2">Escaneie o QR Code ou copie o código:</p>
+        <img id="qrCode" class="mx-auto mb-3 border p-2">
+        <input id="pixCopia" readonly class="w-full p-2 border rounded text-xs mb-2">
+        <button onclick="copiarPix()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Copiar Código Pix</button>
+        <p class="text-xs text-slate-500 mt-3">O saldo é creditado automaticamente após o pagamento</p>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const { createClient } = supabase
+  const _supabase = createClient('SEU-PROJETO.supabase.co', 'SUA_ANON_KEY_AQUI')
+  
+  // TROCA PELA SUA URL E KEY AQUI TAMBÉM
+  let user = null
+
+  async function init() {
+    const { data: { session } } = await _supabase.auth.getSession()
+    if (!session) return window.location.href = 'index.html'
+    user = session.user
+    
+    const { data: profile } = await _supabase.from('smm.profiles').select('balance').eq('id', user.id).single()
+    document.getElementById('saldo').textContent = profile.balance.toFixed(2).replace('.', ',')
+  }
+
+  function setValor(v) {
+    document.getElementById('valor').value = v
+  }
+
+  function copiarPix() {
+    document.getElementById('pixCopia').select()
+    document.execCommand('copy')
+    alert('Código Pix copiado!')
+  }
+
+  document.getElementById('addForm').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const valor = parseFloat(document.getElementById('valor').value)
+    
+    // AQUI VOCÊ VAI CHAMAR SUA API DO MERCADO PAGO
+    // Por enquanto vamos simular pra testar o fluxo
+    const fakePix = {
+      qr_code: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PIX_FAKE_' + valor,
+      qr_code_text: '00020126...PIX_COPIA_E_COLA_FAKE...' + valor
+    }
+    
+    document.getElementById('qrCode').src = fakePix.qr_code
+    document.getElementById('pixCopia').value = fakePix.qr_code_text
+    document.getElementById('pixArea').classList.remove('hidden')
+    
+    // IMPORTANTE: Aqui você vai salvar a transação como 'pending' no banco
+    await _supabase.from('smm.transactions').insert({
+      user_id: user.id,
+      type: 'deposit',
+      amount: valor,
+      description: 'Depósito via Pix - Aguardando pagamento'
+    })
+  })
+
+  init()
+</script>
+</body>
+</html>
