@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - SMM Painel</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    body { background: #0f172a; color: #e2e8f0; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { margin-bottom: 20px; color: #22d3ee; }
+    .card { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
+    th { background: #0f172a; color: #22d3ee; }
+    button { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .btn-green { background: #22c55e; color: #0f172a; }
+    .btn-red { background: #ef4444; color: white; }
+    .btn-blue { background: #3b82f6; color: white; }
+    select, input { padding: 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; }
+    .status-pending { color: #facc15; font-weight: bold; }
+    .status-completed { color: #22c55e; font-weight: bold; }
+    .status-cancelled { color: #ef4444; font-weight: bold; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Painel Admin</h1>
+    
+    <div id="login" class="card">
+      <h3>Login Admin</h3>
+      <input type="email" id="email" placeholder="Email admin" style="margin: 10px 0; width: 100%;">
+      <input type="password" id="senha" placeholder="Senha" style="margin: 10px 0; width: 100%;">
+      <button class="btn-blue" onclick="loginAdmin()">Entrar</button>
+    </div>
+
+    <div id="painel" style="display:none;">
+      <div class="card">
+        <h3>Estatísticas</h3>
+        <div class="grid">
+          <div><strong>Pedidos Hoje:</strong> <span id="pedidosHoje">0</span></div>
+          <div><strong>Pendentes:</strong> <span id="pendentes">0</span></div>
+          <div><strong>Faturamento Hoje:</strong> R$ <span id="faturamento">0.00</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Adicionar Saldo</h3>
+        <input type="text" id="userIdSaldo" placeholder="ID do usuário">
+        <input type="number" id="valorSaldo" placeholder="Valor R$" step="0.01">
+        <button class="btn-green" onclick="addSaldo()">Adicionar</button>
+      </div>
+
+      <div class="card">
+        <h3>Últimos Pedidos</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>User ID</th>
+              <th>Serviço</th>
+              <th>Link</th>
+              <th>Qtd</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaPedidos"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<script>
+const supabaseUrl = 'SUA_URL';
+const supabaseKey = 'SUA_KEY';
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+// COLOCA SEU EMAIL AQUI - SÓ ESSE EMAIL VAI ENTRAR
+const ADMIN_EMAIL = 'seuemail@gmail.com';
+
+async function loginAdmin() {
+  const email = document.getElementById('email').value;
+  const senha = document.getElementById('senha').value;
+  
+  if (email !== ADMIN_EMAIL) {
+    alert('Acesso negado');
+    return;
+  }
+  
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+  if (error) return alert('Erro: ' + error.message);
+  
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('painel').style.display = 'block';
+  carregarDados();
+}
+
+async function carregarDados() {
+  // Pedidos
+  const { data: pedidos } = await supabase
+    .from('orders')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(50);
+  
+  const tbody = document.getElementById('tabelaPedidos');
+  tbody.innerHTML = '';
+  
+  let pendentes = 0, faturamento = 0;
+  const hoje = new Date().toISOString().split('T')[0];
+  let pedidosHoje = 0;
+  
+  pedidos.forEach(p => {
+    const data = new Date(p.created_at).toLocaleString('pt-BR');
+    const dataPedido = p.created_at.split('T')[0];
+    
+    if (p.status === 'pending') pendentes++;
+    if (dataPedido === hoje) {
+      pedidosHoje++;
+      faturamento += parseFloat(p.charge);
+    }
+    
+    tbody.innerHTML += `
+      <tr>
+        <td>${data}</td>
+        <td title="${p.user_id}">${p.user_id.substring(0,8)}...</td>
+        <td>${p.service_id}</td>
+        <td><a href="${p.link}" target="_blank">Ver</a></td>
+        <td>${p.quantity}</td>
+        <td>R$ ${p.charge}</td>
+        <td class="status-${p.status}">${p.status}</td>
+        <td>
+          ${p.status === 'pending' ? `
+            <button class="btn-green" onclick="mudarStatus('${p.id}', 'completed')">✓ Entregue</button>
+            <button class="btn-red" onclick="mudarStatus('${p.id}', 'cancelled')">✗ Cancelar</button>
+          ` : '-'}
+        </td>
+      </tr>
+    `;
+  });
+  
+  document.getElementById('pendentes').innerText = pendentes;
+  document.getElementById('pedidosHoje').innerText = pedidosHoje;
+  document.getElementById('faturamento').innerText = faturamento.toFixed(2);
+}
+
+async function mudarStatus(id, status) {
+  if (!confirm(`Mudar status para ${status}?`)) return;
+  
+  const { error } = await supabase
+    .from('orders')
+    .update({ status })
+    .eq('id', id);
+    
+  if (error) return alert('Erro: ' + error.message);
+  
+  // Se cancelar, estorna o saldo
+  if (status === 'cancelled') {
+    const { data: pedido } = await supabase.from('orders').select('*').eq('id', id).single();
+    await supabase.from('profiles')
+      .update({ balance: supabase.rpc('increment', { x: pedido.charge }) })
+      .eq('id', pedido.user_id);
+  }
+  
+  alert('Status atualizado!');
+  carregarDados();
+}
+
+async function addSaldo() {
+  const userId = document.getElementById('userIdSaldo').value;
+  const valor = parseFloat(document.getElementById('valorSaldo').value);
+  
+  if (!userId || !valor) return alert('Preenche tudo');
+  
+  const { error } = await supabase.rpc('add_balance', { user_id: userId, amount: valor });
+  if (error) {
+    // Se não tiver a função, faz update direto
