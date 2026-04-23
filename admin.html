@@ -11,27 +11,21 @@
    .container { max-width: 1200px; margin: 0 auto; }
     h1 { margin-bottom: 16px; color: #22d3ee; font-size: 24px; }
    .card { background: #1e293b; padding: 16px; border-radius: 12px; margin-bottom: 16px; }
-
-    /* Desktop: tabela normal */
    .tabela-wrapper { display: none; overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; font-size: 13px; }
     th { background: #0f172a; color: #22d3ee; white-space: nowrap; }
-
-    /* Mobile: cards */
    .pedidos-lista { display: block; }
    .pedido-card { background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #334155; }
    .pedido-card div { margin: 4px 0; font-size: 13px; }
    .pedido-card strong { color: #22d3ee; }
    .pedido-botoes { display: flex; gap: 8px; margin-top: 10px; }
-
     @media (min-width: 768px) {
      .tabela-wrapper { display: block; }
      .pedidos-lista { display: none; }
       body { padding: 20px; }
       h1 { font-size: 28px; }
     }
-
     button { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; }
    .btn-green { background: #22c55e; color: #0f172a; flex: 1; }
    .btn-red { background: #ef4444; color: white; flex: 1; }
@@ -44,7 +38,6 @@
    .erro { color: #ef4444; margin-top: 10px; font-weight: bold; background: #7f1d1d; padding: 10px; border-radius: 6px; font-size: 13px; }
    .ok { color: #22c55e; margin-top: 10px; font-weight: bold; background: #14532d; padding: 10px; border-radius: 6px; font-size: 13px; }
     a { color: #38bdf8; word-break: break-all; }
-
     @media (min-width: 640px) {
      .grid { grid-template-columns: repeat(3, 1fr); }
     }
@@ -53,7 +46,6 @@
 <body>
   <div class="container">
     <h1>Painel Admin</h1>
-
     <div id="login" class="card">
       <h3>Login Admin</h3>
       <input type="email" id="email" placeholder="Email admin">
@@ -61,7 +53,6 @@
       <button class="btn-blue" onclick="loginAdmin()">Entrar</button>
       <div id="msgErro"></div>
     </div>
-
     <div id="painel" style="display:none;">
       <div class="card">
         <h3>Estatísticas</h3>
@@ -70,8 +61,6 @@
           <div><strong>Pendentes:</strong> <span id="pendentes">0</span></div>
           <div><strong>Faturamento Hoje:</strong> R$ <span id="faturamento">0.00</span></div>
         </div>
-      </div>
-
       <div class="card">
         <h3>Adicionar Saldo</h3>
         <input type="text" id="userIdSaldo" placeholder="UUID do usuário (ex: 550e8400-...)">
@@ -79,16 +68,11 @@
         <button class="btn-green" onclick="addSaldo()">Adicionar</button>
         <div id="msgSaldo"></div>
       </div>
-
       <div class="card">
         <h3>Últimos 50 Pedidos</h3>
         <button class="btn-blue" onclick="carregarDados()">Atualizar Lista</button>
         <div id="msgTabela"></div>
-
-        <!-- Mobile: Cards -->
         <div class="pedidos-lista" id="pedidosLista"></div>
-
-        <!-- Desktop: Tabela -->
         <div class="tabela-wrapper">
           <table>
             <thead>
@@ -114,10 +98,8 @@
 const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh';
 const ADMIN_EMAIL = 'robinultimate23@gmail.com';
-
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Valida se é UUID
 function isUUID(str) {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   return uuidRegex.test(str);
@@ -128,31 +110,25 @@ function loginAdmin() {
   const senha = document.getElementById('senha').value;
   const msgErro = document.getElementById('msgErro');
   msgErro.innerHTML = '<div class="ok">Verificando...</div>';
-
   if (!email ||!senha) {
     msgErro.innerHTML = '<div class="erro">Preenche email e senha</div>';
     return;
   }
-
   if (email.toLowerCase()!== ADMIN_EMAIL.toLowerCase()) {
     msgErro.innerHTML = '<div class="erro">Acesso negado: email não é admin</div>';
     return;
   }
-
   supabase.auth.signInWithPassword({ email: email, password: senha }).then(function(res) {
     if (res.error) {
       msgErro.innerHTML = '<div class="erro">Erro Auth: ' + res.error.message + '</div>';
       return;
     }
-
     msgErro.innerHTML = '<div class="ok">Login OK. Verificando permissões...</div>';
-
     supabase.rpc('get_all_orders').then(function(res2) {
       if (res2.error) {
         msgErro.innerHTML = '<div class="erro">Erro Permissão: ' + res2.error.message + '</div>';
         return;
       }
-
       msgErro.innerHTML = '';
       document.getElementById('login').style.display = 'none';
       document.getElementById('painel').style.display = 'block';
@@ -166,55 +142,42 @@ function loginAdmin() {
 function carregarDados() {
   const msgTabela = document.getElementById('msgTabela');
   msgTabela.innerHTML = '<div class="ok">Carregando...</div>';
-
   supabase.rpc('get_all_orders').then(function(res) {
     if (res.error) {
       msgTabela.innerHTML = '<div class="erro">Erro ao carregar: ' + res.error.message + '</div>';
       return;
     }
-
     msgTabela.innerHTML = '';
     const tbody = document.getElementById('tabelaPedidos');
     const lista = document.getElementById('pedidosLista');
     tbody.innerHTML = '';
     lista.innerHTML = '';
-
     let pendentes = 0, faturamento = 0;
     const hoje = new Date().toISOString().split('T')[0];
     let pedidosHoje = 0;
-
     if (!res.data || res.data.length === 0) {
       msgTabela.innerHTML = '<div class="ok">Nenhum pedido encontrado</div>';
       return;
     }
-
     res.data.forEach(function(p) {
       const data = new Date(p.created_at).toLocaleString('pt-BR');
       const dataPedido = p.created_at.split('T')[0];
-
       if (p.status === 'pending') pendentes++;
       if (dataPedido === hoje) {
         pedidosHoje++;
         faturamento += parseFloat(p.charge);
       }
-
-      // Cards mobile
       let botoesCard = '';
       if (p.status === 'pending') {
-        botoesCard = '<div class="pedido-botoes"><button class="btn-green" onclick="mudarStatus(\'' + p.id + '\', \'completed\')">Entregue</button><button class="btn-red" onclick="mudarStatus(\'' + p.id + '\', \'cancelled\')">Cancelar</button></div>';
+        botoesCard = '<div class="pedido-botoes"><button class="btn-green" onclick="mudarStatus(' + p.id + ', \'completed\')">Entregue</button><button class="btn-red" onclick="mudarStatus(' + p.id + ', \'cancelled\')">Cancelar</button></div>';
       }
-
-      lista.innerHTML += '<div class="pedido-card"><div><strong>Data:</strong> ' + data + '</div><div><strong>User:</strong> ' + p.user_id.substring(0,8) + '...</div><div><strong>Serviço:</strong> ' + p.service_id + '</div><div><strong>Qtd:</strong> ' + p.quantity + '</div><div><strong>Valor:</strong> R$ ' + parseFloat(p.charge).toFixed(2) + '</div><div><strong>Status:</strong> <span class="status-' + p.status + '">' + p.status + '</span></div><div><strong>Link:</strong> <a href="' + p.link + '" target="_blank">Abrir</a></div>' + botoesCard + '</div>';
-
-      // Tabela desktop
+      lista.innerHTML += '<div class="pedido-card"><div><strong>ID:</strong> ' + p.id + '</div><div><strong>Data:</strong> ' + data + '</div><div><strong>User:</strong> ' + p.user_id.substring(0,8) + '...</div><div><strong>Serviço:</strong> ' + p.service_id + '</div><div><strong>Qtd:</strong> ' + p.quantity + '</div><div><strong>Valor:</strong> R$ ' + parseFloat(p.charge).toFixed(2) + '</div><div><strong>Status:</strong> <span class="status-' + p.status + '">' + p.status + '</span></div><div><strong>Link:</strong> <a href="' + p.link + '" target="_blank">Abrir</a></div>' + botoesCard + '</div>';
       let botoes = '-';
       if (p.status === 'pending') {
-        botoes = '<button class="btn-green" onclick="mudarStatus(\'' + p.id + '\', \'completed\')">Entregue</button><button class="btn-red" onclick="mudarStatus(\'' + p.id + '\', \'cancelled\')">Cancelar</button>';
+        botoes = '<button class="btn-green" onclick="mudarStatus(' + p.id + ', \'completed\')">Entregue</button><button class="btn-red" onclick="mudarStatus(' + p.id + ', \'cancelled\')">Cancelar</button>';
       }
-
       tbody.innerHTML += '<tr><td>' + data + '</td><td title="' + p.user_id + '">' + p.user_id.substring(0,8) + '...</td><td>' + p.service_id + '</td><td><a href="' + p.link + '" target="_blank">Abrir</a></td><td>' + p.quantity + '</td><td>R$ ' + parseFloat(p.charge).toFixed(2) + '</td><td class="status-' + p.status + '">' + p.status + '</td><td>' + botoes + '</td></tr>';
     });
-
     document.getElementById('pendentes').innerText = pendentes;
     document.getElementById('pedidosHoje').innerText = pedidosHoje;
     document.getElementById('faturamento').innerText = faturamento.toFixed(2);
@@ -224,19 +187,12 @@ function carregarDados() {
 }
 
 function mudarStatus(id, status) {
-  if (!isUUID(id)) {
-    alert('Erro: ID do pedido não é um UUID válido');
-    return;
-  }
-
   if (!confirm('Confirma mudar para ' + status + '?')) return;
-
   supabase.rpc('admin_update_order_status', { order_id: id, new_status: status }).then(function(res) {
     if (res.error) {
       alert('Erro: ' + res.error.message);
       return;
     }
-
     alert(status === 'cancelled'? 'Pedido cancelado e saldo estornado!' : 'Status atualizado!');
     carregarDados();
   });
@@ -247,23 +203,19 @@ function addSaldo() {
   const valor = parseFloat(document.getElementById('valorSaldo').value);
   const msgSaldo = document.getElementById('msgSaldo');
   msgSaldo.innerHTML = '';
-
   if (!userId ||!valor || valor <= 0) {
     msgSaldo.innerHTML = '<div class="erro">Preenche ID e valor válido</div>';
     return;
   }
-
   if (!isUUID(userId)) {
     msgSaldo.innerHTML = '<div class="erro">ID inválido. Use o UUID completo do usuário, ex: 550e8400-e29b-41d4-a716-446655440000</div>';
     return;
   }
-
   supabase.rpc('admin_add_balance', { user_id: userId, amount: valor }).then(function(res) {
     if (res.error) {
       msgSaldo.innerHTML = '<div class="erro">Erro: ' + res.error.message + '</div>';
       return;
     }
-
     msgSaldo.innerHTML = '<div class="ok">R$ ' + valor.toFixed(2) + ' adicionado com sucesso!</div>';
     document.getElementById('userIdSaldo').value = '';
     document.getElementById('valorSaldo').value = '';
