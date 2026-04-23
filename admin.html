@@ -83,8 +83,8 @@
 <script>
 // ========== TROCA SÓ ESSAS 2 LINHAS ==========
 const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co'; 
-const SUPABASE_KEY = 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh'; // <-- TROCA ESSA
-const ADMIN_EMAIL = 'robinultimate23@gmail.com'; // <-- TROCA ESSA
+const SUPABASE_KEY = 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh';
+const ADMIN_EMAIL = 'robinultimate23@gmail.com';
 // ============================================
 
 let supabase;
@@ -130,11 +130,7 @@ async function loginAdmin() {
 }
 
 async function carregarDados() {
-  const { data: pedidos, error } = await supabase
-    .from('orders')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(50);
+  const { data: pedidos, error } = await supabase.rpc('get_all_orders');
   
   if (error) {
     alert('Erro ao carregar pedidos: ' + error.message);
@@ -169,8 +165,8 @@ async function carregarDados() {
         <td class="status-${p.status}">${p.status}</td>
         <td>
           ${p.status === 'pending' ? `
-            <button class="btn-green" onclick="mudarStatus('${p.id}', 'completed', '${p.user_id}', ${p.charge})">Entregue</button>
-            <button class="btn-red" onclick="mudarStatus('${p.id}', 'cancelled', '${p.user_id}', ${p.charge})">Cancelar</button>
+            <button class="btn-green" onclick="mudarStatus('${p.id}', 'completed')">Entregue</button>
+            <button class="btn-red" onclick="mudarStatus('${p.id}', 'cancelled')">Cancelar</button>
           ` : '-'}
         </td>
       </tr>
@@ -182,20 +178,14 @@ async function carregarDados() {
   document.getElementById('faturamento').innerText = faturamento.toFixed(2);
 }
 
-async function mudarStatus(id, status, userId, valor) {
+async function mudarStatus(id, status) {
   if (!confirm(`Confirma mudar para ${status}?`)) return;
   
-  const { error } = await supabase.from('orders').update({ status }).eq('id', id);
+  const { error } = await supabase.rpc('admin_update_order_status', { order_id: id, new_status: status });
+  
   if (error) return alert('Erro: ' + error.message);
   
-  if (status === 'cancelled') {
-    const { data: perfil } = await supabase.from('profiles').select('balance').eq('id', userId).single();
-    await supabase.from('profiles').update({ balance: perfil.balance + parseFloat(valor) }).eq('id', userId);
-    alert('Pedido cancelado e saldo estornado!');
-  } else {
-    alert('Status atualizado!');
-  }
-  
+  alert(status === 'cancelled' ? 'Pedido cancelado e saldo estornado!' : 'Status atualizado!');
   carregarDados();
 }
 
@@ -211,14 +201,8 @@ async function addSaldo() {
     return;
   }
   
-  const { data: perfil, error: erro1 } = await supabase.from('profiles').select('balance').eq('id', userId).single();
-  if (erro1) {
-    msgSaldo.innerText = 'Usuário não encontrado';
-    msgSaldo.className = 'erro';
-    return;
-  }
+  const { error } = await supabase.rpc('admin_add_balance', { user_id: userId, amount: valor });
   
-  const { error } = await supabase.from('profiles').update({ balance: perfil.balance + valor }).eq('id', userId);
   if (error) {
     msgSaldo.innerText = 'Erro: ' + error.message;
     msgSaldo.className = 'erro';
