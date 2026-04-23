@@ -1,9 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - SMM Painel</title>
+  <!-- Troquei o CDN que tava dando problema -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    body { background: #0f172a; color: #e2e8f0; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { margin-bottom: 20px; color: #22d3ee; }
+    .card { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; font-size: 14px; }
+    th { background: #0f172a; color: #22d3ee; }
+    button { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 2px; }
+    .btn-green { background: #22c55e; color: #0f172a; }
+    .btn-red { background: #ef4444; color: white; }
+    .btn-blue { background: #3b82f6; color: white; }
+    select, input { padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; width: 100%; margin: 8px 0; }
+    .status-pending { color: #facc15; font-weight: bold; }
+    .status-completed { color: #22c55e; font-weight: bold; }
+    .status-cancelled { color: #ef4444; font-weight: bold; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+    .erro { color: #ef4444; margin-top: 10px; font-weight: bold; }
+    .ok { color: #22c55e; margin-top: 10px; font-weight: bold; }
+    a { color: #38bdf8; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Painel Admin</h1>
+    
+    <div id="login" class="card">
+      <h3>Login Admin</h3>
+      <input type="email" id="email" placeholder="Email admin">
+      <input type="password" id="senha" placeholder="Senha">
+      <button class="btn-blue" onclick="loginAdmin()">Entrar</button>
+      <div id="msgErro" class="erro"></div>
+    </div>
+
+    <div id="painel" style="display:none;">
+      <div class="card">
+        <h3>Estatísticas</h3>
+        <div class="grid">
+          <div><strong>Pedidos Hoje:</strong> <span id="pedidosHoje">0</span></div>
+          <div><strong>Pendentes:</strong> <span id="pendentes">0</span></div>
+          <div><strong>Faturamento Hoje:</strong> R$ <span id="faturamento">0.00</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Adicionar Saldo</h3>
+        <input type="text" id="userIdSaldo" placeholder="ID do usuário">
+        <input type="number" id="valorSaldo" placeholder="Valor R$" step="0.01">
+        <button class="btn-green" onclick="addSaldo()">Adicionar</button>
+        <div id="msgSaldo" class="ok"></div>
+      </div>
+
+      <div class="card">
+        <h3>Últimos 50 Pedidos</h3>
+        <button class="btn-blue" onclick="carregarDados()">Atualizar Lista</button>
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>User</th>
+              <th>Serviço</th>
+              <th>Link</th>
+              <th>Qtd</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaPedidos"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 <script>
-// TESTE: Se esse alert não aparecer, o arquivo JS nem carregou
 alert('Script carregou');
 
 // ========== CONFIG ==========
-const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co';
+const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co'; 
 const SUPABASE_KEY = 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh';
 const ADMIN_EMAIL = 'robinultimate23@gmail.com';
 // ============================================
@@ -15,7 +97,7 @@ window.onload = function() {
 
   if (typeof window.supabase === 'undefined') {
     alert('ERRO: Lib do Supabase não carregou');
-    document.getElementById('msgErro').innerText = 'ERRO: Lib do Supabase não carregou.';
+    document.getElementById('msgErro').innerText = 'ERRO: Lib do Supabase não carregou. Checa a internet ou o link do CDN.';
     return;
   }
 
@@ -24,6 +106,7 @@ window.onload = function() {
     alert('Supabase conectado');
   } catch (e) {
     alert('ERRO Supabase: ' + e.message);
+    document.getElementById('msgErro').innerText = 'ERRO Supabase: ' + e.message;
   }
 };
 
@@ -33,43 +116,43 @@ async function loginAdmin() {
   const senha = document.getElementById('senha').value;
   const msgErro = document.getElementById('msgErro');
   msgErro.innerText = 'Verificando...';
-
-  if (!email ||!senha) {
+  
+  if (!email || !senha) {
     msgErro.innerText = 'Preenche email e senha';
     return;
   }
-
-  if (email.toLowerCase()!== ADMIN_EMAIL.toLowerCase()) {
+  
+  if (email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
     msgErro.innerText = 'Acesso negado: email não é admin';
     return;
   }
-
+  
   if (!supabase) {
     msgErro.innerText = 'ERRO: Supabase não inicializou';
     alert('Supabase é null');
     return;
   }
-
+  
   alert('Tentando login...');
   const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
-
+  
   if (error) {
     msgErro.innerText = 'Erro Auth: ' + error.message;
     alert('Erro Auth: ' + error.message);
     return;
   }
-
+  
   alert('Login OK. Testando RPC...');
   msgErro.innerText = 'Login OK. Verificando permissões...';
-
+  
   const { data: teste, error: erroRpc } = await supabase.rpc('get_all_orders');
-
+  
   if (erroRpc) {
     msgErro.innerText = 'Erro Permissão: ' + erroRpc.message;
     alert('Erro RPC: ' + erroRpc.message);
     return;
   }
-
+  
   alert('RPC OK. Entrando...');
   msgErro.innerText = '';
   document.getElementById('login').style.display = 'none';
@@ -79,29 +162,29 @@ async function loginAdmin() {
 
 async function carregarDados() {
   const { data: pedidos, error } = await supabase.rpc('get_all_orders');
-
+  
   if (error) {
     alert('Erro ao carregar pedidos: ' + error.message);
     return;
   }
-
+  
   const tbody = document.getElementById('tabelaPedidos');
   tbody.innerHTML = '';
-
+  
   let pendentes = 0, faturamento = 0;
   const hoje = new Date().toISOString().split('T')[0];
   let pedidosHoje = 0;
-
+  
   pedidos.forEach(p => {
     const data = new Date(p.created_at).toLocaleString('pt-BR');
     const dataPedido = p.created_at.split('T')[0];
-
+    
     if (p.status === 'pending') pendentes++;
     if (dataPedido === hoje) {
       pedidosHoje++;
       faturamento += parseFloat(p.charge);
     }
-
+    
     tbody.innerHTML += `
       <tr>
         <td>${data}</td>
@@ -112,7 +195,7 @@ async function carregarDados() {
         <td>R$ ${parseFloat(p.charge).toFixed(2)}</td>
         <td class="status-${p.status}">${p.status}</td>
         <td>
-          ${p.status === 'pending'? `
+          ${p.status === 'pending' ? `
             <button class="btn-green" onclick="mudarStatus('${p.id}', 'completed')">Entregue</button>
             <button class="btn-red" onclick="mudarStatus('${p.id}', 'cancelled')">Cancelar</button>
           ` : '-'}
@@ -120,7 +203,7 @@ async function carregarDados() {
       </tr>
     `;
   });
-
+  
   document.getElementById('pendentes').innerText = pendentes;
   document.getElementById('pedidosHoje').innerText = pedidosHoje;
   document.getElementById('faturamento').innerText = faturamento.toFixed(2);
@@ -128,12 +211,12 @@ async function carregarDados() {
 
 async function mudarStatus(id, status) {
   if (!confirm(`Confirma mudar para ${status}?`)) return;
-
+  
   const { error } = await supabase.rpc('admin_update_order_status', { order_id: id, new_status: status });
-
+  
   if (error) return alert('Erro: ' + error.message);
-
-  alert(status === 'cancelled'? 'Pedido cancelado e saldo estornado!' : 'Status atualizado!');
+  
+  alert(status === 'cancelled' ? 'Pedido cancelado e saldo estornado!' : 'Status atualizado!');
   carregarDados();
 }
 
@@ -142,21 +225,21 @@ async function addSaldo() {
   const valor = parseFloat(document.getElementById('valorSaldo').value);
   const msgSaldo = document.getElementById('msgSaldo');
   msgSaldo.innerText = '';
-
-  if (!userId ||!valor || valor <= 0) {
+  
+  if (!userId || !valor || valor <= 0) {
     msgSaldo.innerText = 'Preenche ID e valor válido';
     msgSaldo.className = 'erro';
     return;
   }
-
+  
   const { error } = await supabase.rpc('admin_add_balance', { user_id: userId, amount: valor });
-
+  
   if (error) {
     msgSaldo.innerText = 'Erro: ' + error.message;
     msgSaldo.className = 'erro';
     return;
   }
-
+  
   msgSaldo.innerText = `R$ ${valor.toFixed(2)} adicionado com sucesso!`;
   msgSaldo.className = 'ok';
   document.getElementById('userIdSaldo').value = '';
@@ -164,6 +247,8 @@ async function addSaldo() {
 }
 
 setInterval(() => {
-  if (document.getElementById('painel').style.display!== 'none') carregarDados();
+  if (document.getElementById('painel').style.display !== 'none') carregarDados();
 }, 30000);
 </script>
+</body>
+</html>
