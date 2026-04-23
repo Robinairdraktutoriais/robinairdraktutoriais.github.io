@@ -36,7 +36,7 @@
       <h3>Login Admin</h3>
       <input type="email" id="email" placeholder="Email admin">
       <input type="password" id="senha" placeholder="Senha">
-      <button class="btn-blue" id="btnEntrar">Entrar</button>
+      <button class="btn-blue" onclick="loginAdmin()">Entrar</button>
       <div id="msgErro" class="erro"></div>
     </div>
 
@@ -54,13 +54,13 @@
         <h3>Adicionar Saldo</h3>
         <input type="text" id="userIdSaldo" placeholder="ID do usuário">
         <input type="number" id="valorSaldo" placeholder="Valor R$" step="0.01">
-        <button class="btn-green" id="btnAddSaldo">Adicionar</button>
+        <button class="btn-green" onclick="addSaldo()">Adicionar</button>
         <div id="msgSaldo" class="ok"></div>
       </div>
 
       <div class="card">
         <h3>Últimos 50 Pedidos</h3>
-        <button class="btn-blue" id="btnAtualizar">Atualizar Lista</button>
+        <button class="btn-blue" onclick="carregarDados()">Atualizar Lista</button>
         <table>
           <thead>
             <tr>
@@ -88,19 +88,26 @@ const ADMIN_EMAIL = 'robinultimate23@gmail.com';
 // ============================================
 
 let supabase;
-window.addEventListener('DOMContentLoaded', () => {
-  try {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  } catch (e) {
-    document.getElementById('msgErro').innerText = 'ERRO Supabase: ' + e.message;
+
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM carregou');
+  
+  if (typeof window.supabase === 'undefined') {
+    document.getElementById('msgErro').innerText = 'ERRO: Lib do Supabase não carregou. Checa a internet.';
+    return;
   }
   
-  document.getElementById('btnEntrar').addEventListener('click', loginAdmin);
-  document.getElementById('btnAddSaldo').addEventListener('click', addSaldo);
-  document.getElementById('btnAtualizar').addEventListener('click', carregarDados);
+  try {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('Supabase conectado');
+  } catch (e) {
+    document.getElementById('msgErro').innerText = 'ERRO Supabase: ' + e.message;
+    console.error(e);
+  }
 });
 
 async function loginAdmin() {
+  console.log('Botão clicado');
   const email = document.getElementById('email').value.trim();
   const senha = document.getElementById('senha').value;
   const msgErro = document.getElementById('msgErro');
@@ -116,13 +123,20 @@ async function loginAdmin() {
     return;
   }
   
+  if (!supabase) {
+    msgErro.innerText = 'ERRO: Supabase não inicializou';
+    return;
+  }
+  
   const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
   
   if (error) {
     msgErro.innerText = 'Erro: ' + error.message;
+    console.error(error);
     return;
   }
   
+  console.log('Login OK');
   msgErro.innerText = '';
   document.getElementById('login').style.display = 'none';
   document.getElementById('painel').style.display = 'block';
@@ -134,6 +148,7 @@ async function carregarDados() {
   
   if (error) {
     alert('Erro ao carregar pedidos: ' + error.message);
+    console.error(error);
     return;
   }
   
