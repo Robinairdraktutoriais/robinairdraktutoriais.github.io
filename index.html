@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel SMM - Entrar</title>
+  <title>Painel SMM</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-950 text-gray-100 min-h-screen flex items-center justify-center p-4">
 
-  <div class="w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl p-8 shadow-2xl">
+  <!-- TELA DE LOGIN -->
+  <div id="login-screen" class="w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl p-8 shadow-2xl">
     <div class="text-center mb-8">
       <h1 class="text-3xl font-bold text-white">Painel SMM</h1>
       <p class="text-gray-400 mt-2">Acesse sua conta</p>
@@ -57,33 +58,155 @@
     </form>
   </div>
 
+  <!-- PAINEL LOGADO -->
+  <div id="dashboard-screen" class="hidden w-full max-w-2xl">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-8 shadow-2xl">
+      <div class="flex justify-between items-center mb-8">
+        <div>
+          <h1 class="text-2xl font-bold text-white">Painel SMM</h1>
+          <p class="text-gray-400 text-sm" id="user-email"></p>
+        </div>
+        <button
+          id="logout-btn"
+          class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition text-sm"
+        >
+          Sair
+        </button>
+      </div>
+
+      <!-- CARD SALDO -->
+      <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl p-6 mb-6">
+        <p class="text-blue-100 text-sm mb-1">Saldo disponível</p>
+        <p class="text-4xl font-bold text-white">R$ <span id="saldo-valor">0,00</span></p>
+      </div>
+
+      <!-- ADICIONAR SALDO -->
+      <div class="bg-gray-800 border border-gray-700 rounded-xl p-6">
+        <h2 class="text-xl font-semibold text-white mb-4">Adicionar Saldo via Pix</h2>
+        
+        <div class="flex gap-2 mb-4">
+          <button onclick="setValor(10)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 10</button>
+          <button onclick="setValor(20)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 20</button>
+          <button onclick="setValor(50)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 50</button>
+          <button onclick="setValor(100)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 100</button>
+        </div>
+
+        <div class="flex gap-2 mb-4">
+          <input
+            type="number"
+            id="valor-input"
+            placeholder="Ou digite outro valor"
+            min="5"
+            step="0.01"
+            class="flex-1 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
+          >
+          <button
+            id="gerar-pix-btn"
+            onclick="gerarPix()"
+            class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition"
+          >
+            Gerar Pix
+          </button>
+        </div>
+
+        <!-- AREA DO QR CODE -->
+        <div id="pix-area" class="hidden bg-gray-900 border border-gray-700 rounded-lg p-6 text-center">
+          <p class="text-gray-400 text-sm mb-3">Escaneie o QR Code ou use o Copia e Cola</p>
+          <img id="qr-code-img" class="mx-auto mb-4 bg-white p-2 rounded-lg" width="250">
+          <textarea 
+            id="qr-code-text" 
+            rows="3" 
+            readonly
+            class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs mb-3"
+          ></textarea>
+          <button 
+            onclick="copiarPix()" 
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm"
+          >
+            Copiar código Pix
+          </button>
+          <p class="text-yellow-400 text-xs mt-4">
+            ⏱️ Aguardando pagamento... O saldo é creditado automaticamente em até 30s
+          </p>
+        </div>
+
+        <div id="pix-message" class="hidden text-sm p-3 rounded-lg mt-4"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // TROCAR AQUI DEPOIS COM SUAS CHAVES DO SUPABASE
+    // SUAS CHAVES DO SUPABASE
     const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co'
     const SUPABASE_ANON_KEY = 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh'
 
     const { createClient } = supabase
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+    // ELEMENTOS
+    const loginScreen = document.getElementById('login-screen')
+    const dashboardScreen = document.getElementById('dashboard-screen')
     const authForm = document.getElementById('auth-form')
     const emailInput = document.getElementById('email')
     const passwordInput = document.getElementById('password')
     const loginBtn = document.getElementById('login-btn')
     const signupBtn = document.getElementById('signup-btn')
+    const logoutBtn = document.getElementById('logout-btn')
     const messageDiv = document.getElementById('message')
+    const pixMessageDiv = document.getElementById('pix-message')
+    const userEmailEl = document.getElementById('user-email')
+    const saldoValorEl = document.getElementById('saldo-valor')
+    const valorInput = document.getElementById('valor-input')
+    const pixArea = document.getElementById('pix-area')
+    const gerarPixBtn = document.getElementById('gerar-pix-btn')
+
+    let currentUserId = null
+    let saldoInterval = null
 
     function showMsg(text, error = true) {
       messageDiv.textContent = text
-      messageDiv.className = `text-sm p-3 rounded-lg ${error? 'bg-red-900/50 text-red-300 border border-red-800' : 'bg-green-900/50 text-green-300 border border-green-800'}`
+      messageDiv.className = `text-sm p-3 rounded-lg ${error ? 'bg-red-900/50 text-red-300 border border-red-800' : 'bg-green-900/50 text-green-300 border border-green-800'}`
       messageDiv.classList.remove('hidden')
     }
 
-    // Se já tá logado, manda pro painel
+    function showPixMsg(text, error = true) {
+      pixMessageDiv.textContent = text
+      pixMessageDiv.className = `text-sm p-3 rounded-lg mt-4 ${error ? 'bg-red-900/50 text-red-300 border border-red-800' : 'bg-green-900/50 text-green-300 border border-green-800'}`
+      pixMessageDiv.classList.remove('hidden')
+    }
+
+    // CHECA SE JÁ TÁ LOGADO
     _supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) window.location.href = 'painel.html'
+      if (session) {
+        showDashboard(session.user)
+      }
     })
 
-    // Login
+    // ESCUTA MUDANÇA DE LOGIN
+    _supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        showDashboard(session.user)
+      } else if (event === 'SIGNED_OUT') {
+        showLogin()
+      }
+    })
+
+    function showDashboard(user) {
+      currentUserId = user.id
+      userEmailEl.textContent = user.email
+      loginScreen.classList.add('hidden')
+      dashboardScreen.classList.remove('hidden')
+      carregarSaldo()
+    }
+
+    function showLogin() {
+      currentUserId = null
+      dashboardScreen.classList.add('hidden')
+      loginScreen.classList.remove('hidden')
+      if (saldoInterval) clearInterval(saldoInterval)
+    }
+
+    // LOGIN
     authForm.addEventListener('submit', async (e) => {
       e.preventDefault()
       loginBtn.disabled = true
@@ -95,22 +218,20 @@
       })
 
       if (error) {
-        showMsg(error.message === 'Invalid login credentials'? 'Email ou senha incorretos' : error.message)
+        showMsg(error.message === 'Invalid login credentials' ? 'Email ou senha incorretos' : error.message)
         loginBtn.disabled = false
         loginBtn.textContent = 'Entrar'
-      } else {
-        window.location.href = 'painel.html'
       }
     })
 
-    // Cadastro
+    // CADASTRO
     signupBtn.addEventListener('click', async () => {
-      if (!emailInput.value ||!passwordInput.value) return showMsg('Preencha email e senha')
+      if (!emailInput.value || !passwordInput.value) return showMsg('Preencha email e senha')
 
       signupBtn.disabled = true
       signupBtn.textContent = 'Criando...'
 
-      const { error } = await _supabase.auth.signUp({
+      const { data, error } = await _supabase.auth.signUp({
         email: emailInput.value,
         password: passwordInput.value,
       })
@@ -118,12 +239,85 @@
       if (error) {
         showMsg(error.message)
       } else {
+        // Cria registro na tabela usuarios
+        await _supabase.from('usuarios').insert({ 
+          id: data.user.id, 
+          email: data.user.email,
+          saldo: 0 
+        })
         showMsg('Conta criada! Faça login agora.', false)
       }
 
       signupBtn.disabled = false
       signupBtn.textContent = 'Criar conta gratuita'
     })
+
+    // LOGOUT
+    logoutBtn.addEventListener('click', async () => {
+      await _supabase.auth.signOut()
+    })
+
+    // CARREGAR SALDO
+    async function carregarSaldo() {
+      const { data, error } = await _supabase
+        .from('usuarios')
+        .select('saldo')
+        .eq('id', currentUserId)
+        .single()
+      
+      if (data) {
+        saldoValorEl.textContent = Number(data.saldo).toFixed(2).replace('.', ',')
+      }
+    }
+
+    // BOTÕES DE VALOR RÁPIDO
+    function setValor(valor) {
+      valorInput.value = valor
+    }
+
+    // GERAR PIX
+    async function gerarPix() {
+      const valor = parseFloat(valorInput.value)
+      
+      if (!valor || valor < 5) {
+        showPixMsg('Valor mínimo é R$ 5,00')
+        return
+      }
+
+      gerarPixBtn.disabled = true
+      gerarPixBtn.textContent = 'Gerando...'
+      pixMessageDiv.classList.add('hidden')
+
+      const { data, error } = await _supabase.functions.invoke('criar-pagamento', {
+        body: { valor: valor, user_id: currentUserId }
+      })
+
+      if (error) {
+        showPixMsg('Erro ao gerar Pix: ' + error.message)
+        gerarPixBtn.disabled = false
+        gerarPixBtn.textContent = 'Gerar Pix'
+        return
+      }
+
+      // Mostra QR Code
+      document.getElementById('qr-code-img').src = `data:image/png;base64,${data.qr_code_base64}`
+      document.getElementById('qr-code-text').value = data.qr_code
+      pixArea.classList.remove('hidden')
+      
+      gerarPixBtn.disabled = false
+      gerarPixBtn.textContent = 'Gerar Pix'
+
+      // Começa a verificar saldo a cada 3s
+      if (saldoInterval) clearInterval(saldoInterval)
+      saldoInterval = setInterval(carregarSaldo, 3000)
+    }
+
+    function copiarPix() {
+      const input = document.getElementById('qr-code-text')
+      input.select()
+      document.execCommand('copy')
+      showPixMsg('Código Pix copiado!', false)
+    }
   </script>
 </body>
 </html>
