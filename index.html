@@ -42,7 +42,7 @@
             <p class="text-green-400 font-bold text-lg">R$ <span id="saldo-valor">0,00</span></p>
           </div>
           <button class="bg-gray-700 text-white px-3 py-2 rounded-lg text-sm">ID</button>
-          <button onclick="abrirModalSaldo()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition font-semibold">+ Saldo</button>
+          <button onclick="scrollToSaldo()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition font-semibold">+ Saldo</button>
           <button id="logout-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">Sair</button>
         </div>
       </div>
@@ -50,6 +50,34 @@
 
     <!-- CONTEÚDO -->
     <div class="max-w-6xl mx-auto p-4 space-y-4">
+      
+      <!-- CARD ADICIONAR SALDO -->
+      <div id="card-saldo" class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <h2 class="text-xl font-semibold text-white mb-4">Adicionar Saldo via Pix</h2>
+        
+        <div class="flex gap-2 mb-4">
+          <button onclick="setValor(10)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 10</button>
+          <button onclick="setValor(20)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 20</button>
+          <button onclick="setValor(50)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 50</button>
+          <button onclick="setValor(100)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 100</button>
+        </div>
+
+        <div class="flex gap-2 mb-4">
+          <input type="number" id="valor-input" placeholder="Ou digite outro valor" min="5" step="0.01" class="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white">
+          <button id="gerar-pix-btn" onclick="gerarPix()" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition">Gerar Pix</button>
+        </div>
+
+        <div id="pix-area" class="hidden bg-gray-800 border border-gray-700 rounded-lg p-6 text-center">
+          <p class="text-gray-400 text-sm mb-3">Escaneie o QR Code ou use o Copia e Cola</p>
+          <img id="qr-code-img" class="mx-auto mb-4 bg-white p-2 rounded-lg" width="250">
+          <textarea id="qr-code-text" rows="3" readonly class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-xs mb-3"></textarea>
+          <button onclick="copiarPix()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm">Copiar código Pix</button>
+          <p class="text-yellow-400 text-xs mt-4">⏱️ Aguardando pagamento... O saldo é creditado automaticamente em até 30s</p>
+        </div>
+
+        <div id="pix-message" class="hidden text-sm p-3 rounded-lg mt-4"></div>
+      </div>
+
       <!-- FAZER NOVO PEDIDO -->
       <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
         <h2 class="text-xl font-semibold text-white mb-4">Fazer Novo Pedido</h2>
@@ -57,15 +85,19 @@
         <div class="space-y-4">
           <div>
             <label class="text-gray-300 text-sm mb-1 block">Categoria</label>
-            <select id="categoria" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white">
-              <option>Selecione</option>
+            <select id="categoria" onchange="carregarServicos()" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white">
+              <option value="">Selecione</option>
+              <option value="instagram">Instagram</option>
+              <option value="tiktok">TikTok</option>
+              <option value="youtube">YouTube</option>
+              <option value="facebook">Facebook</option>
             </select>
           </div>
 
           <div>
             <label class="text-gray-300 text-sm mb-1 block">Serviço</label>
-            <select id="servico" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white">
-              <option>Selecione categoria</option>
+            <select id="servico" onchange="calcularPreco()" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white">
+              <option value="">Selecione categoria</option>
             </select>
           </div>
 
@@ -76,7 +108,7 @@
 
           <div>
             <label class="text-gray-300 text-sm mb-1 block">Quantidade</label>
-            <input type="number" id="quantidade" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white">
+            <input type="number" id="quantidade" oninput="calcularPreco()" min="100" placeholder="Mínimo 100" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white">
           </div>
 
           <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 flex justify-between items-center">
@@ -84,8 +116,9 @@
               <p class="text-gray-400 text-sm">Você pagará</p>
               <p class="text-blue-400 font-bold text-2xl">R$ <span id="valor-pedido">0,00</span></p>
             </div>
-            <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition">Enviar Pedido</button>
+            <button onclick="enviarPedido()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition">Enviar Pedido</button>
           </div>
+          <div id="pedido-msg" class="hidden text-sm p-3 rounded-lg"></div>
         </div>
       </div>
 
@@ -99,40 +132,7 @@
     </div>
   </div>
 
-  <!-- MODAL ADICIONAR SALDO -->
-  <div id="modal-saldo" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-md">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-semibold text-white">Adicionar Saldo via Pix</h2>
-        <button onclick="fecharModalSaldo()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
-      </div>
-      
-      <div class="flex gap-2 mb-4">
-        <button onclick="setValor(10)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 10</button>
-        <button onclick="setValor(20)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 20</button>
-        <button onclick="setValor(50)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 50</button>
-        <button onclick="setValor(100)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 100</button>
-      </div>
-
-      <div class="flex gap-2 mb-4">
-        <input type="number" id="valor-input" placeholder="Ou digite outro valor" min="5" step="0.01" class="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white">
-        <button id="gerar-pix-btn" onclick="gerarPix()" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition">Gerar Pix</button>
-      </div>
-
-      <div id="pix-area" class="hidden bg-gray-800 border border-gray-700 rounded-lg p-4 text-center">
-        <p class="text-gray-400 text-sm mb-3">Escaneie o QR Code</p>
-        <img id="qr-code-img" class="mx-auto mb-3 bg-white p-2 rounded-lg" width="200">
-        <textarea id="qr-code-text" rows="2" readonly class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-xs mb-3"></textarea>
-        <button onclick="copiarPix()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm">Copiar código Pix</button>
-        <p class="text-yellow-400 text-xs mt-3">⏱️ Saldo creditado em até 30s após pagamento</p>
-      </div>
-
-      <div id="pix-message" class="hidden text-sm p-3 rounded-lg mt-4"></div>
-    </div>
-  </div>
-
   <script>
-    // SUAS CHAVES DO SUPABASE
     const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co'
     const SUPABASE_ANON_KEY = 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh'
     const SUPABASE_FUNCTION_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pZWR3anl6dm1rZ3dmZHdoYWNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MzQ0MTIsImV4cCI6MjA3MDAxMDQxMn0.pIr6g27ClVzWQhVbcnpH4nvkVskzUJOCzzX14xWEhKg'
@@ -140,7 +140,28 @@
     const { createClient } = supabase
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-    // ELEMENTOS
+    const SERVICOS = {
+      instagram: [
+        { id: 'ig-seguidores', nome: 'Seguidores Instagram', preco: 12.50 },
+        { id: 'ig-curtidas', nome: 'Curtidas Instagram', preco: 2.00 },
+        { id: 'ig-views', nome: 'Visualizações Stories', preco: 1.50 }
+      ],
+      tiktok: [
+        { id: 'tt-seguidores', nome: 'Seguidores TikTok', preco: 15.00 },
+        { id: 'tt-curtidas', nome: 'Curtidas TikTok', preco: 3.00 },
+        { id: 'tt-views', nome: 'Visualizações TikTok', preco: 0.80 }
+      ],
+      youtube: [
+        { id: 'yt-inscritos', nome: 'Inscritos YouTube', preco: 25.00 },
+        { id: 'yt-views', nome: 'Visualizações YouTube', preco: 5.00 },
+        { id: 'yt-likes', nome: 'Likes YouTube', preco: 8.00 }
+      ],
+      facebook: [
+        { id: 'fb-curtidas', nome: 'Curtidas Página', preco: 10.00 },
+        { id: 'fb-seguidores', nome: 'Seguidores Facebook', preco: 18.00 }
+      ]
+    }
+
     const loginScreen = document.getElementById('login-screen')
     const dashboardScreen = document.getElementById('dashboard-screen')
     const authForm = document.getElementById('auth-form')
@@ -156,10 +177,15 @@
     const valorInput = document.getElementById('valor-input')
     const pixArea = document.getElementById('pix-area')
     const gerarPixBtn = document.getElementById('gerar-pix-btn')
-    const modalSaldo = document.getElementById('modal-saldo')
+    const pedidoMsg = document.getElementById('pedido-msg')
 
     let currentUser = null
     let saldoInterval = null
+    let servicoSelecionado = null
+
+    function scrollToSaldo() {
+      document.getElementById('card-saldo').scrollIntoView({ behavior: 'smooth' })
+    }
 
     function showMsg(text, error = true) {
       messageDiv.textContent = text
@@ -173,30 +199,48 @@
       pixMessageDiv.classList.remove('hidden')
     }
 
-    function abrirModalSaldo() {
-      modalSaldo.classList.remove('hidden')
+    function showPedidoMsg(text, error = true) {
+      pedidoMsg.textContent = text
+      pedidoMsg.className = `text-sm p-3 rounded-lg ${error ? 'bg-red-900/50 text-red-300 border border-red-800' : 'bg-green-900/50 text-green-300 border border-green-800'}`
+      pedidoMsg.classList.remove('hidden')
+      setTimeout(() => pedidoMsg.classList.add('hidden'), 3000)
     }
 
-    function fecharModalSaldo() {
-      modalSaldo.classList.add('hidden')
-      pixArea.classList.add('hidden')
-      pixMessageDiv.classList.add('hidden')
-      valorInput.value = ''
-    }
-
-    // CHECA SE JÁ TÁ LOGADO
-    _supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        showDashboard(session.user)
+    function carregarServicos() {
+      const cat = document.getElementById('categoria').value
+      const servicoSelect = document.getElementById('servico')
+      if (!cat) {
+        servicoSelect.innerHTML = '<option value="">Selecione categoria</option>'
+        return
       }
+      servicoSelect.innerHTML = '<option value="">Selecione o serviço</option>'
+      SERVICOS[cat].forEach(s => {
+        servicoSelect.innerHTML += `<option value="${s.id}" data-preco="${s.preco}">${s.nome} - R$ ${s.preco.toFixed(2)}/1000</option>`
+      })
+    }
+
+    function calcularPreco() {
+      const servicoSelect = document.getElementById('servico')
+      const qtd = parseInt(document.getElementById('quantidade').value) || 0
+      const opt = servicoSelect.options[servicoSelect.selectedIndex]
+      if (!opt.value || qtd < 100) {
+        document.getElementById('valor-pedido').textContent = '0,00'
+        servicoSelecionado = null
+        return
+      }
+      const precoPor1000 = parseFloat(opt.dataset.preco)
+      const valor = (qtd / 1000) * precoPor1000
+      document.getElementById('valor-pedido').textContent = valor.toFixed(2).replace('.', ',')
+      servicoSelecionado = { id: opt.value, nome: opt.text.split(' - ')[0], preco: precoPor1000 }
+    }
+
+    _supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) showDashboard(session.user)
     })
 
     _supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') {
-        showDashboard(session.user)
-      } else if (event === 'SIGNED_OUT') {
-        showLogin()
-      }
+      if (event === 'SIGNED_IN') showDashboard(session.user)
+      else if (event === 'SIGNED_OUT') showLogin()
     })
 
     function showDashboard(user) {
@@ -215,17 +259,14 @@
       if (saldoInterval) clearInterval(saldoInterval)
     }
 
-    // LOGIN
     authForm.addEventListener('submit', async (e) => {
       e.preventDefault()
       loginBtn.disabled = true
       loginBtn.textContent = 'Entrando...'
-
       const { error } = await _supabase.auth.signInWithPassword({
         email: emailInput.value,
         password: passwordInput.value,
       })
-
       if (error) {
         showMsg(error.message === 'Invalid login credentials' ? 'Email ou senha incorretos' : error.message)
         loginBtn.disabled = false
@@ -233,72 +274,46 @@
       }
     })
 
-    // CADASTRO
     signupBtn.addEventListener('click', async () => {
       if (!emailInput.value || !passwordInput.value) return showMsg('Preencha email e senha')
-
       signupBtn.disabled = true
       signupBtn.textContent = 'Criando...'
-
       const { data, error } = await _supabase.auth.signUp({
         email: emailInput.value,
         password: passwordInput.value,
       })
-
       if (error) {
         showMsg(error.message)
       } else {
-        await _supabase.from('usuarios').insert({ 
-          id: data.user.id, 
-          email: data.user.email,
-          saldo: 0 
-        })
+        await _supabase.from('usuarios').insert({ id: data.user.id, email: data.user.email, saldo: 0 })
         showMsg('Conta criada! Faça login agora.', false)
       }
-
       signupBtn.disabled = false
       signupBtn.textContent = 'Criar conta gratuita'
     })
 
-    // LOGOUT
     logoutBtn.addEventListener('click', async () => {
       await _supabase.auth.signOut()
     })
 
-    // CARREGAR SALDO
     async function carregarSaldo() {
-      const { data, error } = await _supabase
-        .from('usuarios')
-        .select('saldo')
-        .eq('id', currentUser.id)
-        .single()
-      
-      if (data) {
-        saldoValorEl.textContent = Number(data.saldo).toFixed(2).replace('.', ',')
-      }
+      const { data } = await _supabase.from('usuarios').select('saldo').eq('id', currentUser.id).single()
+      if (data) saldoValorEl.textContent = Number(data.saldo).toFixed(2).replace('.', ',')
     }
 
-    // CARREGAR PEDIDOS
     async function carregarPedidos() {
-      const { data, error } = await _supabase
-        .from('pedidos')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false })
-        .limit(5)
-      
+      const { data } = await _supabase.from('pedidos').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(5)
       const listaPedidos = document.getElementById('lista-pedidos')
       if (!data || data.length === 0) {
         listaPedidos.innerHTML = '<p class="text-gray-400 text-center py-8">Nenhum pedido ainda</p>'
         return
       }
-
       listaPedidos.innerHTML = data.map(p => `
         <div class="bg-gray-800 border border-gray-700 rounded-lg p-4">
           <div class="flex justify-between items-start mb-2">
             <div>
               <p class="text-white font-semibold">${p.servico || 'Pedido'}</p>
-              <p class="text-gray-400 text-sm">${p.link || ''}</p>
+              <p class="text-gray-400 text-sm truncate max-w-xs">${p.link || ''}</p>
             </div>
             <span class="px-3 py-1 rounded-full text-xs ${
               p.status === 'completo' ? 'bg-green-900 text-green-300' : 
@@ -314,20 +329,16 @@
       `).join('')
     }
 
-    // BOTÕES DE VALOR RÁPIDO
     function setValor(valor) {
       valorInput.value = valor
     }
 
-    // GERAR PIX
     async function gerarPix() {
       const valor = parseFloat(valorInput.value)
-      
       if (!valor || valor < 5) {
         showPixMsg('Valor mínimo é R$ 5,00')
         return
       }
-
       gerarPixBtn.disabled = true
       gerarPixBtn.textContent = 'Gerando...'
       pixMessageDiv.classList.add('hidden')
@@ -335,27 +346,17 @@
 
       try {
         const { data, error } = await _supabase.functions.invoke('criar-pagamento', {
-          body: { 
-            valor: valor, 
-            email: currentUser.email
-          },
-          headers: {
-            Authorization: `Bearer ${SUPABASE_FUNCTION_KEY}`
-          }
+          body: { valor: valor, email: currentUser.email },
+          headers: { Authorization: `Bearer ${SUPABASE_FUNCTION_KEY}` }
         })
-
-        if (error) throw new Error(error.message || 'Erro ao chamar função')
+        if (error) throw new Error(error.message)
         if (data.error) throw new Error(data.error)
-
         document.getElementById('qr-code-img').src = `data:image/jpeg;base64,${data.qr_code_base64}`
         document.getElementById('qr-code-text').value = data.qr_code
         pixArea.classList.remove('hidden')
-        
         if (saldoInterval) clearInterval(saldoInterval)
         saldoInterval = setInterval(carregarSaldo, 3000)
-
       } catch (err) {
-        console.error('Erro completo:', err)
         showPixMsg('Erro ao gerar Pix: ' + err.message)
       } finally {
         gerarPixBtn.disabled = false
@@ -368,6 +369,31 @@
       input.select()
       document.execCommand('copy')
       showPixMsg('Código Pix copiado!', false)
+    }
+
+    async function enviarPedido() {
+      if (!servicoSelecionado) return showPedidoMsg('Selecione um serviço')
+      const qtd = parseInt(document.getElementById('quantidade').value)
+      const link = document.getElementById('link').value
+      if (qtd < 100) return showPedidoMsg('Quantidade mínima: 100')
+      if (!link) return showPedidoMsg('Informe o link')
+      const valor = (qtd / 1000) * servicoSelecionado.preco
+      const { data: userData } = await _supabase.from('usuarios').select('saldo').eq('id', currentUser.id).single()
+      if (userData.saldo < valor) return showPedidoMsg('Saldo insuficiente. Adicione saldo.')
+      const { error } = await _supabase.from('pedidos').insert({
+        user_id: currentUser.id, servico: servicoSelecionado.nome, link: link, quantidade: qtd, valor: valor, status: 'pendente'
+      })
+      if (error) {
+        showPedidoMsg('Erro ao criar pedido')
+      } else {
+        await _supabase.from('usuarios').update({ saldo: userData.saldo - valor }).eq('id', currentUser.id)
+        showPedidoMsg('Pedido enviado com sucesso!', false)
+        document.getElementById('quantidade').value = ''
+        document.getElementById('link').value = ''
+        document.getElementById('valor-pedido').textContent = '0,00'
+        carregarSaldo()
+        carregarPedidos()
+      }
     }
   </script>
 </body>
