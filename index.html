@@ -42,8 +42,40 @@
             <p class="text-green-400 font-bold text-lg leading-tight">R$ <span id="saldo-valor">0,00</span></p>
           </div>
           <button class="bg-[#2a2f36] text-white px-3 py-2 rounded-lg text-sm font-medium">ID</button>
-          <button onclick="abrirModalSaldo()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition font-semibold text-sm whitespace-nowrap">+ Saldo</button>
+          <button onclick="toggleSaldo()" id="btn-saldo" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition font-semibold text-sm whitespace-nowrap">+ Saldo</button>
           <button id="logout-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition text-sm">Sair</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA ADICIONAR SALDO - ESCONDIDA POR PADRÃO -->
+    <div id="aba-saldo" class="hidden bg-[#1a1f26] border-b border-[#2a2f36] transition-all">
+      <div class="max-w-6xl mx-auto p-4">
+        <div class="bg-[#0f1419] border border-[#2a2f36] rounded-xl p-6">
+          <h2 class="text-lg font-semibold text-white mb-4">Adicionar Saldo via Pix</h2>
+          
+          <div class="mb-3">
+            <input type="number" id="valor-input" placeholder="Digite o valor (mínimo R$ 5,00)" min="5" step="0.01" class="w-full px-4 py-3 bg-[#1a1f26] border border-[#2a2f36] rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-lg">
+          </div>
+
+          <div class="grid grid-cols-4 gap-2 mb-4">
+            <button onclick="setValor(10)" class="bg-[#2a2f36] hover:bg-[#343a42] py-2.5 rounded-lg transition text-sm">R$ 10</button>
+            <button onclick="setValor(20)" class="bg-[#2a2f36] hover:bg-[#343a42] py-2.5 rounded-lg transition text-sm">R$ 20</button>
+            <button onclick="setValor(50)" class="bg-[#2a2f36] hover:bg-[#343a42] py-2.5 rounded-lg transition text-sm">R$ 50</button>
+            <button onclick="setValor(100)" class="bg-[#2a2f36] hover:bg-[#343a42] py-2.5 rounded-lg transition text-sm">R$ 100</button>
+          </div>
+
+          <button id="gerar-pix-btn" onclick="gerarPix()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition">Gerar Pix</button>
+
+          <div id="pix-area" class="hidden bg-[#1a1f26] border border-[#2a2f36] rounded-lg p-6 text-center mt-4">
+            <p class="text-gray-400 text-sm mb-3">Escaneie o QR Code</p>
+            <img id="qr-code-img" class="mx-auto mb-3 bg-white p-2 rounded-lg" width="220">
+            <textarea id="qr-code-text" rows="3" readonly class="w-full px-3 py-2 bg-[#0f1419] border border-[#2a2f36] rounded-lg text-white text-xs mb-3"></textarea>
+            <button onclick="copiarPix()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm">Copiar código Pix</button>
+            <p class="text-yellow-400 text-xs mt-3">⏱️ Saldo creditado em até 30s após pagamento</p>
+          </div>
+
+          <div id="pix-message" class="hidden text-sm p-3 rounded-lg mt-4"></div>
         </div>
       </div>
     </div>
@@ -51,7 +83,6 @@
     <!-- CONTEÚDO -->
     <div class="max-w-6xl mx-auto p-4 space-y-4">
       
-      <!-- FAZER NOVO PEDIDO -->
       <div class="bg-[#1a1f26] border border-[#2a2f36] rounded-xl p-6">
         <h2 class="text-xl font-semibold text-white mb-4">Fazer Novo Pedido</h2>
         
@@ -95,45 +126,12 @@
         </div>
       </div>
 
-      <!-- ÚLTIMOS PEDIDOS -->
       <div class="bg-[#1a1f26] border border-[#2a2f36] rounded-xl p-6">
         <h2 class="text-xl font-semibold text-white mb-4">Últimos Pedidos</h2>
         <div id="lista-pedidos">
           <p class="text-gray-400 text-center py-8">Nenhum pedido ainda</p>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- MODAL ADICIONAR SALDO - SÓ APARECE AO CLICAR -->
-  <div id="modal-saldo" class="hidden fixed inset-0 bg-black/80 flex items-start justify-center p-4 pt-20 z-50" onclick="fecharModalSaldo()">
-    <div class="bg-[#1a1f26] border border-[#2a2f36] rounded-xl p-6 w-full max-w-md" onclick="event.stopPropagation()">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-semibold text-white">Adicionar Saldo via Pix</h2>
-        <button onclick="fecharModalSaldo()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
-      </div>
-      
-      <div class="grid grid-cols-4 gap-2 mb-4">
-        <button onclick="setValor(10)" class="bg-[#2a2f36] hover:bg-[#343a42] py-2.5 rounded-lg transition text-sm">R$ 10</button>
-        <button onclick="setValor(20)" class="bg-[#2a2f36] hover:bg-[#343a42] py-2.5 rounded-lg transition text-sm">R$ 20</button>
-        <button onclick="setValor(50)" class="bg-[#2a2f36] hover:bg-[#343a42] py-2.5 rounded-lg transition text-sm">R$ 50</button>
-        <button onclick="setValor(100)" class="bg-[#2a2f36] hover:bg-[#343a42] py-2.5 rounded-lg transition text-sm">R$ 100</button>
-      </div>
-
-      <div class="flex gap-2 mb-4">
-        <input type="number" id="valor-input" placeholder="Ou digite outro valor" min="5" step="0.01" class="flex-1 px-4 py-3 bg-[#0f1419] border border-[#2a2f36] rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white">
-        <button id="gerar-pix-btn" onclick="gerarPix()" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition whitespace-nowrap">Gerar Pix</button>
-      </div>
-
-      <div id="pix-area" class="hidden bg-[#0f1419] border border-[#2a2f36] rounded-lg p-6 text-center">
-        <p class="text-gray-400 text-sm mb-3">Escaneie o QR Code</p>
-        <img id="qr-code-img" class="mx-auto mb-3 bg-white p-2 rounded-lg" width="220">
-        <textarea id="qr-code-text" rows="3" readonly class="w-full px-3 py-2 bg-[#1a1f26] border border-[#2a2f36] rounded-lg text-white text-xs mb-3"></textarea>
-        <button onclick="copiarPix()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm">Copiar código Pix</button>
-        <p class="text-yellow-400 text-xs mt-3">⏱️ Saldo creditado em até 30s após pagamento</p>
-      </div>
-
-      <div id="pix-message" class="hidden text-sm p-3 rounded-lg mt-4"></div>
     </div>
   </div>
 
@@ -183,21 +181,28 @@
     const pixArea = document.getElementById('pix-area')
     const gerarPixBtn = document.getElementById('gerar-pix-btn')
     const pedidoMsg = document.getElementById('pedido-msg')
-    const modalSaldo = document.getElementById('modal-saldo')
+    const abaSaldo = document.getElementById('aba-saldo')
+    const btnSaldo = document.getElementById('btn-saldo')
 
     let currentUser = null
     let saldoInterval = null
     let servicoSelecionado = null
+    let saldoAberto = false
 
-    function abrirModalSaldo() {
-      modalSaldo.classList.remove('hidden')
-      pixArea.classList.add('hidden')
-      pixMessageDiv.classList.add('hidden')
-      valorInput.value = ''
-    }
-
-    function fecharModalSaldo() {
-      modalSaldo.classList.add('hidden')
+    function toggleSaldo() {
+      saldoAberto = !saldoAberto
+      if (saldoAberto) {
+        abaSaldo.classList.remove('hidden')
+        btnSaldo.classList.add('bg-green-700')
+        btnSaldo.classList.remove('bg-green-600')
+      } else {
+        abaSaldo.classList.add('hidden')
+        btnSaldo.classList.remove('bg-green-700')
+        btnSaldo.classList.add('bg-green-600')
+        pixArea.classList.add('hidden')
+        pixMessageDiv.classList.add('hidden')
+        valorInput.value = ''
+      }
     }
 
     function showMsg(text, error = true) {
