@@ -59,9 +59,9 @@
   </div>
 
   <!-- PAINEL LOGADO -->
-  <div id="dashboard-screen" class="hidden w-full max-w-2xl">
+  <div id="dashboard-screen" class="hidden w-full max-w-4xl">
     <div class="bg-gray-900 border border-gray-800 rounded-xl p-8 shadow-2xl">
-      <div class="flex justify-between items-center mb-8">
+      <div class="flex justify-between items-center mb-6">
         <div>
           <h1 class="text-2xl font-bold text-white">Painel SMM</h1>
           <p class="text-gray-400 text-sm" id="user-email"></p>
@@ -74,64 +74,99 @@
         </button>
       </div>
 
-      <!-- CARD SALDO -->
-      <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl p-6 mb-6">
-        <p class="text-blue-100 text-sm mb-1">Saldo disponível</p>
-        <p class="text-4xl font-bold text-white">R$ <span id="saldo-valor">0,00</span></p>
+      <!-- ABAS -->
+      <div class="flex gap-2 mb-6 border-b border-gray-800">
+        <button onclick="mostrarAba('saldo')" id="tab-saldo" class="px-4 py-2 font-semibold border-b-2 border-blue-500 text-white">
+          Saldo
+        </button>
+        <button onclick="mostrarAba('pedidos')" id="tab-pedidos" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-400 hover:text-white">
+          Meus Pedidos
+        </button>
+        <button onclick="mostrarAba('novo')" id="tab-novo" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-400 hover:text-white">
+          Novo Pedido
+        </button>
       </div>
 
-      <!-- ADICIONAR SALDO -->
-      <div class="bg-gray-800 border border-gray-700 rounded-xl p-6">
-        <h2 class="text-xl font-semibold text-white mb-4">Adicionar Saldo via Pix</h2>
-        
-        <div class="flex gap-2 mb-4">
-          <button onclick="setValor(10)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 10</button>
-          <button onclick="setValor(20)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 20</button>
-          <button onclick="setValor(50)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 50</button>
-          <button onclick="setValor(100)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 100</button>
+      <!-- ABA SALDO -->
+      <div id="aba-saldo">
+        <!-- CARD SALDO -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl p-6 mb-6">
+          <p class="text-blue-100 text-sm mb-1">Saldo disponível</p>
+          <p class="text-4xl font-bold text-white">R$ <span id="saldo-valor">0,00</span></p>
         </div>
 
-        <div class="flex gap-2 mb-4">
-          <input
-            type="number"
-            id="valor-input"
-            placeholder="Ou digite outro valor"
-            min="5"
-            step="0.01"
-            class="flex-1 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
-          >
-          <button
-            id="gerar-pix-btn"
-            onclick="gerarPix()"
-            class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition"
-          >
-            Gerar Pix
-          </button>
-        </div>
+        <!-- ADICIONAR SALDO -->
+        <div class="bg-gray-800 border border-gray-700 rounded-xl p-6">
+          <h2 class="text-xl font-semibold text-white mb-4">Adicionar Saldo via Pix</h2>
+          
+          <div class="flex gap-2 mb-4">
+            <button onclick="setValor(10)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 10</button>
+            <button onclick="setValor(20)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 20</button>
+            <button onclick="setValor(50)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 50</button>
+            <button onclick="setValor(100)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 100</button>
+          </div>
 
-        <!-- AREA DO QR CODE -->
-        <div id="pix-area" class="hidden bg-gray-900 border border-gray-700 rounded-lg p-6 text-center">
-          <p class="text-gray-400 text-sm mb-3">Escaneie o QR Code ou use o Copia e Cola</p>
-          <img id="qr-code-img" class="mx-auto mb-4 bg-white p-2 rounded-lg" width="250">
-          <textarea 
-            id="qr-code-text" 
-            rows="3" 
-            readonly
-            class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs mb-3"
-          ></textarea>
-          <button 
-            onclick="copiarPix()" 
-            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm"
-          >
-            Copiar código Pix
-          </button>
-          <p class="text-yellow-400 text-xs mt-4">
-            ⏱️ Aguardando pagamento... O saldo é creditado automaticamente em até 30s
-          </p>
-        </div>
+          <div class="flex gap-2 mb-4">
+            <input
+              type="number"
+              id="valor-input"
+              placeholder="Ou digite outro valor"
+              min="5"
+              step="0.01"
+              class="flex-1 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
+            >
+            <button
+              id="gerar-pix-btn"
+              onclick="gerarPix()"
+              class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition"
+            >
+              Gerar Pix
+            </button>
+          </div>
 
-        <div id="pix-message" class="hidden text-sm p-3 rounded-lg mt-4"></div>
+          <!-- AREA DO QR CODE -->
+          <div id="pix-area" class="hidden bg-gray-900 border border-gray-700 rounded-lg p-6 text-center">
+            <p class="text-gray-400 text-sm mb-3">Escaneie o QR Code ou use o Copia e Cola</p>
+            <img id="qr-code-img" class="mx-auto mb-4 bg-white p-2 rounded-lg" width="250">
+            <textarea 
+              id="qr-code-text" 
+              rows="3" 
+              readonly
+              class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs mb-3"
+            ></textarea>
+            <button 
+              onclick="copiarPix()" 
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm"
+            >
+              Copiar código Pix
+            </button>
+            <p class="text-yellow-400 text-xs mt-4">
+              ⏱️ Aguardando pagamento... O saldo é creditado automaticamente em até 30s
+            </p>
+          </div>
+
+          <div id="pix-message" class="hidden text-sm p-3 rounded-lg mt-4"></div>
+        </div>
       </div>
+
+      <!-- ABA PEDIDOS -->
+      <div id="aba-pedidos" class="hidden">
+        <div class="bg-gray-800 border border-gray-700 rounded-xl p-6">
+          <h2 class="text-xl font-semibold text-white mb-4">Meus Pedidos</h2>
+          <div id="lista-pedidos" class="space-y-3">
+            <p class="text-gray-400 text-center py-8">Carregando pedidos...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABA NOVO PEDIDO -->
+      <div id="aba-novo" class="hidden">
+        <div class="bg-gray-800 border border-gray-700 rounded-xl p-6">
+          <h2 class="text-xl font-semibold text-white mb-4">Fazer Novo Pedido</h2>
+          <p class="text-gray-400">Em breve: formulário de pedidos aqui</p>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -139,8 +174,6 @@
     // SUAS CHAVES DO SUPABASE
     const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co'
     const SUPABASE_ANON_KEY = 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh'
-    
-    // KEY JWT SÓ PRA EDGE FUNCTION - NÃO MEXE AQUI
     const SUPABASE_FUNCTION_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pZWR3anl6dm1rZ3dmZHdoYWNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MzQ0MTIsImV4cCI6MjA3MDAxMDQxMn0.pIr6g27ClVzWQhVbcnpH4nvkVskzUJOCzzX14xWEhKg'
 
     const { createClient } = supabase
@@ -162,9 +195,30 @@
     const valorInput = document.getElementById('valor-input')
     const pixArea = document.getElementById('pix-area')
     const gerarPixBtn = document.getElementById('gerar-pix-btn')
+    const listaPedidos = document.getElementById('lista-pedidos')
 
     let currentUser = null
     let saldoInterval = null
+
+    // TROCAR ABAS
+    function mostrarAba(aba) {
+      document.getElementById('aba-saldo').classList.add('hidden')
+      document.getElementById('aba-pedidos').classList.add('hidden')
+      document.getElementById('aba-novo').classList.add('hidden')
+      
+      document.getElementById('tab-saldo').classList.remove('border-blue-500', 'text-white')
+      document.getElementById('tab-saldo').classList.add('border-transparent', 'text-gray-400')
+      document.getElementById('tab-pedidos').classList.remove('border-blue-500', 'text-white')
+      document.getElementById('tab-pedidos').classList.add('border-transparent', 'text-gray-400')
+      document.getElementById('tab-novo').classList.remove('border-blue-500', 'text-white')
+      document.getElementById('tab-novo').classList.add('border-transparent', 'text-gray-400')
+
+      document.getElementById(`aba-${aba}`).classList.remove('hidden')
+      document.getElementById(`tab-${aba}`).classList.add('border-blue-500', 'text-white')
+      document.getElementById(`tab-${aba}`).classList.remove('border-transparent', 'text-gray-400')
+
+      if (aba === 'pedidos') carregarPedidos()
+    }
 
     function showMsg(text, error = true) {
       messageDiv.textContent = text
@@ -272,12 +326,51 @@
       }
     }
 
+    // CARREGAR PEDIDOS
+    async function carregarPedidos() {
+      const { data, error } = await _supabase
+        .from('pedidos')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false })
+      
+      if (error) {
+        listaPedidos.innerHTML = '<p class="text-red-400 text-center py-8">Erro ao carregar pedidos</p>'
+        return
+      }
+
+      if (!data || data.length === 0) {
+        listaPedidos.innerHTML = '<p class="text-gray-400 text-center py-8">Nenhum pedido ainda</p>'
+        return
+      }
+
+      listaPedidos.innerHTML = data.map(p => `
+        <div class="bg-gray-900 border border-gray-700 rounded-lg p-4">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <p class="text-white font-semibold">${p.servico || 'Pedido'}</p>
+              <p class="text-gray-400 text-sm">${p.link || ''}</p>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs ${
+              p.status === 'completo' ? 'bg-green-900 text-green-300' : 
+              p.status === 'processando' ? 'bg-yellow-900 text-yellow-300' : 
+              'bg-gray-700 text-gray-300'
+            }">${p.status || 'pendente'}</span>
+          </div>
+          <div class="flex gap-4 text-sm text-gray-400">
+            <span>Qtd: ${p.quantidade || 0}</span>
+            <span>Valor: R$ ${Number(p.valor || 0).toFixed(2)}</span>
+          </div>
+        </div>
+      `).join('')
+    }
+
     // BOTÕES DE VALOR RÁPIDO
     function setValor(valor) {
       valorInput.value = valor
     }
 
-    // GERAR PIX - CORRIGIDO COM HEADER JWT
+    // GERAR PIX
     async function gerarPix() {
       const valor = parseFloat(valorInput.value)
       
@@ -302,17 +395,9 @@
           }
         })
 
-        if (error) {
-          console.error('Erro Supabase:', error)
-          throw new Error(error.message || 'Erro ao chamar função')
-        }
+        if (error) throw new Error(error.message || 'Erro ao chamar função')
+        if (data.error) throw new Error(data.error)
 
-        if (data.error) {
-          console.error('Erro da função:', data.error)
-          throw new Error(data.error)
-        }
-
-        // Mostra QR Code
         document.getElementById('qr-code-img').src = `data:image/jpeg;base64,${data.qr_code_base64}`
         document.getElementById('qr-code-text').value = data.qr_code
         pixArea.classList.remove('hidden')
