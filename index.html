@@ -160,7 +160,7 @@
     const pixArea = document.getElementById('pix-area')
     const gerarPixBtn = document.getElementById('gerar-pix-btn')
 
-    let currentUserId = null
+    let currentUser = null
     let saldoInterval = null
 
     function showMsg(text, error = true) {
@@ -192,7 +192,7 @@
     })
 
     function showDashboard(user) {
-      currentUserId = user.id
+      currentUser = user
       userEmailEl.textContent = user.email
       loginScreen.classList.add('hidden')
       dashboardScreen.classList.remove('hidden')
@@ -200,7 +200,7 @@
     }
 
     function showLogin() {
-      currentUserId = null
+      currentUser = null
       dashboardScreen.classList.add('hidden')
       loginScreen.classList.remove('hidden')
       if (saldoInterval) clearInterval(saldoInterval)
@@ -262,7 +262,7 @@
       const { data, error } = await _supabase
         .from('usuarios')
         .select('saldo')
-        .eq('id', currentUserId)
+        .eq('id', currentUser.id)
         .single()
       
       if (data) {
@@ -275,7 +275,7 @@
       valorInput.value = valor
     }
 
-    // GERAR PIX
+    // GERAR PIX - CORRIGIDO
     async function gerarPix() {
       const valor = parseFloat(valorInput.value)
       
@@ -287,29 +287,42 @@
       gerarPixBtn.disabled = true
       gerarPixBtn.textContent = 'Gerando...'
       pixMessageDiv.classList.add('hidden')
+      pixArea.classList.add('hidden')
 
-      const { data, error } = await _supabase.functions.invoke('criar-pagamento', {
-        body: { valor: valor, user_id: currentUserId }
-      })
+      try {
+        const { data, error } = await _supabase.functions.invoke('criar-pagamento', {
+          body: { 
+            valor: valor, 
+            email: currentUser.email // MUDANÇA: mandando email em vez de user_id
+          }
+        })
 
-      if (error) {
-        showPixMsg('Erro ao gerar Pix: ' + error.message)
+        if (error) {
+          console.error('Erro Supabase:', error)
+          throw new Error(error.message || 'Erro ao chamar função')
+        }
+
+        if (data.error) {
+          console.error('Erro da função:', data.error)
+          throw new Error(data.error)
+        }
+
+        // Mostra QR Code
+        document.getElementById('qr-code-img').src = `data:image/jpeg;base64,${data.qr_code_base64}`
+        document.getElementById('qr-code-text').value = data.qr_code
+        pixArea.classList.remove('hidden')
+        
+        // Começa a verificar saldo a cada 3s
+        if (saldoInterval) clearInterval(saldoInterval)
+        saldoInterval = setInterval(carregarSaldo, 3000)
+
+      } catch (err) {
+        console.error('Erro completo:', err)
+        showPixMsg('Erro ao gerar Pix: ' + err.message)
+      } finally {
         gerarPixBtn.disabled = false
         gerarPixBtn.textContent = 'Gerar Pix'
-        return
       }
-
-      // Mostra QR Code
-      document.getElementById('qr-code-img').src = `data:image/png;base64,${data.qr_code_base64}`
-      document.getElementById('qr-code-text').value = data.qr_code
-      pixArea.classList.remove('hidden')
-      
-      gerarPixBtn.disabled = false
-      gerarPixBtn.textContent = 'Gerar Pix'
-
-      // Começa a verificar saldo a cada 3s
-      if (saldoInterval) clearInterval(saldoInterval)
-      saldoInterval = setInterval(carregarSaldo, 3000)
     }
 
     function copiarPix() {
