@@ -7,166 +7,127 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-950 text-gray-100 min-h-screen">
 
   <!-- TELA DE LOGIN -->
-  <div id="login-screen" class="w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl p-8 shadow-2xl">
-    <div class="text-center mb-8">
-      <h1 class="text-3xl font-bold text-white">Painel SMM</h1>
-      <p class="text-gray-400 mt-2">Acesse sua conta</p>
+  <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl p-8 shadow-2xl">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-white">Painel SMM</h1>
+        <p class="text-gray-400 mt-2">Acesse sua conta</p>
+      </div>
+
+      <form id="auth-form" class="space-y-4">
+        <input type="email" id="email" required placeholder="seu@email.com" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white">
+        <input type="password" id="password" required minlength="6" placeholder="Sua senha" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white">
+        <div id="message" class="hidden text-sm p-3 rounded-lg"></div>
+        <button type="submit" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">Entrar</button>
+        <button type="button" id="signup-btn" class="w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 rounded-lg transition border border-gray-700">Criar conta gratuita</button>
+      </form>
     </div>
-
-    <form id="auth-form" class="space-y-4">
-      <div>
-        <input
-          type="email"
-          id="email"
-          required
-          placeholder="seu@email.com"
-          class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
-        >
-      </div>
-
-      <div>
-        <input
-          type="password"
-          id="password"
-          required
-          minlength="6"
-          placeholder="Sua senha"
-          class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
-        >
-      </div>
-
-      <div id="message" class="hidden text-sm p-3 rounded-lg"></div>
-
-      <button
-        type="submit"
-        id="login-btn"
-        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
-      >
-        Entrar
-      </button>
-
-      <button
-        type="button"
-        id="signup-btn"
-        class="w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 rounded-lg transition border border-gray-700"
-      >
-        Criar conta gratuita
-      </button>
-    </form>
   </div>
 
   <!-- PAINEL LOGADO -->
-  <div id="dashboard-screen" class="hidden w-full max-w-4xl">
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-8 shadow-2xl">
-      <div class="flex justify-between items-center mb-6">
+  <div id="dashboard-screen" class="hidden">
+    <!-- HEADER -->
+    <div class="bg-gray-900 border-b border-gray-800 p-4">
+      <div class="max-w-6xl mx-auto flex justify-between items-center">
         <div>
           <h1 class="text-2xl font-bold text-white">Painel SMM</h1>
           <p class="text-gray-400 text-sm" id="user-email"></p>
         </div>
-        <button
-          id="logout-btn"
-          class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition text-sm"
-        >
-          Sair
-        </button>
-      </div>
-
-      <!-- ABAS -->
-      <div class="flex gap-2 mb-6 border-b border-gray-800">
-        <button onclick="mostrarAba('saldo')" id="tab-saldo" class="px-4 py-2 font-semibold border-b-2 border-blue-500 text-white">
-          Saldo
-        </button>
-        <button onclick="mostrarAba('pedidos')" id="tab-pedidos" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-400 hover:text-white">
-          Meus Pedidos
-        </button>
-        <button onclick="mostrarAba('novo')" id="tab-novo" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-400 hover:text-white">
-          Novo Pedido
-        </button>
-      </div>
-
-      <!-- ABA SALDO -->
-      <div id="aba-saldo">
-        <!-- CARD SALDO -->
-        <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl p-6 mb-6">
-          <p class="text-blue-100 text-sm mb-1">Saldo disponível</p>
-          <p class="text-4xl font-bold text-white">R$ <span id="saldo-valor">0,00</span></p>
-        </div>
-
-        <!-- ADICIONAR SALDO -->
-        <div class="bg-gray-800 border border-gray-700 rounded-xl p-6">
-          <h2 class="text-xl font-semibold text-white mb-4">Adicionar Saldo via Pix</h2>
-          
-          <div class="flex gap-2 mb-4">
-            <button onclick="setValor(10)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 10</button>
-            <button onclick="setValor(20)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 20</button>
-            <button onclick="setValor(50)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 50</button>
-            <button onclick="setValor(100)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 100</button>
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <p class="text-gray-400 text-xs">Saldo</p>
+            <p class="text-green-400 font-bold text-lg">R$ <span id="saldo-valor">0,00</span></p>
           </div>
-
-          <div class="flex gap-2 mb-4">
-            <input
-              type="number"
-              id="valor-input"
-              placeholder="Ou digite outro valor"
-              min="5"
-              step="0.01"
-              class="flex-1 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
-            >
-            <button
-              id="gerar-pix-btn"
-              onclick="gerarPix()"
-              class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition"
-            >
-              Gerar Pix
-            </button>
-          </div>
-
-          <!-- AREA DO QR CODE -->
-          <div id="pix-area" class="hidden bg-gray-900 border border-gray-700 rounded-lg p-6 text-center">
-            <p class="text-gray-400 text-sm mb-3">Escaneie o QR Code ou use o Copia e Cola</p>
-            <img id="qr-code-img" class="mx-auto mb-4 bg-white p-2 rounded-lg" width="250">
-            <textarea 
-              id="qr-code-text" 
-              rows="3" 
-              readonly
-              class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs mb-3"
-            ></textarea>
-            <button 
-              onclick="copiarPix()" 
-              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm"
-            >
-              Copiar código Pix
-            </button>
-            <p class="text-yellow-400 text-xs mt-4">
-              ⏱️ Aguardando pagamento... O saldo é creditado automaticamente em até 30s
-            </p>
-          </div>
-
-          <div id="pix-message" class="hidden text-sm p-3 rounded-lg mt-4"></div>
+          <button class="bg-gray-700 text-white px-3 py-2 rounded-lg text-sm">ID</button>
+          <button onclick="abrirModalSaldo()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition font-semibold">+ Saldo</button>
+          <button id="logout-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">Sair</button>
         </div>
       </div>
+    </div>
 
-      <!-- ABA PEDIDOS -->
-      <div id="aba-pedidos" class="hidden">
-        <div class="bg-gray-800 border border-gray-700 rounded-xl p-6">
-          <h2 class="text-xl font-semibold text-white mb-4">Meus Pedidos</h2>
-          <div id="lista-pedidos" class="space-y-3">
-            <p class="text-gray-400 text-center py-8">Carregando pedidos...</p>
+    <!-- CONTEÚDO -->
+    <div class="max-w-6xl mx-auto p-4 space-y-4">
+      <!-- FAZER NOVO PEDIDO -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <h2 class="text-xl font-semibold text-white mb-4">Fazer Novo Pedido</h2>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="text-gray-300 text-sm mb-1 block">Categoria</label>
+            <select id="categoria" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white">
+              <option>Selecione</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-gray-300 text-sm mb-1 block">Serviço</label>
+            <select id="servico" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white">
+              <option>Selecione categoria</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-gray-300 text-sm mb-1 block">Link do perfil/post</label>
+            <input type="text" id="link" placeholder="https://instagram.com/..." class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white">
+          </div>
+
+          <div>
+            <label class="text-gray-300 text-sm mb-1 block">Quantidade</label>
+            <input type="number" id="quantidade" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white">
+          </div>
+
+          <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 flex justify-between items-center">
+            <div>
+              <p class="text-gray-400 text-sm">Você pagará</p>
+              <p class="text-blue-400 font-bold text-2xl">R$ <span id="valor-pedido">0,00</span></p>
+            </div>
+            <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition">Enviar Pedido</button>
           </div>
         </div>
       </div>
 
-      <!-- ABA NOVO PEDIDO -->
-      <div id="aba-novo" class="hidden">
-        <div class="bg-gray-800 border border-gray-700 rounded-xl p-6">
-          <h2 class="text-xl font-semibold text-white mb-4">Fazer Novo Pedido</h2>
-          <p class="text-gray-400">Em breve: formulário de pedidos aqui</p>
+      <!-- ÚLTIMOS PEDIDOS -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <h2 class="text-xl font-semibold text-white mb-4">Últimos Pedidos</h2>
+        <div id="lista-pedidos">
+          <p class="text-gray-400 text-center py-8">Nenhum pedido ainda</p>
         </div>
       </div>
+    </div>
+  </div>
 
+  <!-- MODAL ADICIONAR SALDO -->
+  <div id="modal-saldo" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-md">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold text-white">Adicionar Saldo via Pix</h2>
+        <button onclick="fecharModalSaldo()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+      </div>
+      
+      <div class="flex gap-2 mb-4">
+        <button onclick="setValor(10)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 10</button>
+        <button onclick="setValor(20)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 20</button>
+        <button onclick="setValor(50)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 50</button>
+        <button onclick="setValor(100)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">R$ 100</button>
+      </div>
+
+      <div class="flex gap-2 mb-4">
+        <input type="number" id="valor-input" placeholder="Ou digite outro valor" min="5" step="0.01" class="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white">
+        <button id="gerar-pix-btn" onclick="gerarPix()" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition">Gerar Pix</button>
+      </div>
+
+      <div id="pix-area" class="hidden bg-gray-800 border border-gray-700 rounded-lg p-4 text-center">
+        <p class="text-gray-400 text-sm mb-3">Escaneie o QR Code</p>
+        <img id="qr-code-img" class="mx-auto mb-3 bg-white p-2 rounded-lg" width="200">
+        <textarea id="qr-code-text" rows="2" readonly class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-xs mb-3"></textarea>
+        <button onclick="copiarPix()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm">Copiar código Pix</button>
+        <p class="text-yellow-400 text-xs mt-3">⏱️ Saldo creditado em até 30s após pagamento</p>
+      </div>
+
+      <div id="pix-message" class="hidden text-sm p-3 rounded-lg mt-4"></div>
     </div>
   </div>
 
@@ -195,30 +156,10 @@
     const valorInput = document.getElementById('valor-input')
     const pixArea = document.getElementById('pix-area')
     const gerarPixBtn = document.getElementById('gerar-pix-btn')
-    const listaPedidos = document.getElementById('lista-pedidos')
+    const modalSaldo = document.getElementById('modal-saldo')
 
     let currentUser = null
     let saldoInterval = null
-
-    // TROCAR ABAS
-    function mostrarAba(aba) {
-      document.getElementById('aba-saldo').classList.add('hidden')
-      document.getElementById('aba-pedidos').classList.add('hidden')
-      document.getElementById('aba-novo').classList.add('hidden')
-      
-      document.getElementById('tab-saldo').classList.remove('border-blue-500', 'text-white')
-      document.getElementById('tab-saldo').classList.add('border-transparent', 'text-gray-400')
-      document.getElementById('tab-pedidos').classList.remove('border-blue-500', 'text-white')
-      document.getElementById('tab-pedidos').classList.add('border-transparent', 'text-gray-400')
-      document.getElementById('tab-novo').classList.remove('border-blue-500', 'text-white')
-      document.getElementById('tab-novo').classList.add('border-transparent', 'text-gray-400')
-
-      document.getElementById(`aba-${aba}`).classList.remove('hidden')
-      document.getElementById(`tab-${aba}`).classList.add('border-blue-500', 'text-white')
-      document.getElementById(`tab-${aba}`).classList.remove('border-transparent', 'text-gray-400')
-
-      if (aba === 'pedidos') carregarPedidos()
-    }
 
     function showMsg(text, error = true) {
       messageDiv.textContent = text
@@ -232,6 +173,17 @@
       pixMessageDiv.classList.remove('hidden')
     }
 
+    function abrirModalSaldo() {
+      modalSaldo.classList.remove('hidden')
+    }
+
+    function fecharModalSaldo() {
+      modalSaldo.classList.add('hidden')
+      pixArea.classList.add('hidden')
+      pixMessageDiv.classList.add('hidden')
+      valorInput.value = ''
+    }
+
     // CHECA SE JÁ TÁ LOGADO
     _supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
@@ -239,7 +191,6 @@
       }
     })
 
-    // ESCUTA MUDANÇA DE LOGIN
     _supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
         showDashboard(session.user)
@@ -254,6 +205,7 @@
       loginScreen.classList.add('hidden')
       dashboardScreen.classList.remove('hidden')
       carregarSaldo()
+      carregarPedidos()
     }
 
     function showLogin() {
@@ -333,19 +285,16 @@
         .select('*')
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false })
+        .limit(5)
       
-      if (error) {
-        listaPedidos.innerHTML = '<p class="text-red-400 text-center py-8">Erro ao carregar pedidos</p>'
-        return
-      }
-
+      const listaPedidos = document.getElementById('lista-pedidos')
       if (!data || data.length === 0) {
         listaPedidos.innerHTML = '<p class="text-gray-400 text-center py-8">Nenhum pedido ainda</p>'
         return
       }
 
       listaPedidos.innerHTML = data.map(p => `
-        <div class="bg-gray-900 border border-gray-700 rounded-lg p-4">
+        <div class="bg-gray-800 border border-gray-700 rounded-lg p-4">
           <div class="flex justify-between items-start mb-2">
             <div>
               <p class="text-white font-semibold">${p.servico || 'Pedido'}</p>
