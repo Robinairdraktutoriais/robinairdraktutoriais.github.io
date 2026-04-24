@@ -138,7 +138,10 @@
   <script>
     // SUAS CHAVES DO SUPABASE
     const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co'
-    const SUPABASE_ANON_KEY = ' sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh'
+    const SUPABASE_ANON_KEY = 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh'
+    
+    // KEY JWT SÓ PRA EDGE FUNCTION - NÃO MEXE AQUI
+    const SUPABASE_FUNCTION_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pZWR3anl6dm1rZ3dmZHdoYWNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MzQ0MTIsImV4cCI6MjA3MDAxMDQxMn0.pIr6g27ClVzWQhVbcnpH4nvkVskzUJOCzzX14xWEhKg'
 
     const { createClient } = supabase
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -239,7 +242,6 @@
       if (error) {
         showMsg(error.message)
       } else {
-        // Cria registro na tabela usuarios
         await _supabase.from('usuarios').insert({ 
           id: data.user.id, 
           email: data.user.email,
@@ -275,7 +277,7 @@
       valorInput.value = valor
     }
 
-    // GERAR PIX - CORRIGIDO
+    // GERAR PIX - CORRIGIDO COM HEADER JWT
     async function gerarPix() {
       const valor = parseFloat(valorInput.value)
       
@@ -293,7 +295,10 @@
         const { data, error } = await _supabase.functions.invoke('criar-pagamento', {
           body: { 
             valor: valor, 
-            email: currentUser.email // MUDANÇA: mandando email em vez de user_id
+            email: currentUser.email
+          },
+          headers: {
+            Authorization: `Bearer ${SUPABASE_FUNCTION_KEY}`
           }
         })
 
@@ -312,7 +317,6 @@
         document.getElementById('qr-code-text').value = data.qr_code
         pixArea.classList.remove('hidden')
         
-        // Começa a verificar saldo a cada 3s
         if (saldoInterval) clearInterval(saldoInterval)
         saldoInterval = setInterval(carregarSaldo, 3000)
 
