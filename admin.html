@@ -145,7 +145,7 @@
   .login-box button:disabled { opacity: 0.5; cursor: not-allowed; }
   .error { color: var(--red); font-size: 0.9rem; margin-top: 12px; }
   .logout { 
-      background: rgba(239, 68, 68, 0.2); 
+      background: rgba(239, 68, 0.2); 
       color: #ef4444; 
       border: 1px solid rgba(239, 68, 68, 0.3);
       padding: 8px 16px;
@@ -165,15 +165,6 @@
       margin-right: 4px;
     }
   .btn-action:hover { background: rgba(139, 92, 246, 0.3); }
-  .debug { 
-      background: rgba(239, 68, 68, 0.1); 
-      border: 1px solid rgba(239, 68, 68, 0.3); 
-      padding: 12px; 
-      border-radius: 8px; 
-      margin: 16px 0; 
-      font-size: 0.85rem;
-      color: #fca5a5;
-    }
   </style>
 </head>
 <body>
@@ -190,11 +181,6 @@
   const app = document.getElementById('app')
   let currentTab = 'monitor'
 
-  // Debug: mostra erros na tela
-  window.addEventListener('error', (e) => {
-    app.innerHTML = `<div class="debug"><b>Erro JS:</b> ${e.message}<br><small>${e.filename}:${e.lineno}</small></div>`
-  })
-
   try {
     const { data: { session } } = await supabase.auth.getSession()
 
@@ -209,7 +195,7 @@
       }
     }
   } catch (err) {
-    app.innerHTML = `<div class="debug"><b>Erro ao iniciar:</b> ${err.message}</div>`
+    app.innerHTML = `<div class="error" style="padding:20px;text-align:center">Erro: ${err.message}</div>`
   }
 
   function renderLogin() {
@@ -317,15 +303,15 @@
       <div class="grid">
         <div class="stat-card">
           <span>Online Agora</span>
-          <h2 id="online-count">-</h2>
+          <h2 id="online-count">0</h2>
         </div>
         <div class="stat-card">
           <span>Logins Hoje</span>
-          <h2 id="hoje-count">-</h2>
+          <h2 id="hoje-count">0</h2>
         </div>
         <div class="stat-card">
           <span>Total de Usuários</span>
-          <h2 id="total-count">-</h2>
+          <h2 id="total-count">0</h2>
         </div>
       </div>
 
@@ -352,7 +338,13 @@
 
   async function carregarMonitor() {
     try {
-      await supabase.rpc('limpar_offline').catch(() => {})
+      // CORRIGIDO: removido o .catch() que dava erro
+      try {
+        await supabase.rpc('limpar_offline')
+      } catch (e) {
+        // Se a função não existir, ignora
+        console.log('RPC limpar_offline não existe, pulando...')
+      }
 
       const { data: usuarios, error } = await supabase
      .from('usuarios_online')
@@ -438,7 +430,7 @@
       tbody.innerHTML = pedidos.map(p => `
         <tr>
           <td>#${p.id}</td>
-          <td>${p.cliente || p.nome || '-'}</td>
+          <td>${p.cliente || p.nome || p.email || '-'}</td>
           <td>${p.servico || p.produto || '-'}</td>
           <td>R$ ${p.valor || p.preco || '0'}</td>
           <td>${p.status || 'Pendente'}</td>
