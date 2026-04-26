@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel SMM</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
     @keyframes spin{to{transform:rotate(360deg)}}
   </style>
@@ -15,8 +14,8 @@
   <!-- LOADING INICIAL -->
   <div id="loading-screen" class="min-h-screen flex items-center justify-center">
     <div class="text-center">
-      <div class="w-10 h-10 border-3 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-3" style="animation:spin 1s linear infinite"></div>
-      <p class="text-gray-400 text-sm">Carregando painel...</p>
+      <div class="w-10 h-10 border-3 border-blue-500/30 border-t-blue-500 rounded-full mx-auto mb-3" style="animation:spin 1s linear infinite"></div>
+      <p class="text-gray-400 text-sm" id="loading-text">Carregando painel...</p>
     </div>
   </div>
 
@@ -37,7 +36,6 @@
       </form>
     </div>
   </div>
-
   <!-- PAINEL LOGADO -->
   <div id="dashboard-screen" class="hidden">
     <!-- HEADER -->
@@ -59,7 +57,7 @@
       </div>
     </div>
 
-    <!-- ABA ADICIONAR SALDO - ESCONDIDA POR PADRÃO -->
+    <!-- ABA ADICIONAR SALDO -->
     <div id="aba-saldo" class="hidden bg-[#1a1f26] border-b border-[#2a2f36] transition-all">
       <div class="max-w-6xl mx-auto p-4">
         <div class="bg-[#0f1419] border border-[#2a2f36] rounded-xl p-6">
@@ -145,13 +143,13 @@
       </div>
     </div>
   </div>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/+esm'
 
-  <script>
     const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co'
     const SUPABASE_ANON_KEY = 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh'
     const SUPABASE_FUNCTION_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pZWR3anl6dm1rZ3dmZHdoYWNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MzQ0MTIsImV4cCI6MjA3MDAxMDQxMn0.pIr6g27ClVzWQhVbcnpH4nvkVskzUJOCzzX14xWEhKg'
 
-    const { createClient } = supabase
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
     const SERVICOS = {
@@ -177,6 +175,7 @@
     }
 
     const loadingScreen = document.getElementById('loading-screen')
+    const loadingText = document.getElementById('loading-text')
     const loginScreen = document.getElementById('login-screen')
     const dashboardScreen = document.getElementById('dashboard-screen')
     const authForm = document.getElementById('auth-form')
@@ -202,7 +201,7 @@
     let saldoAberto = false
     let pingInterval = null
 
-    function toggleSaldo() {
+    window.toggleSaldo = function() {
       saldoAberto = !saldoAberto
       if (saldoAberto) {
         abaSaldo.classList.remove('hidden')
@@ -237,7 +236,7 @@
       setTimeout(() => pedidoMsg.classList.add('hidden'), 3000)
     }
 
-    function carregarServicos() {
+    window.carregarServicos = function() {
       const cat = document.getElementById('categoria').value
       const servicoSelect = document.getElementById('servico')
       if (!cat) {
@@ -250,7 +249,7 @@
       })
     }
 
-    function calcularPreco() {
+    window.calcularPreco = function() {
       const servicoSelect = document.getElementById('servico')
       const qtd = parseInt(document.getElementById('quantidade').value) || 0
       const opt = servicoSelect.options[servicoSelect.selectedIndex]
@@ -265,7 +264,6 @@
       servicoSelecionado = { id: opt.value, nome: opt.text.split(' - ')[0], preco: precoPor1000 }
     }
 
-    // NOVA FUNÇÃO: Ping online pro painel admin
     async function pingOnline() {
       if (!currentUser) return
       try {
@@ -284,11 +282,32 @@
       }
     }
 
-    _supabase.auth.getSession().then(({ data: { session } }) => {
-      loadingScreen.classList.add('hidden')
-      if (session) showDashboard(session.user)
-      else showLogin()
-    })
+    async function init() {
+      loadingText.textContent = 'Conectando...'
+      
+      const timeout = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 5000)
+      )
+      
+      try {
+        const result = await Promise.race([
+          _supabase.auth.getSession(),
+          timeout
+        ])
+        
+        const { data: { session } } = result
+        loadingScreen.classList.add('hidden')
+        
+        if (session) showDashboard(session.user)
+        else showLogin()
+      } catch (err) {
+        console.error('Erro ao iniciar:', err)
+        loadingScreen.classList.add('hidden')
+        showLogin()
+      }
+    }
+
+    init()
 
     _supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') showDashboard(session.user)
@@ -301,10 +320,9 @@
       loginScreen.classList.add('hidden')
       dashboardScreen.classList.remove('hidden')
       
-      // Inicia ping online
       pingOnline()
       if (pingInterval) clearInterval(pingInterval)
-      pingInterval = setInterval(pingOnline, 120000) // a cada 2min
+      pingInterval = setInterval(pingOnline, 120000)
       
       carregarSaldo()
       carregarPedidos()
@@ -352,7 +370,6 @@
     })
 
     logoutBtn.addEventListener('click', async () => {
-      // Marca offline antes de sair
       if (currentUser) {
         await _supabase.from('usuarios_online').update({ status: 'offline' }).eq('user_id', currentUser.id)
       }
@@ -392,11 +409,11 @@
       `).join('')
     }
 
-    function setValor(valor) {
+    window.setValor = function(valor) {
       valorInput.value = valor
     }
 
-    async function gerarPix() {
+    window.gerarPix = async function() {
       const valor = parseFloat(valorInput.value)
       if (!valor || valor < 5) {
         showPixMsg('Valor mínimo é R$ 5,00')
@@ -420,4 +437,50 @@
         if (saldoInterval) clearInterval(saldoInterval)
         saldoInterval = setInterval(carregarSaldo, 3000)
       } catch (err) {
-        showPixMsg('Erro
+        showPixMsg('Erro ao gerar Pix: ' + err.message)
+      } finally {
+        gerarPixBtn.disabled = false
+        gerarPixBtn.textContent = 'Gerar Pix'
+      }
+    }
+
+    window.copiarPix = function() {
+      const input = document.getElementById('qr-code-text')
+      input.select()
+      document.execCommand('copy')
+      showPixMsg('Código Pix copiado!', false)
+    }
+
+    window.enviarPedido = async function() {
+      if (!servicoSelecionado) return showPedidoMsg('Selecione um serviço')
+      const qtd = parseInt(document.getElementById('quantidade').value)
+      const link = document.getElementById('link').value
+      if (qtd < 100) return showPedidoMsg('Quantidade mínima: 100')
+      if (!link) return showPedidoMsg('Informe o link')
+      const valor = (qtd / 1000) * servicoSelecionado.preco
+      const { data: userData } = await _supabase.from('usuarios').select('saldo').eq('id', currentUser.id).single()
+      if (userData.saldo < valor) return showPedidoMsg('Saldo insuficiente. Adicione saldo.')
+      const { error } = await _supabase.from('pedidos').insert({
+        user_id: currentUser.id, servico: servicoSelecionado.nome, link: link, quantidade: qtd, valor: valor, status: 'pendente'
+      })
+      if (error) {
+        showPedidoMsg('Erro ao criar pedido')
+      } else {
+        await _supabase.from('usuarios').update({ saldo: userData.saldo - valor }).eq('id', currentUser.id)
+        showPedidoMsg('Pedido enviado com sucesso!', false)
+        document.getElementById('quantidade').value = ''
+        document.getElementById('link').value = ''
+        document.getElementById('valor-pedido').textContent = '0,00'
+        carregarSaldo()
+        carregarPedidos()
+      }
+    }
+
+    window.addEventListener('beforeunload', () => {
+      if (currentUser) {
+        _supabase.from('usuarios_online').update({ status: 'offline' }).eq('user_id', currentUser.id)
+      }
+    })
+  </script>
+</body>
+</html>
