@@ -24,89 +24,48 @@
         radial-gradient(at 80% 20%, rgba(34, 211, 238, 0.1) 0px, transparent 50%);
       min-height: 100vh;
       color: var(--text);
-      padding: 12px;
+      padding: 24px;
     }
-  .container { max-width: 1400px; margin: 0 auto; }
-  .header { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      margin-bottom: 16px;
-      gap: 8px;
-    }
-    h1 { 
-      font-size: 1.2rem; 
-      background: linear-gradient(90deg, #8b5cf6, #22d3ee); 
-      -webkit-background-clip: text; 
-      -webkit-text-fill-color: transparent;
-      line-height: 1.2;
-    }
-  .live { 
-      display: flex; 
-      align-items: center; 
-      gap: 4px; 
-      color: var(--green); 
-      font-size: 0.7rem;
-      white-space: nowrap;
-    }
-  .live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+   .container { max-width: 1400px; margin: 0 auto; }
+   .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+    h1 { font-size: 1.8rem; background: linear-gradient(90deg, #8b5cf6, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+   .live { display: flex; align-items: center; gap: 8px; color: var(--green); font-size: 0.9rem; }
+   .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
     
-  /* Cards SEMPRE lado a lado, até no iPhone SE */
-  .grid { 
+   /* Cards de cima: volta pro jeito que tava antes */
+   .grid { 
       display: grid; 
-      grid-template-columns: repeat(3, 1fr); 
-      gap: 8px; 
-      margin-bottom: 16px; 
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+      gap: 16px; 
+      margin-bottom: 24px; 
     }
-  .stat-card { 
+   .stat-card { 
       background: var(--card); 
       border: 1px solid var(--border); 
       backdrop-filter: blur(20px); 
-      padding: 10px 8px; 
-      border-radius: 10px; 
+      padding: 20px; 
+      border-radius: 16px; 
     }
-  .stat-card span { 
-      color: var(--muted); 
-      font-size: 0.65rem;
-      display: block;
-      line-height: 1.1;
-    }
-  .stat-card h2 { 
-      font-size: 1.4rem; 
-      margin-top: 4px; 
-      color: var(--primary);
-      line-height: 1;
-    }
-
-    /* Aumenta tudo no tablet/desktop */
-    @media (min-width: 768px) {
-      body { padding: 24px; }
-      .header { margin-bottom: 32px; }
-      h1 { font-size: 1.8rem; }
-      .live { font-size: 0.9rem; gap: 8px; }
-      .live-dot { width: 8px; height: 8px; }
-      .grid { gap: 16px; margin-bottom: 24px; }
-      .stat-card { padding: 20px; border-radius: 16px; }
-      .stat-card span { font-size: 0.85rem; }
-      .stat-card h2 { font-size: 2.2rem; margin-top: 8px; }
-    }
-
-  .table-wrap { 
+   .stat-card span { color: var(--muted); font-size: 0.85rem; }
+   .stat-card h2 { font-size: 2.2rem; margin-top: 8px; color: var(--primary); }
+   
+   /* Tabela: só aqui muda pra caber no celular */
+   .table-wrap { 
       background: var(--card); 
       border: 1px solid var(--border); 
       backdrop-filter: blur(20px); 
-      border-radius: 12px; 
+      border-radius: 16px; 
       overflow-x: auto;
     }
     table { 
       width: 100%; 
       border-collapse: collapse;
-      min-width: 550px;
+      min-width: 480px; /* Reduzi de 650 pra 480 */
     }
     th { 
       text-align: left; 
-      padding: 10px 6px; 
+      padding: 12px 6px; 
       color: var(--muted); 
       font-size: 0.65rem; 
       text-transform: uppercase; 
@@ -114,34 +73,35 @@
       white-space: nowrap;
     }
     td { 
-      padding: 10px 6px; 
+      padding: 12px 6px; 
       border-bottom: 1px solid rgba(139, 92, 246, 0.05);
-      font-size: 0.8rem;
+      font-size: 0.75rem;
     }
     td:first-child, th:first-child { padding-left: 12px; }
     td:last-child, th:last-child { padding-right: 12px; }
     tr:hover { background: rgba(139, 92, 246, 0.05); }
-  .status-online { color: var(--green); font-weight: 600; }
-  .status-offline { color: var(--red); }
-  .user-badge { 
+   .status-online { color: var(--green); font-weight: 600; }
+   .status-offline { color: var(--red); }
+   .user-badge { 
       background: rgba(139, 92, 246, 0.15); 
       color: var(--primary); 
-      padding: 2px 6px; 
+      padding: 2px 8px; 
       border-radius: 20px; 
       font-size: 0.7rem;
       display: inline-block;
+      max-width: 80px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
-  .loading { text-align:center; padding: 30px; color: var(--muted); }
-  .email-cell { max-width: 100px; overflow: hidden; text-overflow: ellipsis; }
-  
-    @media (min-width: 768px) {
-      table { min-width: 650px; }
-      th { padding: 16px 8px; font-size: 0.8rem; }
-      td { padding: 16px 8px; font-size: 0.85rem; }
-      td:first-child, th:first-child { padding-left: 16px; }
-      td:last-child, th:last-child { padding-right: 16px; }
-      .user-badge { padding: 4px 12px; font-size: 0.85rem; }
-      .email-cell { max-width: 120px; }
+   .loading { text-align:center; padding: 40px; color: var(--muted); }
+   .email-cell { max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
+   .ip-cell { max-width: 70px; overflow: hidden; text-overflow: ellipsis; }
+   
+    /* Esconde IP e Dispositivo no celular pra caber tudo */
+    @media (max-width: 640px) {
+      .hide-mobile { display: none; }
+      table { min-width: 320px; }
     }
   </style>
 </head>
@@ -173,8 +133,8 @@
           <tr>
             <th>Usuário</th>
             <th>Email</th>
-            <th>IP</th>
-            <th>Dispositivo</th>
+            <th class="hide-mobile">IP</th>
+            <th class="hide-mobile">Dispositivo</th>
             <th>Último Acesso</th>
             <th>Status</th>
           </tr>
@@ -255,10 +215,10 @@
 
     tbody.innerHTML = usuarios.map(u => `
       <tr>
-        <td><span class="user-badge">${u.username || '-'}</span></td>
+        <td><span class="user-badge" title="${u.username || '-'}">${u.username || '-'}</span></td>
         <td class="email-cell" title="${u.email}">${u.email || '-'}</td>
-        <td>${u.ip || '-'}</td>
-        <td>${u.navegador? u.navegador.split(' ')[0] : '-'}</td>
+        <td class="ip-cell hide-mobile" title="${u.ip}">${u.ip || '-'}</td>
+        <td class="hide-mobile">${u.navegador? u.navegador.split(' ')[0] : '-'}</td>
         <td>${new Date(u.ultimo_acesso).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
         <td class="status-${u.status}">${u.status.toUpperCase()}</td>
       </tr>
