@@ -96,7 +96,6 @@
     'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh'
   )
 
-  // Espera o Supabase restaurar a sessão do localStorage
   const { data: { session } } = await supabase.auth.getSession()
 
   if (!session) {
@@ -113,15 +112,15 @@
   const user = session.user
   console.log('Logado como:', user.email, user.user_metadata)
 
-  // Checa se é admin por email OU role
-  const isAdmin = user.email === 'robinultimate23gmail.com' || user.user_metadata?.role === 'admin'
+  // CORRIGIDO: agora com @ no email
+  const isAdmin = user.email === 'robinultimate23@gmail.com' || user.user_metadata?.role === 'admin'
 
   if (!isAdmin) {
     document.body.innerHTML = `
       <div style="display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;gap:16px;color:#e2e8f0;font-family:system-ui">
         <h1>Acesso negado</h1>
         <p style="color:#64748b">Logado como: ${user.email}</p>
-        <p style="color:#64748b">Mas não tem permissão de admin</p>
+        <p style="color:#64748b">Mas não tem permissão de administrador</p>
       </div>
     `
     throw new Error('Não é admin')
@@ -171,10 +170,8 @@
     `).join('')
   }
 
-  // Se chegou aqui, é admin. Pode carregar os dados
   carregarDados()
 
-  // Realtime: atualiza quando muda algo
   supabase
    .channel('usuarios_online')
    .on('postgres_changes', { event: '*', schema: 'public', table: 'usuarios_online' }, carregarDados)
