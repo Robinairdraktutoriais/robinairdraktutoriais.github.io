@@ -467,12 +467,7 @@
 
   async function carregarUsuarios() {
     try {
-      // CORRIGIDO: Busca na tabela usuarios, não na auth.users
-      const { data: usuarios, error } = await supabase
-     .from('usuarios')
-     .select('*')
-     .order('created_at', { ascending: false })
-     .limit(100)
+      const { data: usuarios, error } = await supabase.rpc('get_all_users')
 
       if (error) throw error
 
@@ -487,7 +482,7 @@
           <td class="email-cell" title="${u.id}">${u.id.substring(0,8)}...</td>
           <td>${u.email ? u.email.split('@')[0] : '-'}</td>
           <td class="email-cell" title="${u.email}">${u.email || '-'}</td>
-          <td>R$ ${Number(u.saldo || 0).toFixed(2)}</td>
+          <td>R$ ${Number(u.raw_user_meta_data?.saldo || 0).toFixed(2)}</td>
           <td>${u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '-'}</td>
         </tr>
       `).join('')
