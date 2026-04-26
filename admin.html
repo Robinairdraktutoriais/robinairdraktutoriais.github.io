@@ -2,229 +2,327 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <title>Admin - Monitor de Usuários</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - SMM Painel</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-    body { background: #0f172a; color: #e2e8f0; padding: 12px; }
-   .container { max-width: 1200px; margin: 0 auto; }
-    h1 { margin-bottom: 16px; color: #22d3ee; font-size: 24px; }
-   .card { background: #1e293b; padding: 16px; border-radius: 12px; margin-bottom: 16px; }
-   .tabela-wrapper { display: none; overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; font-size: 13px; }
-    th { background: #0f172a; color: #22d3ee; white-space: nowrap; }
-   .pedidos-lista { display: block; }
-   .pedido-card { background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #334155; }
-   .pedido-card div { margin: 4px 0; font-size: 13px; }
-   .pedido-card strong { color: #22d3ee; }
-   .pedido-botoes { display: flex; gap: 8px; margin-top: 10px; }
-    @media (min-width: 768px) {
-     .tabela-wrapper { display: block; }
-     .pedidos-lista { display: none; }
-      body { padding: 20px; }
-      h1 { font-size: 28px; }
+    :root {
+      --bg: #0a0a0f;
+      --card: rgba(20, 20, 35, 0.6);
+      --border: rgba(139, 92, 246, 0.2);
+      --primary: #8b5cf6;
+      --green: #10b981;
+      --red: #ef4444;
+      --text: #e2e8f0;
+      --muted: #64748b;
     }
-    button { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; }
-   .btn-green { background: #22c55e; color: #0f172a; flex: 1; }
-   .btn-red { background: #ef4444; color: white; flex: 1; }
-   .btn-blue { background: #3b82f6; color: white; width: 100%; }
-    select, input { padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; width: 100%; margin: 8px 0; }
-   .status-pending { color: #facc15; font-weight: bold; }
-   .status-completed { color: #22c55e; font-weight: bold; }
-   .status-cancelled { color: #ef4444; font-weight: bold; }
-   .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-   .erro { color: #ef4444; margin-top: 10px; font-weight: bold; background: #7f1d1d; padding: 10px; border-radius: 6px; font-size: 13px; }
-   .ok { color: #22c55e; margin-top: 10px; font-weight: bold; background: #14532d; padding: 10px; border-radius: 6px; font-size: 13px; }
-    a { color: #38bdf8; word-break: break-all; }
-    @media (min-width: 640px) {
-     .grid { grid-template-columns: repeat(3, 1fr); }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      background-image:
+        radial-gradient(at 20% 80%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+        radial-gradient(at 80% 20%, rgba(34, 211, 238, 0.1) 0px, transparent 50%);
+      min-height: 100vh;
+      color: var(--text);
+      padding: 24px;
     }
+  .container { max-width: 1400px; margin: 0 auto; }
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+    h1 { font-size: 1.8rem; background: linear-gradient(90deg, #8b5cf6, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .live { display: flex; align-items: center; gap: 8px; color: var(--green); font-size: 0.9rem; }
+  .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+      gap: 16px; 
+      margin-bottom: 24px; 
+    }
+  .stat-card { 
+      background: var(--card); 
+      border: 1px solid var(--border); 
+      backdrop-filter: blur(20px); 
+      padding: 20px; 
+      border-radius: 16px; 
+    }
+  .stat-card span { color: var(--muted); font-size: 0.85rem; }
+  .stat-card h2 { font-size: 2.2rem; margin-top: 8px; color: var(--primary); }
+  .table-wrap { 
+      background: var(--card); 
+      border: 1px solid var(--border); 
+      backdrop-filter: blur(20px); 
+      border-radius: 16px; 
+      overflow-x: auto;
+    }
+    table { 
+      width: 100%; 
+      border-collapse: collapse;
+      min-width: 480px;
+    }
+    th { 
+      text-align: left; 
+      padding: 12px 6px; 
+      color: var(--muted); 
+      font-size: 0.65rem; 
+      text-transform: uppercase; 
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    td { 
+      padding: 12px 6px; 
+      border-bottom: 1px solid rgba(139, 92, 246, 0.05);
+      font-size: 0.75rem;
+    }
+    td:first-child, th:first-child { padding-left: 12px; }
+    td:last-child, th:last-child { padding-right: 12px; }
+    tr:hover { background: rgba(139, 92, 246, 0.05); }
+  .status-online { color: var(--green); font-weight: 600; }
+  .status-offline { color: var(--red); }
+  .user-badge { 
+      background: rgba(139, 92, 246, 0.15); 
+      color: var(--primary); 
+      padding: 2px 8px; 
+      border-radius: 20px; 
+      font-size: 0.7rem;
+      display: inline-block;
+      max-width: 80px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  .loading { text-align:center; padding: 40px; color: var(--muted); }
+  .email-cell { max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
+   
+    @media (max-width: 640px) {
+     .hide-mobile { display: none; }
+      table { min-width: 320px; }
+    }
+
+  .login-box {
+      max-width: 400px;
+      margin: 15vh auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      padding: 40px 30px;
+      border-radius: 20px;
+      text-align: center;
+    }
+  .login-box h2 { margin-bottom: 24px; font-size: 1.5rem; }
+  .login-box input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 12px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 1rem;
+    }
+  .login-box button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(90deg, #8b5cf6, #22d3ee);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+  .login-box button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .error { color: var(--red); font-size: 0.9rem; margin-top: 12px; }
+  .logout { 
+      background: rgba(239, 68, 68, 0.2); 
+      color: #ef4444; 
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+  .logout:hover { background: rgba(239, 68, 68, 0.3); }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Painel Admin</h1>
-    <div id="login" class="card">
-      <h3>Login Admin</h3>
-      <input type="email" id="email" placeholder="Email admin">
-      <input type="password" id="senha" placeholder="Senha">
-      <button class="btn-blue" onclick="loginAdmin()">Entrar</button>
-      <div id="msgErro"></div>
-    </div>
-    <div id="painel" style="display:none;">
-      <div class="card">
-        <h3>Estatísticas</h3>
-        <div class="grid">
-          <div><strong>Pedidos Hoje:</strong> <span id="pedidosHoje">0</span></div>
-          <div><strong>Pendentes:</strong> <span id="pendentes">0</span></div>
-          <div><strong>Faturamento Hoje:</strong> R$ <span id="faturamento">0.00</span></div>
-        </div>
-      <div class="card">
-        <h3>Adicionar Saldo</h3>
-        <input type="text" id="userIdSaldo" placeholder="UUID do usuário (ex: 550e8400-...)">
-        <input type="number" id="valorSaldo" placeholder="Valor R$" step="0.01">
-        <button class="btn-green" onclick="addSaldo()">Adicionar</button>
-        <div id="msgSaldo"></div>
+  <div id="app"></div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+  const supabase = createClient(
+    'https://niedwjyzvmkgwfdwhacf.supabase.co',
+    'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh'
+  )
+
+  const app = document.getElementById('app')
+
+  const { data: { session } } = await supabase.auth.getSession()
+
+  if (!session) {
+    renderLogin()
+  } else {
+    const isAdmin = session.user.email === 'robinultimate23@gmail.com' || session.user.user_metadata?.role === 'admin'
+    if (isAdmin) {
+      renderDashboard(session.user)
+    } else {
+      renderNoAccess(session.user.email)
+    }
+  }
+
+  function renderLogin() {
+    app.innerHTML = `
+      <div class="login-box">
+        <h2>Login Admin</h2>
+        <input type="email" id="email" placeholder="Email" value="robinultimate23@gmail.com">
+        <input type="password" id="password" placeholder="Senha">
+        <button id="btnLogin">Entrar</button>
+        <div class="error" id="error"></div>
       </div>
-      <div class="card">
-        <h3>Últimos 50 Pedidos</h3>
-        <button class="btn-blue" onclick="carregarDados()">Atualizar Lista</button>
-        <div id="msgTabela"></div>
-        <div class="pedidos-lista" id="pedidosLista"></div>
-        <div class="tabela-wrapper">
+    `
+
+    document.getElementById('btnLogin').onclick = async () => {
+      const btn = document.getElementById('btnLogin')
+      const errorDiv = document.getElementById('error')
+      btn.disabled = true
+      btn.textContent = 'Entrando...'
+      errorDiv.textContent = ''
+
+      const email = document.getElementById('email').value
+      const password = document.getElementById('password').value
+
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+
+      if (error) {
+        errorDiv.textContent = error.message
+        btn.disabled = false
+        btn.textContent = 'Entrar'
+        return
+      }
+
+      const isAdmin = data.user.email === 'robinultimate23@gmail.com' || data.user.user_metadata?.role === 'admin'
+      if (isAdmin) {
+        renderDashboard(data.user)
+      } else {
+        await supabase.auth.signOut()
+        renderNoAccess(data.user.email)
+      }
+    }
+  }
+
+  function renderNoAccess(email) {
+    app.innerHTML = `
+      <div style="display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;gap:16px;color:#e2e8f0;font-family:system-ui;padding:20px;text-align:center">
+        <h1>Acesso negado</h1>
+        <p style="color:#64748b">Logado como: ${email}</p>
+        <p style="color:#64748b">Mas não tem permissão de admin</p>
+        <button onclick="location.reload()" class="logout">Tentar novamente</button>
+      </div>
+    `
+  }
+
+  function renderDashboard(user) {
+    app.innerHTML = `
+      <div class="container">
+        <div class="header">
+          <h1>Monitor de Usuários</h1>
+          <div style="display:flex;gap:12px;align-items:center">
+            <div class="live"><div class="live-dot"></div> Tempo Real</div>
+            <button class="logout" id="btnLogout">Sair</button>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="stat-card">
+            <span>Online Agora</span>
+            <h2 id="online-count">0</h2>
+          </div>
+          <div class="stat-card">
+            <span>Logins Hoje</span>
+            <h2 id="hoje-count">0</h2>
+          </div>
+          <div class="stat-card">
+            <span>Total de Usuários</span>
+            <h2 id="total-count">0</h2>
+          </div>
+        </div>
+
+        <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Data</th>
-                <th>User</th>
-                <th>Serviço</th>
-                <th>Link</th>
-                <th>Qtd</th>
-                <th>Valor</th>
+                <th>Usuário</th>
+                <th>Email</th>
+                <th class="hide-mobile">IP</th>
+                <th class="hide-mobile">Dispositivo</th>
+                <th>Último Acesso</th>
                 <th>Status</th>
-                <th>Ações</th>
               </tr>
             </thead>
-            <tbody id="tabelaPedidos"></tbody>
+            <tbody id="tabela">
+              <tr><td colspan="6" class="loading">Carregando...</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
-    </div>
-  </div>
+    `
 
-<script>
-const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh';
-const ADMIN_EMAIL = 'robinultimate23@gmail.com';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    document.getElementById('btnLogout').onclick = async () => {
+      await supabase.auth.signOut()
+      location.reload()
+    }
 
-function isUUID(str) {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(str);
-}
+    carregarDados()
 
-function loginAdmin() {
-  const email = document.getElementById('email').value.trim();
-  const senha = document.getElementById('senha').value;
-  const msgErro = document.getElementById('msgErro');
-  msgErro.innerHTML = '<div class="ok">Verificando...</div>';
-  if (!email ||!senha) {
-    msgErro.innerHTML = '<div class="erro">Preenche email e senha</div>';
-    return;
+    supabase
+   .channel('usuarios_online')
+   .on('postgres_changes', { event: '*', schema: 'public', table: 'usuarios_online' }, carregarDados)
+   .subscribe()
   }
-  if (email.toLowerCase()!== ADMIN_EMAIL.toLowerCase()) {
-    msgErro.innerHTML = '<div class="erro">Acesso negado: email não é admin</div>';
-    return;
+
+  async function carregarDados() {
+    await supabase.rpc('limpar_offline')
+
+    const { data: usuarios, error } = await supabase
+   .from('usuarios_online')
+   .select('*')
+   .order('ultimo_acesso', { ascending: false })
+   .limit(100)
+
+    if (error) {
+      console.error(error)
+      document.getElementById('tabela').innerHTML = `<tr><td colspan="6" class="loading">Erro: ${error.message}</td></tr>`
+      return
+    }
+
+    const online = usuarios.filter(u => u.status === 'online').length
+    const hoje = usuarios.filter(u => {
+      const data = new Date(u.ultimo_acesso)
+      const agora = new Date()
+      return data.toDateString() === agora.toDateString()
+    }).length
+
+    document.getElementById('online-count').textContent = online
+    document.getElementById('hoje-count').textContent = hoje
+    document.getElementById('total-count').textContent = usuarios.length
+
+    const tbody = document.getElementById('tabela')
+    if (usuarios.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="loading">Nenhum usuário registrado ainda</td></tr>`
+      return
+    }
+
+    tbody.innerHTML = usuarios.map(u => `
+      <tr>
+        <td><span class="user-badge" title="${u.username || '-'}">${u.username || '-'}</span></td>
+        <td class="email-cell" title="${u.email}">${u.email || '-'}</td>
+        <td class="hide-mobile" title="${u.ip}">${u.ip || '-'}</td>
+        <td class="hide-mobile">${u.navegador? u.navegador.split(' ')[0] : '-'}</td>
+        <td>${new Date(u.ultimo_acesso).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
+        <td class="status-${u.status}">${u.status.toUpperCase()}</td>
+      </tr>
+    `).join('')
   }
-  supabase.auth.signInWithPassword({ email: email, password: senha }).then(function(res) {
-    if (res.error) {
-      msgErro.innerHTML = '<div class="erro">Erro Auth: ' + res.error.message + '</div>';
-      return;
-    }
-    msgErro.innerHTML = '<div class="ok">Login OK. Verificando permissões...</div>';
-    supabase.rpc('get_all_orders').then(function(res2) {
-      if (res2.error) {
-        msgErro.innerHTML = '<div class="erro">Erro Permissão: ' + res2.error.message + '</div>';
-        return;
-      }
-      msgErro.innerHTML = '';
-      document.getElementById('login').style.display = 'none';
-      document.getElementById('painel').style.display = 'block';
-      carregarDados();
-    });
-  }).catch(function(err) {
-    msgErro.innerHTML = '<div class="erro">Erro de conexão: ' + err.message + '</div>';
-  });
-}
-
-function carregarDados() {
-  const msgTabela = document.getElementById('msgTabela');
-  msgTabela.innerHTML = '<div class="ok">Carregando...</div>';
-  supabase.rpc('get_all_orders').then(function(res) {
-    if (res.error) {
-      msgTabela.innerHTML = '<div class="erro">Erro ao carregar: ' + res.error.message + '</div>';
-      return;
-    }
-    msgTabela.innerHTML = '';
-    const tbody = document.getElementById('tabelaPedidos');
-    const lista = document.getElementById('pedidosLista');
-    tbody.innerHTML = '';
-    lista.innerHTML = '';
-    let pendentes = 0, faturamento = 0;
-    const hoje = new Date().toISOString().split('T')[0];
-    let pedidosHoje = 0;
-    if (!res.data || res.data.length === 0) {
-      msgTabela.innerHTML = '<div class="ok">Nenhum pedido encontrado</div>';
-      return;
-    }
-    res.data.forEach(function(p) {
-      const data = new Date(p.created_at).toLocaleString('pt-BR');
-      const dataPedido = p.created_at.split('T')[0];
-      if (p.status === 'pending') pendentes++;
-      if (dataPedido === hoje) {
-        pedidosHoje++;
-        faturamento += parseFloat(p.charge);
-      }
-      let botoesCard = '';
-      if (p.status === 'pending') {
-        botoesCard = '<div class="pedido-botoes"><button class="btn-green" onclick="mudarStatus(' + p.id + ', \'completed\')">Entregue</button><button class="btn-red" onclick="mudarStatus(' + p.id + ', \'cancelled\')">Cancelar</button></div>';
-      }
-      lista.innerHTML += '<div class="pedido-card"><div><strong>ID:</strong> ' + p.id + '</div><div><strong>Data:</strong> ' + data + '</div><div><strong>User:</strong> ' + p.user_id.substring(0,8) + '...</div><div><strong>Serviço:</strong> ' + p.service_id + '</div><div><strong>Qtd:</strong> ' + p.quantity + '</div><div><strong>Valor:</strong> R$ ' + parseFloat(p.charge).toFixed(2) + '</div><div><strong>Status:</strong> <span class="status-' + p.status + '">' + p.status + '</span></div><div><strong>Link:</strong> <a href="' + p.link + '" target="_blank">Abrir</a></div>' + botoesCard + '</div>';
-      let botoes = '-';
-      if (p.status === 'pending') {
-        botoes = '<button class="btn-green" onclick="mudarStatus(' + p.id + ', \'completed\')">Entregue</button><button class="btn-red" onclick="mudarStatus(' + p.id + ', \'cancelled\')">Cancelar</button>';
-      }
-      tbody.innerHTML += '<tr><td>' + data + '</td><td title="' + p.user_id + '">' + p.user_id.substring(0,8) + '...</td><td>' + p.service_id + '</td><td><a href="' + p.link + '" target="_blank">Abrir</a></td><td>' + p.quantity + '</td><td>R$ ' + parseFloat(p.charge).toFixed(2) + '</td><td class="status-' + p.status + '">' + p.status + '</td><td>' + botoes + '</td></tr>';
-    });
-    document.getElementById('pendentes').innerText = pendentes;
-    document.getElementById('pedidosHoje').innerText = pedidosHoje;
-    document.getElementById('faturamento').innerText = faturamento.toFixed(2);
-  }).catch(function(err) {
-    msgTabela.innerHTML = '<div class="erro">Erro de conexão: ' + err.message + '</div>';
-  });
-}
-
-function mudarStatus(id, status) {
-  if (!confirm('Confirma mudar para ' + status + '?')) return;
-  supabase.rpc('admin_update_order_status', { order_id: id, new_status: status }).then(function(res) {
-    if (res.error) {
-      alert('Erro: ' + res.error.message);
-      return;
-    }
-    alert(status === 'cancelled'? 'Pedido cancelado e saldo estornado!' : 'Status atualizado!');
-    carregarDados();
-  });
-}
-
-function addSaldo() {
-  const userId = document.getElementById('userIdSaldo').value.trim();
-  const valor = parseFloat(document.getElementById('valorSaldo').value);
-  const msgSaldo = document.getElementById('msgSaldo');
-  msgSaldo.innerHTML = '';
-  if (!userId ||!valor || valor <= 0) {
-    msgSaldo.innerHTML = '<div class="erro">Preenche ID e valor válido</div>';
-    return;
-  }
-  if (!isUUID(userId)) {
-    msgSaldo.innerHTML = '<div class="erro">ID inválido. Use o UUID completo do usuário, ex: 550e8400-e29b-41d4-a716-446655440000</div>';
-    return;
-  }
-  supabase.rpc('admin_add_balance', { user_id: userId, amount: valor }).then(function(res) {
-    if (res.error) {
-      msgSaldo.innerHTML = '<div class="erro">Erro: ' + res.error.message + '</div>';
-      return;
-    }
-    msgSaldo.innerHTML = '<div class="ok">R$ ' + valor.toFixed(2) + ' adicionado com sucesso!</div>';
-    document.getElementById('userIdSaldo').value = '';
-    document.getElementById('valorSaldo').value = '';
-  });
-}
-
-setInterval(function() {
-  if (document.getElementById('painel').style.display!== 'none') carregarDados();
-}, 30000);
 </script>
 </body>
 </html>
