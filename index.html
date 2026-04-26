@@ -6,11 +6,22 @@
   <title>Painel SMM</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
 </head>
 <body class="bg-[#0f1419] text-gray-100 min-h-screen">
 
+  <!-- LOADING INICIAL -->
+  <div id="loading-screen" class="min-h-screen flex items-center justify-center">
+    <div class="text-center">
+      <div class="w-10 h-10 border-3 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-3" style="animation:spin 1s linear infinite"></div>
+      <p class="text-gray-400 text-sm">Carregando painel...</p>
+    </div>
+  </div>
+
   <!-- TELA DE LOGIN -->
-  <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+  <div id="login-screen" class="hidden min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-[#1a1f26] border border-[#2a2f36] rounded-xl p-8 shadow-2xl">
       <div class="text-center mb-8">
         <h1 class="text-3xl font-bold text-white">Painel SMM</h1>
@@ -165,6 +176,7 @@
       ]
     }
 
+    const loadingScreen = document.getElementById('loading-screen')
     const loginScreen = document.getElementById('login-screen')
     const dashboardScreen = document.getElementById('dashboard-screen')
     const authForm = document.getElementById('auth-form')
@@ -188,6 +200,7 @@
     let saldoInterval = null
     let servicoSelecionado = null
     let saldoAberto = false
+    let pingInterval = null
 
     function toggleSaldo() {
       saldoAberto = !saldoAberto
@@ -252,8 +265,29 @@
       servicoSelecionado = { id: opt.value, nome: opt.text.split(' - ')[0], preco: precoPor1000 }
     }
 
+    // NOVA FUNÇÃO: Ping online pro painel admin
+    async function pingOnline() {
+      if (!currentUser) return
+      try {
+        const ip = await fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => d.ip).catch(() => 'N/A')
+        await _supabase.from('usuarios_online').upsert({
+          user_id: currentUser.id,
+          username: currentUser.user_metadata?.username || currentUser.email.split('@')[0],
+          email: currentUser.email,
+          ip: ip,
+          navegador: navigator.userAgent,
+          ultimo_acesso: new Date().toISOString(),
+          status: 'online'
+        }, { onConflict: 'user_id' })
+      } catch(e) {
+        console.log('Ping falhou:', e)
+      }
+    }
+
     _supabase.auth.getSession().then(({ data: { session } }) => {
+      loadingScreen.classList.add('hidden')
       if (session) showDashboard(session.user)
+      else showLogin()
     })
 
     _supabase.auth.onAuthStateChange((event, session) => {
@@ -266,6 +300,12 @@
       userEmailEl.textContent = user.email
       loginScreen.classList.add('hidden')
       dashboardScreen.classList.remove('hidden')
+      
+      // Inicia ping online
+      pingOnline()
+      if (pingInterval) clearInterval(pingInterval)
+      pingInterval = setInterval(pingOnline, 120000) // a cada 2min
+      
       carregarSaldo()
       carregarPedidos()
     }
@@ -275,6 +315,7 @@
       dashboardScreen.classList.add('hidden')
       loginScreen.classList.remove('hidden')
       if (saldoInterval) clearInterval(saldoInterval)
+      if (pingInterval) clearInterval(pingInterval)
     }
 
     authForm.addEventListener('submit', async (e) => {
@@ -311,6 +352,10 @@
     })
 
     logoutBtn.addEventListener('click', async () => {
+      // Marca offline antes de sair
+      if (currentUser) {
+        await _supabase.from('usuarios_online').update({ status: 'offline' }).eq('user_id', currentUser.id)
+      }
       await _supabase.auth.signOut()
     })
 
@@ -375,44 +420,4 @@
         if (saldoInterval) clearInterval(saldoInterval)
         saldoInterval = setInterval(carregarSaldo, 3000)
       } catch (err) {
-        showPixMsg('Erro ao gerar Pix: ' + err.message)
-      } finally {
-        gerarPixBtn.disabled = false
-        gerarPixBtn.textContent = 'Gerar Pix'
-      }
-    }
-
-    function copiarPix() {
-      const input = document.getElementById('qr-code-text')
-      input.select()
-      document.execCommand('copy')
-      showPixMsg('Código Pix copiado!', false)
-    }
-
-    async function enviarPedido() {
-      if (!servicoSelecionado) return showPedidoMsg('Selecione um serviço')
-      const qtd = parseInt(document.getElementById('quantidade').value)
-      const link = document.getElementById('link').value
-      if (qtd < 100) return showPedidoMsg('Quantidade mínima: 100')
-      if (!link) return showPedidoMsg('Informe o link')
-      const valor = (qtd / 1000) * servicoSelecionado.preco
-      const { data: userData } = await _supabase.from('usuarios').select('saldo').eq('id', currentUser.id).single()
-      if (userData.saldo < valor) return showPedidoMsg('Saldo insuficiente. Adicione saldo.')
-      const { error } = await _supabase.from('pedidos').insert({
-        user_id: currentUser.id, servico: servicoSelecionado.nome, link: link, quantidade: qtd, valor: valor, status: 'pendente'
-      })
-      if (error) {
-        showPedidoMsg('Erro ao criar pedido')
-      } else {
-        await _supabase.from('usuarios').update({ saldo: userData.saldo - valor }).eq('id', currentUser.id)
-        showPedidoMsg('Pedido enviado com sucesso!', false)
-        document.getElementById('quantidade').value = ''
-        document.getElementById('link').value = ''
-        document.getElementById('valor-pedido').textContent = '0,00'
-        carregarSaldo()
-        carregarPedidos()
-      }
-    }
-  </script>
-</body>
-</html>
+        showPixMsg('Erro
