@@ -145,7 +145,7 @@
   .login-box button:disabled { opacity: 0.5; cursor: not-allowed; }
   .error { color: var(--red); font-size: 0.9rem; margin-top: 12px; }
   .logout { 
-      background: rgba(239, 68, 0.2); 
+      background: rgba(239, 68, 68, 0.2); 
       color: #ef4444; 
       border: 1px solid rgba(239, 68, 68, 0.3);
       padding: 8px 16px;
@@ -221,7 +221,6 @@
         const password = document.getElementById('password').value
 
         const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-
         if (error) throw error
 
         const isAdmin = data.user.email === 'robinultimate23@gmail.com' || data.user.user_metadata?.role === 'admin'
@@ -338,13 +337,7 @@
 
   async function carregarMonitor() {
     try {
-      // CORRIGIDO: removido o .catch() que dava erro
-      try {
-        await supabase.rpc('limpar_offline')
-      } catch (e) {
-        // Se a função não existir, ignora
-        console.log('RPC limpar_offline não existe, pulando...')
-      }
+      try { await supabase.rpc('limpar_offline') } catch(e) {}
 
       const { data: usuarios, error } = await supabase
      .from('usuarios_online')
@@ -419,6 +412,7 @@
      .order('created_at', { ascending: false })
      .limit(100)
 
+      console.log('Erro real:', error)
       if (error) throw error
 
       const tbody = document.getElementById('tabela-pedidos')
@@ -441,7 +435,8 @@
         </tr>
       `).join('')
     } catch (err) {
-      document.getElementById('tabela-pedidos').innerHTML = `<tr><td colspan="7" class="loading">Tabela "pedidos" não encontrada</td></tr>`
+      console.error('Erro pedidos:', err)
+      document.getElementById('tabela-pedidos').innerHTML = `<tr><td colspan="7" class="loading">Erro: ${err.message}</td></tr>`
     }
   }
 
@@ -496,7 +491,7 @@
         </tr>
       `).join('')
     } catch (err) {
-      document.getElementById('tabela-usuarios').innerHTML = `<tr><td colspan="5" class="loading">Tabela "profiles" não encontrada</td></tr>`
+      document.getElementById('tabela-usuarios').innerHTML = `<tr><td colspan="5" class="loading">Erro: ${err.message}</td></tr>`
     }
   }
 
