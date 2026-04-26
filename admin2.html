@@ -1,40 +1,185 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-const supabase = createClient(
-  'https://niedwjyzvmkgwfdwhacf.supabase.co',
-  'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh'
-)
-
-// Espera o Supabase restaurar a sessão do localStorage
-const { data: { session } } = await supabase.auth.getSession()
-
-if (!session) {
-  document.body.innerHTML = `
-    <div style="display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;gap:16px;color:#e2e8f0;font-family:system-ui">
-      <h1>Acesso negado</h1>
-      <p style="color:#64748b">Você não está logado</p>
-      <a href="/admin.html" style="color:#8b5cf6">Ir pro login</a>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin 2.0 - Usuários Online</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --card: rgba(20, 20, 35, 0.6);
+      --border: rgba(139, 92, 246, 0.2);
+      --primary: #8b5cf6;
+      --green: #10b981;
+      --red: #ef4444;
+      --text: #e2e8f0;
+      --muted: #64748b;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      background-image:
+        radial-gradient(at 20% 80%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+        radial-gradient(at 80% 20%, rgba(34, 211, 238, 0.1) 0px, transparent 50%);
+      min-height: 100vh;
+      color: var(--text);
+      padding: 24px;
+    }
+   .container { max-width: 1400px; margin: 0 auto; }
+   .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+    h1 { font-size: 1.8rem; background: linear-gradient(90deg, #8b5cf6, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+   .live { display: flex; align-items: center; gap: 8px; color: var(--green); font-size: 0.9rem; }
+   .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
+   .stat-card { background: var(--card); border: 1px solid var(--border); backdrop-filter: blur(20px); padding: 20px; border-radius: 16px; }
+   .stat-card span { color: var(--muted); font-size: 0.85rem; }
+   .stat-card h2 { font-size: 2.2rem; margin-top: 8px; color: var(--primary); }
+   .table-wrap { background: var(--card); border: 1px solid var(--border); backdrop-filter: blur(20px); border-radius: 16px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 16px; color: var(--muted); font-size: 0.8rem; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+    td { padding: 16px; border-bottom: 1px solid rgba(139, 92, 246, 0.05); }
+    tr:hover { background: rgba(139, 92, 246, 0.05); }
+   .status-online { color: var(--green); font-weight: 600; }
+   .status-offline { color: var(--red); }
+   .user-badge { background: rgba(139, 92, 246, 0.15); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; }
+   .loading { text-align:center; padding: 40px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Monitor de Usuários</h1>
+      <div class="live"><div class="live-dot"></div> Tempo Real</div>
     </div>
-  `
-  throw new Error('Sem sessão')
-}
 
-const user = session.user
-console.log('Logado como:', user.email, user.user_metadata)
-
-// Checa se é admin por email OU role
-const isAdmin = user.email === 'robinultimate23gmail.com' || user.user_metadata?.role === 'admin'
-
-if (!isAdmin) {
-  document.body.innerHTML = `
-    <div style="display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;gap:16px;color:#e2e8f0;font-family:system-ui">
-      <h1>Acesso negado</h1>
-      <p style="color:#64748b">Logado como: ${user.email}</p>
-      <p style="color:#64748b">Mas não tem permissão de admin</p>
+    <div class="grid">
+      <div class="stat-card">
+        <span>Online Agora</span>
+        <h2 id="online-count">0</h2>
+      </div>
+      <div class="stat-card">
+        <span>Logins Hoje</span>
+        <h2 id="hoje-count">0</h2>
+      </div>
+      <div class="stat-card">
+        <span>Total de Usuários</span>
+        <h2 id="total-count">0</h2>
+      </div>
     </div>
-  `
-  throw new Error('Não é admin')
-}
 
-// Se chegou aqui, é admin. Pode carregar os dados
-carregarDados()
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Usuário</th>
+            <th>Email</th>
+            <th>IP</th>
+            <th>Dispositivo</th>
+            <th>Último Acesso</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="tabela">
+          <tr><td colspan="6" class="loading">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+  const supabase = createClient(
+    'https://niedwjyzvmkgwfdwhacf.supabase.co',
+    'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh'
+  )
+
+  // Espera o Supabase restaurar a sessão do localStorage
+  const { data: { session } } = await supabase.auth.getSession()
+
+  if (!session) {
+    document.body.innerHTML = `
+      <div style="display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;gap:16px;color:#e2e8f0;font-family:system-ui">
+        <h1>Acesso negado</h1>
+        <p style="color:#64748b">Você não está logado</p>
+        <a href="/admin.html" style="color:#8b5cf6">Ir pro login</a>
+      </div>
+    `
+    throw new Error('Sem sessão')
+  }
+
+  const user = session.user
+  console.log('Logado como:', user.email, user.user_metadata)
+
+  // Checa se é admin por email OU role
+  const isAdmin = user.email === 'robinultimate23gmail.com' || user.user_metadata?.role === 'admin'
+
+  if (!isAdmin) {
+    document.body.innerHTML = `
+      <div style="display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;gap:16px;color:#e2e8f0;font-family:system-ui">
+        <h1>Acesso negado</h1>
+        <p style="color:#64748b">Logado como: ${user.email}</p>
+        <p style="color:#64748b">Mas não tem permissão de admin</p>
+      </div>
+    `
+    throw new Error('Não é admin')
+  }
+
+  async function carregarDados() {
+    await supabase.rpc('limpar_offline')
+
+    const { data: usuarios, error } = await supabase
+     .from('usuarios_online')
+     .select('*')
+     .order('ultimo_acesso', { ascending: false })
+     .limit(100)
+
+    if (error) {
+      console.error(error)
+      document.getElementById('tabela').innerHTML = `<tr><td colspan="6" class="loading">Erro: ${error.message}</td></tr>`
+      return
+    }
+
+    const online = usuarios.filter(u => u.status === 'online').length
+    const hoje = usuarios.filter(u => {
+      const data = new Date(u.ultimo_acesso)
+      const agora = new Date()
+      return data.toDateString() === agora.toDateString()
+    }).length
+
+    document.getElementById('online-count').textContent = online
+    document.getElementById('hoje-count').textContent = hoje
+    document.getElementById('total-count').textContent = usuarios.length
+
+    const tbody = document.getElementById('tabela')
+    if (usuarios.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="loading">Nenhum usuário registrado ainda</td></tr>`
+      return
+    }
+
+    tbody.innerHTML = usuarios.map(u => `
+      <tr>
+        <td><span class="user-badge">${u.username || '-'}</span></td>
+        <td>${u.email || '-'}</td>
+        <td>${u.ip || '-'}</td>
+        <td>${u.navegador? u.navegador.split(' ')[0] : '-'}</td>
+        <td>${new Date(u.ultimo_acesso).toLocaleString('pt-BR')}</td>
+        <td class="status-${u.status}">${u.status.toUpperCase()}</td>
+      </tr>
+    `).join('')
+  }
+
+  // Se chegou aqui, é admin. Pode carregar os dados
+  carregarDados()
+
+  // Realtime: atualiza quando muda algo
+  supabase
+   .channel('usuarios_online')
+   .on('postgres_changes', { event: '*', schema: 'public', table: 'usuarios_online' }, carregarDados)
+   .subscribe()
+
+</script>
+</body>
+</html>
