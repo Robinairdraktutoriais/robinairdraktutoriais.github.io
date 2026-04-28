@@ -36,6 +36,7 @@
       </form>
     </div>
   </div>
+
   <!-- PAINEL LOGADO -->
   <div id="dashboard-screen" class="hidden">
     <!-- HEADER -->
@@ -64,14 +65,15 @@
           <h2 class="text-lg font-semibold text-white mb-4">Adicionar Saldo via Pix</h2>
           
           <div class="mb-3">
-            <input type="number" id="valor-input" placeholder="Digite o valor (mínimo R$ 5,00)" min="5" step="0.01" class="w-full px-4 py-3 bg-[#1a1f26] border border-[#2a2f36] rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-lg">
+            <input type="number" id="valor-input" placeholder="Digite o valor (mínimo R$ 5,00)" min="5" step="0.01" oninput="calcularTaxaPainel()" class="w-full px-4 py-3 bg-[#1a1f26] border border-[#2a2f36] rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-lg">
+            <div id="taxa-info-painel" class="text-sm text-gray-300 mt-2 p-3 bg-[#1a1f26] border border-[#2a2f36] rounded-lg hidden"></div>
           </div>
 
           <div class="grid grid-cols-4 gap-2 mb-4">
+            <button onclick="setValor(5)" class="bg-[#2a2f36] hover:bg-[#343a42] py-2.5 rounded-lg transition text-sm">R$ 5</button>
             <button onclick="setValor(10)" class="bg-[#2a2f36] hover:bg-[#343a42] py-2.5 rounded-lg transition text-sm">R$ 10</button>
             <button onclick="setValor(20)" class="bg-[#2a2f36] hover:bg-[#343a42] py-2.5 rounded-lg transition text-sm">R$ 20</button>
             <button onclick="setValor(50)" class="bg-[#2a2f36] hover:bg-[#343a42] py-2.5 rounded-lg transition text-sm">R$ 50</button>
-            <button onclick="setValor(100)" class="bg-[#2a2f36] hover:bg-[#343a42] py-2.5 rounded-lg transition text-sm">R$ 100</button>
           </div>
 
           <button id="gerar-pix-btn" onclick="gerarPix()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition">Gerar Pix</button>
@@ -152,6 +154,10 @@
 
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+    // TAXA DO MP: 0,99% + R$ 0,40 pro Pix
+    const TAXA_FIXA = 0.40
+    const TAXA_PERCENT = 0.0099
+
     const SERVICOS = {
       instagram: [
         { id: 'ig-seguidores', nome: 'Seguidores Instagram', preco: 12.50 },
@@ -194,6 +200,7 @@
     const pedidoMsg = document.getElementById('pedido-msg')
     const abaSaldo = document.getElementById('aba-saldo')
     const btnSaldo = document.getElementById('btn-saldo')
+    const taxaInfoPainel = document.getElementById('taxa-info-painel')
 
     let currentUser = null
     let saldoInterval = null
@@ -214,6 +221,7 @@
         pixArea.classList.add('hidden')
         pixMessageDiv.classList.add('hidden')
         valorInput.value = ''
+        taxaInfoPainel.classList.add('hidden')
       }
     }
 
@@ -409,16 +417,45 @@
       `).join('')
     }
 
+    // NOVA FUNÇÃO: Calcula taxa pro cliente pagar
+    window.calcularTaxaPainel = function() {
+      const valorDesejado = parseFloat(valorInput.value) || 0
+      
+      if (valorDesejado < 5) {
+        taxaInfoPainel.classList.add('hidden')
+        return { valorDesejado: 0, valorCobrado: 0 }
+      }
+      
+      const valorCobrado = (valorDesejado + TAXA_FIXA) / (1 - TAXA_PERCENT)
+      const taxaTotal = valorCobrado - valorDesejado
+
+      taxaInfoPainel.classList.remove('hidden')
+      taxaInfoPainel.innerHTML = `
+        <div class="flex justify-between"><span>Você receberá:</span> <b class="text-white">R$ ${valorDesejado.toFixed(2)}</b></div>
+        <div class="flex justify-between text-gray-400"><span>Taxa MP:</span> <span>R$ ${taxaTotal.toFixed(2)}</span></div>
+        <hr class="my-1 border-[#2a2f36]">
+        <div class="flex justify-between font-bold text-green-400"><span>Total a pagar:</span> <span>R$ ${valorCobrado.toFixed(2)}</span></div>
+      `
+      
+      return { valorDesejado, valorCobrado }
+    }
+
     window.setValor = function(valor) {
       valorInput.value = valor
+      calcularTaxaPainel()
     }
 
     window.gerarPix = async function() {
-      const valor = parseFloat(valorInput.value)
-      if (!valor || valor < 5) {
+      const { valorDesejado, valorCobrado } = calcularTaxaPainel()
+      
+      if (valorDesejado < 5) {
         showPixMsg('Valor mínimo é R$ 5,00')
         return
       }
+
+      const confirmar = confirm(`Confirmar pagamento de R$ ${valorCobrado.toFixed(2)} para receber R$ ${valorDesejado.toFixed(2)} de saldo?`)
+      if (!confirmar) return
+
       gerarPixBtn.disabled = true
       gerarPixBtn.textContent = 'Gerando...'
       pixMessageDiv.classList.add('hidden')
@@ -426,14 +463,30 @@
 
       try {
         const { data, error } = await _supabase.functions.invoke('criar-pagamento', {
-          body: { valor: valor, email: currentUser.email },
+          body: { 
+            valor: valorCobrado.toFixed(2), // MANDA O VALOR COM TAXA
+            email_cliente: currentUser.email 
+          },
           headers: { Authorization: `Bearer ${SUPABASE_FUNCTION_KEY}` }
         })
+        
         if (error) throw new Error(error.message)
         if (data.error) throw new Error(data.error)
+        
         document.getElementById('qr-code-img').src = `data:image/jpeg;base64,${data.qr_code_base64}`
         document.getElementById('qr-code-text').value = data.qr_code
         pixArea.classList.remove('hidden')
+
+        // Salva transação com valor SEM TAXA
+        await _supabase.from('smm_transactions').insert({
+          user_id: currentUser.id,
+          type: 'deposit',
+          amount: valorDesejado, // O que ele vai receber
+          description: `Depósito Pix - Pagará R$ ${valorCobrado.toFixed(2)}`,
+          status: 'pending',
+          mp_payment_id: data.id
+        })
+
         if (saldoInterval) clearInterval(saldoInterval)
         saldoInterval = setInterval(carregarSaldo, 3000)
       } catch (err) {
