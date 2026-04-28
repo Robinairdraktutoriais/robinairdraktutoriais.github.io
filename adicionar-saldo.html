@@ -24,18 +24,18 @@
         <div>
           <label class="text-sm font-medium">Valor para adicionar</label>
           <div class="grid grid-cols-3 gap-2 mt-2 mb-2">
-            <button type="button" onclick="setValor(10)" class="border p-2 rounded">R$ 10</button>
-            <button type="button" onclick="setValor(25)" class="border p-2 rounded">R$ 25</button>
-            <button type="button" onclick="setValor(50)" class="border p-2 rounded">R$ 50</button>
+            <button type="button" onclick="setValor(10)" class="border p-2 rounded hover:bg-slate-100">R$ 10</button>
+            <button type="button" onclick="setValor(25)" class="border p-2 rounded hover:bg-slate-100">R$ 25</button>
+            <button type="button" onclick="setValor(50)" class="border p-2 rounded hover:bg-slate-100">R$ 50</button>
           </div>
           <input id="valor" type="number" min="5" step="0.01" placeholder="Ou digite outro valor" class="w-full p-2 border rounded" required>
         </div>
-        <button type="submit" class="w-full bg-green-600 text-white p-3 rounded-lg font-semibold">Gerar Pix</button>
+        <button id="btnSubmit" type="submit" class="w-full bg-green-600 text-white p-3 rounded-lg font-semibold">Gerar Pix</button>
       </form>
 
       <div id="pixArea" class="hidden mt-6 text-center">
         <p class="text-sm mb-2">Escaneie o QR Code ou copie o código:</p>
-        <img id="qrCode" class="mx-auto mb-3 border p-2">
+        <img id="qrCode" class="mx-auto mb-3 border p-2 rounded-lg">
         <input id="pixCopia" readonly class="w-full p-2 border rounded text-xs mb-2">
         <button onclick="copiarPix()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Copiar Código Pix</button>
         <p class="text-xs text-slate-500 mt-3">O saldo é creditado automaticamente após o pagamento</p>
@@ -45,9 +45,9 @@
 
 <script>
   const { createClient } = supabase
-  const _supabase = createClient('SEU-PROJETO.supabase.co', 'SUA_ANON_KEY_AQUI')
+  // TROCA AQUI PELA SUA URL E ANON KEY
+  const _supabase = createClient('https://niedwjyzvmkgwfdwhacf.supabase.co', 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh')
   
-  // TROCA PELA SUA URL E KEY AQUI TAMBÉM
   let user = null
 
   async function init() {
@@ -56,7 +56,9 @@
     user = session.user
     
     const { data: profile } = await _supabase.from('smm.profiles').select('balance').eq('id', user.id).single()
-    document.getElementById('saldo').textContent = profile.balance.toFixed(2).replace('.', ',')
+    if (profile) {
+      document.getElementById('saldo').textContent = profile.balance.toFixed(2).replace('.', ',')
+    }
   }
 
   function setValor(v) {
@@ -71,26 +73,51 @@
 
   document.getElementById('addForm').addEventListener('submit', async (e) => {
     e.preventDefault()
-    const valor = parseFloat(document.getElementById('valor').value)
+    const btn = document.getElementById('btnSubmit')
+    const valor = document.getElementById('valor').value
     
-    // AQUI VOCÊ VAI CHAMAR SUA API DO MERCADO PAGO
-    // Por enquanto vamos simular pra testar o fluxo
-    const fakePix = {
-      qr_code: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PIX_FAKE_' + valor,
-      qr_code_text: '00020126...PIX_COPIA_E_COLA_FAKE...' + valor
+    if (parseFloat(valor) < 5) {
+      alert('Valor mínimo R$ 5,00')
+      return
     }
-    
-    document.getElementById('qrCode').src = fakePix.qr_code
-    document.getElementById('pixCopia').value = fakePix.qr_code_text
-    document.getElementById('pixArea').classList.remove('hidden')
-    
-    // IMPORTANTE: Aqui você vai salvar a transação como 'pending' no banco
-    await _supabase.from('smm.transactions').insert({
-      user_id: user.id,
-      type: 'deposit',
-      amount: valor,
-      description: 'Depósito via Pix - Aguardando pagamento'
-    })
+
+    btn.disabled = true
+    btn.innerText = 'Gerando Pix...'
+
+    try {
+      // CHAMA A EDGE FUNCTION QUE A GENTE CRIOU
+      const { data, error } = await _supabase.functions.invoke('criar-pagamento', {
+        body: { 
+          valor: valor,
+          email_cliente: user.email // Manda o email do usuário logado
+        }
+      })
+
+      if (error) throw error
+      if (data.error) throw new Error(data.error)
+
+      // MOSTRA O PIX REAL DO MERCADO PAGO
+      document.getElementById('qrCode').src = `data:image/png;base64,${data.qr_code_base64}`
+      document.getElementById('pixCopia').value = data.qr_code
+      document.getElementById('pixArea').classList.remove('hidden')
+      
+      // Salva a transação como 'pending' no banco
+      await _supabase.from('smm.transactions').insert({
+        user_id: user.id,
+        type: 'deposit',
+        amount: parseFloat(valor),
+        description: 'Depósito via Pix - Aguardando pagamento',
+        status: 'pending',
+        mp_payment_id: data.id // Salva o ID do pagamento do MP pra dar baixa depois
+      })
+
+    } catch (err) {
+      alert('Erro ao gerar Pix: ' + err.message)
+      console.error(err)
+    } finally {
+      btn.disabled = false
+      btn.innerText = 'Gerar Pix'
+    }
   })
 
   init()
