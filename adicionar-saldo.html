@@ -23,13 +23,14 @@
       <form id="addForm" class="space-y-4">
         <div>
           <label class="text-sm font-medium">Valor para adicionar</label>
-          <div class="grid grid-cols-3 gap-2 mt-2 mb-2">
+          <div class="grid grid-cols-4 gap-2 mt-2 mb-2">
+            <button type="button" onclick="setValor(5)" class="border p-2 rounded hover:bg-slate-100">R$ 5</button>
             <button type="button" onclick="setValor(10)" class="border p-2 rounded hover:bg-slate-100">R$ 10</button>
-            <button type="button" onclick="setValor(25)" class="border p-2 rounded hover:bg-slate-100">R$ 25</button>
+            <button type="button" onclick="setValor(20)" class="border p-2 rounded hover:bg-slate-100">R$ 20</button>
             <button type="button" onclick="setValor(50)" class="border p-2 rounded hover:bg-slate-100">R$ 50</button>
           </div>
           <input id="valor" type="number" min="5" step="0.01" placeholder="Ou digite outro valor" class="w-full p-2 border rounded" required oninput="calcularTaxa()">
-          <p id="taxaInfo" class="text-sm text-slate-600 mt-2 font-medium"></p>
+          <div id="taxaInfo" class="text-sm text-slate-700 mt-3 p-3 bg-slate-50 rounded-lg hidden"></div>
         </div>
         <button id="btnSubmit" type="submit" class="w-full bg-green-600 text-white p-3 rounded-lg font-semibold">Gerar Pix</button>
       </form>
@@ -46,7 +47,6 @@
 
 <script>
   const { createClient } = supabase
-  // TROCA AQUI PELA SUA URL E ANON KEY
   const _supabase = createClient('https://niedwjyzvmkgwfdwhacf.supabase.co', 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh')
   
   let user = null
@@ -76,7 +76,7 @@
     const taxaInfo = document.getElementById('taxaInfo')
     
     if (valorDesejado < 5) {
-      taxaInfo.innerText = 'Valor mínimo: R$ 5,00'
+      taxaInfo.classList.add('hidden')
       return { valorDesejado: 0, valorCobrado: 0 }
     }
     
@@ -84,9 +84,13 @@
     const valorCobrado = (valorDesejado + TAXA_FIXA) / (1 - TAXA_PERCENT)
     const taxaTotal = valorCobrado - valorDesejado
 
-    taxaInfo.innerHTML = `Você receberá: <b>R$ ${valorDesejado.toFixed(2)}</b><br> 
-                          Total a pagar: <b class="text-green-700">R$ ${valorCobrado.toFixed(2)}</b><br>
-                          <span class="text-slate-500">Taxa MP: R$ ${taxaTotal.toFixed(2)}</span>`
+    taxaInfo.classList.remove('hidden')
+    taxaInfo.innerHTML = `
+      <div class="flex justify-between"><span>Você receberá:</span> <b>R$ ${valorDesejado.toFixed(2)}</b></div>
+      <div class="flex justify-between"><span>Taxa Mercado Pago:</span> <span>R$ ${taxaTotal.toFixed(2)}</span></div>
+      <hr class="my-1">
+      <div class="flex justify-between font-bold text-green-700"><span>Total a pagar:</span> <span>R$ ${valorCobrado.toFixed(2)}</span></div>
+    `
     
     return { valorDesejado, valorCobrado }
   }
@@ -114,10 +118,9 @@
     btn.innerText = 'Gerando Pix...'
 
     try {
-      // Manda o valor COM TAXA pro MP gerar o Pix
       const { data, error } = await _supabase.functions.invoke('criar-pagamento', {
         body: { 
-          valor: valorCobrado.toFixed(2), // Ex: 10.50
+          valor: valorCobrado.toFixed(2), // Manda o valor COM TAXA
           email_cliente: user.email
         }
       })
@@ -125,19 +128,17 @@
       if (error) throw error
       if (data.error) throw new Error(data.error)
 
-      // MOSTRA O PIX REAL DO MERCADO PAGO
       document.getElementById('qrCode').src = `data:image/png;base64,${data.qr_code_base64}`
       document.getElementById('pixCopia').value = data.qr_code
       document.getElementById('pixArea').classList.remove('hidden')
       
-      // Salva na transação o valor SEM TAXA que ele vai receber no saldo
       await _supabase.from('smm_transactions').insert({
         user_id: user.id,
         type: 'deposit',
-        amount: valorDesejado, // Ex: 10.00 - é isso que vai somar no saldo
+        amount: valorDesejado, // Salva o valor SEM TAXA
         description: `Depósito Pix - Pagará R$ ${valorCobrado.toFixed(2)}`,
         status: 'pending',
-        mp_payment_id: data.id // Salva o ID do pagamento do MP pra dar baixa depois
+        mp_payment_id: data.id
       })
 
     } catch (err) {
