@@ -1,8 +1,8 @@
 (function() {
-  const DOMINIO_AUTORIZADO = 'CLIENTE-AQUI-PARA-LIBERAR-ACESSO'; 
-  const CHAVE_LICENCA = 'RT-002'; // muda a chave
+  const DOMINIO_AUTORIZADO = 'dominioteste-bloqueado.com'; 
+  const CHAVE_LICENCA = 'RT-TESTE';
   
-  const dominiosLivres = ['localhost', '127.0.0.1', 'robinairdraktutoriais.github.io'];
+  const dominiosLivres = ['localhost', '127.0.0.1'];
   const dominioAtual = window.location.hostname;
 
   const liberado = dominiosLivres.some(d => dominioAtual.includes(d)) || dominioAtual.includes(DOMINIO_AUTORIZADO);
