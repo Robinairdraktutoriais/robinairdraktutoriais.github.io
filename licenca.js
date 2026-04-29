@@ -1,5 +1,5 @@
 (function() {
-  const DOMINIO_AUTORIZADO = 'paineldocliente.com'; 
+  const DOMINIO_AUTORIZADO = 'CLIENTE-AQUI-PARA-LIBERAR-ACESSO'; 
   const CHAVE_LICENCA = 'RT-002'; // muda a chave
   
   const dominiosLivres = ['localhost', '127.0.0.1', 'robinairdraktutoriais.github.io'];
