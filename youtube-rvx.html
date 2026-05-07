@@ -1,69 +1,150 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-color-mode="dark" data-dark-theme="dark">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YOUTUBE RVX</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown-dark.min.css">
+    <title>YOUTUBE RVX - Sem Anúncios</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        .markdown-body {
-            box-sizing: border-box;
-            min-width: 200px;
-            max-width: 980px;
-            margin: 0 auto;
-            padding: 45px;
+        :root {
+            --bg: #0d1117;
+            --card: #161b22;
+            --border: #30363d;
+            --text: #e6edf3;
+            --text-muted: #7d8590;
+            --red: #f85149;
+            --green: #3fb950;
         }
-        @media (max-width: 767px) {
-            .markdown-body { padding: 15px; }
-        }
-        .btn {
-            display: inline-block;
-            background: #da3633;
-            color: white !important;
-            padding: 10px 20px;
-            margin: 8px 4px;
-            border-radius: 6px;
-            text-decoration: none !important;
-            font-weight: 600;
-        }
-        details {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 6px;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
             padding: 16px;
+        }
+        
+       .wrap {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+        
+       .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px 20px;
             margin-bottom: 16px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        
+       .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+        
+       .alert {
+            background: rgba(248, 81, 73, 0.1);
+            border-left: 4px solid var(--red);
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        
+       .btn {
+            display: block;
+            width: 100%;
+            background: var(--red);
+            color: #fff!important;
+            text-decoration: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            margin: 12px 0;
+            transition: opacity 0.2s;
+        }
+       .btn:active { opacity: 0.8; }
+       .btn.green { background: var(--green); }
+        
+        details {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin: 12px 0;
+        }
+        summary {
+            padding: 14px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+        }
+        summary::-webkit-details-marker { display: none; }
+        details[open] summary { border-bottom: 1px solid var(--border); }
+       .details-content { padding: 16px; color: var(--text-muted); }
+        
+        h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        @media (min-width: 480px) {
+            body { padding: 24px; }
+            h1 { font-size: 32px; }
         }
     </style>
 </head>
 <body>
-    <article class="markdown-body">
-        <h1 align="center">🔴 YOUTUBE RVX</h1>
-        <p align="center"><strong>Mod do YouTube completo e totalmente sem anúncios</strong></p>
-
-        <blockquote>
-            <p><strong>IMPORTANTE:</strong> Para usar o YouTube RVX é preciso instalar ele e o Micro G.</p>
-        </blockquote>
-
-        <h3>📥 Downloads</h3>
-        <p align="center">
-            <a href="https://seulink.digital/nGszVm" class="btn">BAIXAR YOUTUBE RVX</a>
-            <a href="https://seulink.digital/umYmg" class="btn">BAIXAR MICRO G</a>
-            <a href="https://whatsapp.com/channel/0029VaFchLYI5s3b3b4qY0Z/100" class="btn">TUTORIAL ENCURTADOR</a>
-        </p>
+    <div class="wrap">
+        <div class="card">
+            <h1>🔴 YOUTUBE RVX</h1>
+            <p class="subtitle">Mod do YouTube completo e totalmente sem anúncios</p>
+            
+            <div class="alert">
+                <strong>IMPORTANTE:</strong> Para usar o YouTube RVX é necessário instalar ele e o Micro G.
+            </div>
+            
+            <h2>📦 Downloads</h2>
+            <a href="https://seulink.digital/nGszVm" class="btn" target="_blank">BAIXAR YOUTUBE RVX</a>
+            <a href="https://seulink.digital/umYmg" class="btn" target="_blank">BAIXAR MICRO G</a>
+            <a href="https://whatsapp.com/channel/0029VaFchLYI5s3b3b4qY0Z/100" class="btn green" target="_blank">TUTORIAL ENCURTADOR</a>
+        </div>
 
         <details>
-            <summary><b>📝 Suas Anotações</b></summary>
-            <p><!-- ESCREVA SUAS INFORMAÇÕES AQUI --></p>
-            <p>Edite esta parte com as infos que você quiser adicionar...</p>
+            <summary>📝 Suas Anotações</summary>
+            <div class="details-content">
+                <!-- ESCREVA SUAS INFORMAÇÕES AQUI -->
+                <p>Edite esta parte com as infos que você quiser adicionar...</p>
+                <p>Exemplo: Testado no Android 14, Samsung A54</p>
+            </div>
         </details>
 
         <details>
-            <summary><b>📋 Changelog / Novidades</b></summary>
-            <p><!-- ESCREVA SUAS INFORMAÇÕES AQUI --></p>
-            <ul>
-                <li><strong>Versão 1.0</strong> - Lançamento inicial</li>
-            </ul>
+            <summary>📋 Changelog / Novidades</summary>
+            <div class="details-content">
+                <!-- ESCREVA SUAS INFORMAÇÕES AQUI -->
+                <p><strong>Versão 1.0 - 06/05/2026</strong></p>
+                <ul>
+                    <li>Lançamento inicial</li>
+                    <li>Sem anúncios</li>
+                </ul>
+            </div>
         </details>
-    </article>
+    </div>
 </body>
 </html>
