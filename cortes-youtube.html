@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Cortes Ao Vivo</title>
+    <style>
+        :root { --bg:#0d1117; --card:#161b22; --border:#30363d; --text:#e6edf3; --red:#f85149; --green:#238636; }
+        body { font-family: system-ui; background: var(--bg); color: var(--text); padding: 16px; margin: 0; }
+      .wrap { max-width: 800px; margin: 0 auto; }
+      .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+        h1 { font-size: 22px; text-align: center; margin: 0 0 16px 0; }
+        input { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); margin: 8px 0; }
+      .btn { width: 100%; padding: 16px; border: none; border-radius: 8px; font-weight: 700; font-size: 18px; margin: 8px 0; cursor: pointer; }
+      .btn-marcar { background: var(--red); color: #fff; }
+      .btn-copiar { background: var(--green); color: #fff; }
+        #lista { margin-top: 16px; }
+      .corte { background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 8px; margin: 8px 0; display: flex; justify-content: space-between; align-items: center; }
+      .timer { font-size: 24px; font-weight: 700; text-align: center; margin: 16px 0; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="card">
+            <h1>🎬 Painel de Cortes Ao Vivo</h1>
+            <input id="urlLive" placeholder="Cole o link da live/vídeo do YouTube aqui" type="url">
+            <div class="timer" id="timer">00:00:00</div>
+            <button class="btn btn-marcar" onclick="marcar()">🔴 MARCAR MELHOR MOMENTO AGORA</button>
+            <button class="btn btn-copiar" onclick="copiarTudo()">📋 COPIAR TODOS OS LINKS</button>
+        </div>
+        <div class="card">
+            <h2>Momentos Marcados</h2>
+            <div id="lista">Nenhum momento marcado ainda...</div>
+        </div>
+    </div>
+
+<script>
+let segundos = 0;
+let intervalo;
+let cortes = [];
+let videoId = '';
+
+document.getElementById('urlLive').addEventListener('input', (e) => {
+    const reg = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const match = e.target.value.match(reg);
+    videoId = match? match[1] : '';
+    if (videoId &&!intervalo) {
+        intervalo = setInterval(() => {
+            segundos++;
+            document.getElementById('timer').textContent = new Date(segundos * 1000).toISOString().slice(11, 19);
+        }, 1000);
+    }
+});
+
+function marcar() {
+    if (!videoId) { alert('Cola o link da live primeiro!'); return; }
+    const inicio = Math.max(0, segundos - 15); // Pega 15s antes
+    const fim = segundos + 15; // 15s depois = corte de 30s
+    cortes.push({inicio, fim});
+    renderizar();
+}
+
+function renderizar() {
+    const lista = document.getElementById('lista');
+    if (cortes.length === 0) { lista.innerHTML = 'Nenhum momento marcado ainda...'; return; }
+    lista.innerHTML = cortes.map((c, i) => `
+        <div class="corte">
+            <span><strong>Corte ${i+1}:</strong> ${c.inicio}s até ${c.fim}s</span>
+            <a href="https://youtu.be/${videoId}?t=${c.inicio}" target="_blank">Testar</a>
+        </div>
+    `).join('');
+}
+
+function copiarTudo() {
+    if (cortes.length === 0) { alert('Marca algum momento primeiro!'); return; }
+    const texto = cortes.map((c, i) => `Corte ${i+1}: https://youtu.be/${videoId}?t=${c.inicio}`).join('\n');
+    navigator.clipboard.writeText(texto);
+    alert('Todos os links copiados! Cola no bloco de notas');
+}
+</script>
+</body>
+</html>
