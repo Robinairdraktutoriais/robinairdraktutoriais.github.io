@@ -1,0 +1,46 @@
+name: Cortar YouTube com yt-dlp
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Link do YouTube'
+        required: true
+      inicio:
+        description: 'Início HH:MM:SS'
+        required: true
+        default: '00:00:00'
+      duracao:
+        description: 'Duração HH:MM:SS'
+        required: true
+        default: '00:00:30'
+      nome:
+        description: 'Nome do arquivo final'
+        required: false
+        default: 'corte.mp4'
+
+jobs:
+  cortar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Instalar dependências
+        run: |
+          sudo apt update -y
+          sudo apt install -y ffmpeg
+          pip install -U yt-dlp
+
+      - name: Cortar vídeo
+        run: |
+          yt-dlp "${{ github.event.inputs.url }}" \
+          --download-sections "*${{ github.event.inputs.inicio }}-${{ github.event.inputs.inicio }}+${{ github.event.inputs.duracao }}" \
+          --force-keyframes-at-cuts \
+          -f "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/best" \
+          --merge-output-format mp4 \
+          --no-warnings \
+          -o "${{ github.event.inputs.nome }}"
+          
+      - name: Upload do corte
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-cortado-${{ github.run_number }}
+          path: ${{ github.event.inputs.nome }}
+          retention-days: 3
