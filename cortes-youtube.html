@@ -1,185 +1,66 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fatiador de Lives - DrakTutoriais</title>
-    <style>
-        :root { --bg:#0d1117; --card:#161b22; --border:#30363d; --text:#e6edf3; --red:#f85149; --green:#238636; --blue:#1f6feb; }
-        body { font-family: system-ui; background: var(--bg); color: var(--text); padding: 16px; margin: 0; }
-   .wrap { max-width: 800px; margin: 0 auto; }
-   .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
-        h1 { font-size: 22px; text-align: center; margin: 0 0 16px 0; }
-        label { display: block; font-size: 14px; color: #7d8590; margin-top: 12px; margin-bottom: 4px; }
-        input { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); }
-   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-   .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 700; font-size: 16px; margin-top: 16px; cursor: pointer; }
-   .btn-gerar { background: var(--red); color: #fff; }
-   .btn-copiar { background: var(--green); color: #fff; }
-        #lista { margin-top: 16px; max-height: 400px; overflow-y: auto; }
-   .corte { background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 8px; margin: 8px 0; }
-   .corte-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
-   .corte a { color: var(--blue); text-decoration: none; font-weight: 600; }
-   .status { text-align: center; font-size: 14px; color: #7d8590; margin-top: 8px; }
-   .dica { font-size: 12px; color: #7d8590; margin-top: 4px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cortador YouTube</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 500px; margin: 50px auto; padding: 0 20px; background: #0d1117; color: #c9d1d9; }
+    h1 { color: #f0f6fc; }
+    input, button { width: 100%; padding: 14px; margin: 8px 0; border-radius: 6px; border: 1px solid #30363d; background: #161b22; color: #c9d1d9; font-size: 16px; box-sizing: border-box; }
+    button { background: #238636; border: none; cursor: pointer; font-weight: 600; }
+    button:hover { background: #2ea043; }
+    .row { display: flex; gap: 10px; }
+    .row input { flex: 1; }
+    .info { background: #161b22; border: 1px solid #30363d; padding: 15px; border-radius: 6px; margin-top: 20px; font-size: 14px; }
+    a { color: #58a6ff; }
+    code { background: #161b22; padding: 2px 6px; border-radius: 4px; }
+  </style>
 </head>
 <body>
-    <div class="wrap">
-        <div class="card">
-            <h1>✂️ Fatiador de Lives Automático</h1>
-            
-            <label>Link da live ou vídeo do YouTube</label>
-            <input id="urlLive" placeholder="https://www.youtube.com/live/..." type="url">
-            
-            <div class="grid-3">
-                <div>
-                    <label>Pular início</label>
-                    <input id="pularInicio" placeholder="Ex: 5m ou 0" type="text" value="0">
-                    <div class="dica">Ignora os primeiros minutos</div>
-                </div>
-                <div>
-                    <label>Duração total</label>
-                    <input id="duracaoTotal" placeholder="Ex: 2h30m ou 150" type="text">
-                    <div class="dica">Tempo total da live</div>
-                </div>
-                <div>
-                    <label>Tamanho do corte</label>
-                    <input id="tamanhoCorte" placeholder="Ex: 10m" type="text" value="10">
-                    <div class="dica">Duração de cada parte</div>
-                </div>
-            </div>
-            
-            <button class="btn btn-gerar" onclick="fatiar()">GERAR TODOS OS CORTES</button>
-            <div class="status" id="status"></div>
-        </div>
-        
-        <div class="card" id="resultadoCard" style="display:none;">
-            <h2>Cortes Gerados</h2>
-            <button class="btn btn-copiar" onclick="copiarTudo()">📋 COPIAR TODOS OS LINKS</button>
-            <div id="lista"></div>
-        </div>
-    </div>
+  <h1>Cortar YouTube igual Termux</h1>
+  <p>Usa <code>yt-dlp + ffmpeg</code> rodando no Github Actions</p>
 
-<script>
-let todosOsCortes = [];
-let videoId = '';
+  <input id="url" type="text" placeholder="https://www.youtube.com/watch?v=..." >
+  <div class="row">
+    <input id="inicio" type="text" placeholder="Início 00:01:30" value="00:00:00">
+    <input id="duracao" type="text" placeholder="Duração 00:00:30" value="00:00:30">
+  </div>
+  <input id="nome" type="text" placeholder="Nome do arquivo" value="corte.mp4">
+  
+  <button onclick="disparar()">Cortar Vídeo</button>
 
-function extrairID(url) {
-    const reg = /(?:youtube\.com\/(?:live\/|watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-    const match = url.match(reg);
-    return match? match[1] : null;
-}
+  <div class="info">
+    <strong>Como funciona:</strong><br>
+    1. Clica em "Cortar Vídeo" pra abrir o Github<br>
+    2. Confirma em "Run workflow"<br>
+    3. Espera ~2min e baixa em "Artifacts"<br><br>
+    <strong>Link direto do Actions:</strong><br>
+    <a id="linkActions" href="#" target="_blank">Abrir aba Actions do repo</a>
+  </div>
 
-function tempoParaSegundos(tempo) {
-    if (!tempo) return 0;
-    tempo = tempo.toString().toLowerCase().replace(/\s/g, '');
+  <script>
+    // TROCA AQUI PELO SEU USUARIO/REPO
+    const REPO = "seu-usuario/seu-repo"; 
     
-    if (/^\d+$/.test(tempo)) return parseInt(tempo) * 60;
+    document.getElementById('linkActions').href = `https://github.com/${REPO}/actions`;
     
-    let segundos = 0;
-    const h = tempo.match(/(\d+)h/);
-    const m = tempo.match(/(\d+)m/);
-    const s = tempo.match(/(\d+)s/);
-    
-    if (h) segundos += parseInt(h[1]) * 3600;
-    if (m) segundos += parseInt(m[1]) * 60;
-    if (s) segundos += parseInt(s[1]);
-    
-    return segundos;
-}
-
-function formatarTempo(s) {
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
-    if (h > 0) return `${h}h${m}m${sec}s`;
-    if (m > 0) return `${m}m${sec}s`;
-    return `${sec}s`;
-}
-
-function fatiar() {
-    const url = document.getElementById('urlLive').value;
-    const pularStr = document.getElementById('pularInicio').value;
-    const duracaoStr = document.getElementById('duracaoTotal').value;
-    const tamanhoStr = document.getElementById('tamanhoCorte').value;
-    
-    videoId = extrairID(url);
-    const pularInicio = tempoParaSegundos(pularStr);
-    const duracaoTotal = tempoParaSegundos(duracaoStr);
-    const tamanhoCorte = tempoParaSegundos(tamanhoStr);
-    
-    const status = document.getElementById('status');
-    
-    if (!videoId) {
-        status.textContent = 'Link do YouTube inválido';
-        status.style.color = '#f85149';
-        return;
+    function disparar() {
+      const url = document.getElementById('url').value;
+      const inicio = document.getElementById('inicio').value;
+      const duracao = document.getElementById('duracao').value;
+      const nome = document.getElementById('nome').value;
+      
+      if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
+        return alert('Cola um link válido do YouTube');
+      }
+      
+      // Link que já preenche tudo no Github
+      const linkWorkflow = `https://github.com/${REPO}/actions/workflows/cortar.yml`;
+      window.open(linkWorkflow, '_blank');
+      
+      alert(`Agora no Github:\n1. Clica em "Run workflow"\n2. Cola o link: ${url}\n3. Início: ${inicio}\n4. Duração: ${duracao}\n5. Nome: ${nome}\n6. Clica no botão verde "Run workflow"`);
     }
-    if (duracaoTotal === 0 || tamanhoCorte === 0) {
-        status.textContent = 'Preenche a duração e o tamanho do corte';
-        status.style.color = '#f85149';
-        return;
-    }
-    if (pularInicio >= duracaoTotal) {
-        status.textContent = 'Tempo pra pular maior que a duração total';
-        status.style.color = '#f85149';
-        return;
-    }
-    if (tamanhoCorte > duracaoTotal - pularInicio) {
-        status.textContent = 'Tamanho do corte maior que o tempo útil da live';
-        status.style.color = '#f85149';
-        return;
-    }
-    
-    todosOsCortes = [];
-    let inicioAtual = pularInicio; // Começa depois do tempo pulado
-    let parte = 1;
-    
-    while (inicioAtual < duracaoTotal) {
-        let fimAtual = inicioAtual + tamanhoCorte;
-        if (fimAtual > duracaoTotal) fimAtual = duracaoTotal;
-        
-        todosOsCortes.push({
-            parte: parte,
-            inicio: inicioAtual,
-            fim: fimAtual,
-            link: `https://youtu.be/${videoId}?t=${inicioAtual}`
-        });
-        
-        inicioAtual = fimAtual;
-        parte++;
-    }
-    
-    status.textContent = `${todosOsCortes.length} cortes gerados! Pulando ${formatarTempo(pularInicio)} do início.`;
-    status.style.color = '#3fb950';
-    document.getElementById('resultadoCard').style.display = 'block';
-    renderizar();
-}
-
-function renderizar() {
-    const lista = document.getElementById('lista');
-    lista.innerHTML = todosOsCortes.map(c => `
-        <div class="corte">
-            <div class="corte-header">
-                <strong>Parte ${c.parte}</strong>
-                <span>${formatarTempo(c.inicio)} até ${formatarTempo(c.fim)}</span>
-            </div>
-            <input value="${c.link}" readonly onclick="this.select()" style="font-size:12px;">
-            <a href="${c.link}" target="_blank">▶️ Abrir corte</a>
-        </div>
-    `).join('');
-}
-
-function copiarTudo() {
-    if (todosOsCortes.length === 0) return;
-    const texto = todosOsCortes.map(c => 
-        `Parte ${c.parte} [${formatarTempo(c.inicio)} - ${formatarTempo(c.fim)}]: ${c.link}`
-    ).join('\n');
-    navigator.clipboard.writeText(texto);
-    alert(`${todosOsCortes.length} links copiados!`);
-}
-</script>
+  </script>
 </body>
 </html>
