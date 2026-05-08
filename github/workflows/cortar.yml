@@ -1,4 +1,4 @@
-name: Cortar YouTube com yt-dlp
+name: Cortar YouTube
 on:
   workflow_dispatch:
     inputs:
@@ -10,37 +10,38 @@ on:
         required: true
         default: '00:00:00'
       duracao:
-        description: 'Duração HH:MM:SS'
+        description: 'Duração HH:MM:SS' 
         required: true
         default: '00:00:30'
       nome:
-        description: 'Nome do arquivo final'
+        description: 'Nome do arquivo'
         required: false
         default: 'corte.mp4'
 
 jobs:
   cortar:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Instalar dependências
+      - name: Instalar yt-dlp e ffmpeg
         run: |
-          sudo apt update -y
-          sudo apt install -y ffmpeg
-          pip install -U yt-dlp
+          sudo apt-get update -y
+          sudo apt-get install -y ffmpeg
+          python -m pip install -U yt-dlp
 
-      - name: Cortar vídeo
+      - name: Baixar e cortar
         run: |
           yt-dlp "${{ github.event.inputs.url }}" \
           --download-sections "*${{ github.event.inputs.inicio }}-${{ github.event.inputs.inicio }}+${{ github.event.inputs.duracao }}" \
           --force-keyframes-at-cuts \
           -f "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/best" \
           --merge-output-format mp4 \
-          --no-warnings \
+          --no-playlist \
           -o "${{ github.event.inputs.nome }}"
           
-      - name: Upload do corte
+      - name: Upload do vídeo
         uses: actions/upload-artifact@v4
         with:
-          name: video-cortado-${{ github.run_number }}
+          name: corte-pronto
           path: ${{ github.event.inputs.nome }}
-          retention-days: 3
+          retention-days: 2
