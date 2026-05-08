@@ -3,63 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cortador YouTube</title>
+  <title>Cortador YouTube Auto</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 500px; margin: 50px auto; padding: 0 20px; background: #0d1117; color: #c9d1d9; }
-    h1 { color: #f0f6fc; }
-    input, button { width: 100%; padding: 14px; margin: 8px 0; border-radius: 6px; border: 1px solid #30363d; background: #161b22; color: #c9d1d9; font-size: 16px; box-sizing: border-box; }
+    body { font-family: system-ui; max-width: 500px; margin: 40px auto; padding: 0 20px; background: #0d1117; color: #e6edf3; }
+    h1 { font-size: 24px; margin-bottom: 8px; }
+    p { color: #7d8590; margin-top: 0; }
+    input, button { width: 100%; padding: 12px; margin: 6px 0; border-radius: 6px; border: 1px solid #30363d; background: #161b22; color: #e6edf3; font-size: 15px; box-sizing: border-box; }
     button { background: #238636; border: none; cursor: pointer; font-weight: 600; }
     button:hover { background: #2ea043; }
-    .row { display: flex; gap: 10px; }
-    .row input { flex: 1; }
-    .info { background: #161b22; border: 1px solid #30363d; padding: 15px; border-radius: 6px; margin-top: 20px; font-size: 14px; }
-    a { color: #58a6ff; }
-    code { background: #161b22; padding: 2px 6px; border-radius: 4px; }
+    button:disabled { background: #30363d; cursor: not-allowed; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .box { background: #161b22; border: 1px solid #30363d; padding: 16px; border-radius: 6px; margin-top: 20px; font-size: 14px; line-height: 1.6; }
+    .status { margin-top: 15px; font-size: 14px; color: #7d8590; }
+    a { color: #58a6ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-  <h1>Cortar YouTube igual Termux</h1>
-  <p>Usa <code>yt-dlp + ffmpeg</code> rodando no Github Actions</p>
-
-  <input id="url" type="text" placeholder="https://www.youtube.com/watch?v=..." >
-  <div class="row">
-    <input id="inicio" type="text" placeholder="Início 00:01:30" value="00:00:00">
+  <h1>Cortar YouTube</h1>
+  <p>Preenche aqui e confirma 1x no Github. Igual Termux mas na nuvem.</p>
+  
+  <input id="url" type="url" placeholder="https://youtube.com/watch?v=..." required>
+  <div class="grid">
+    <input id="inicio" type="text" placeholder="Início 00:01:20" value="00:00:00">
     <input id="duracao" type="text" placeholder="Duração 00:00:30" value="00:00:30">
   </div>
-  <input id="nome" type="text" placeholder="Nome do arquivo" value="corte.mp4">
+  <input id="nome" type="text" placeholder="nome-do-arquivo.mp4" value="corte.mp4">
   
-  <button onclick="disparar()">Cortar Vídeo</button>
+  <button id="btn" onclick="rodar()">Enviar pro Github e Cortar</button>
+  
+  <div class="status" id="status"></div>
 
-  <div class="info">
-    <strong>Como funciona:</strong><br>
-    1. Clica em "Cortar Vídeo" pra abrir o Github<br>
-    2. Confirma em "Run workflow"<br>
-    3. Espera ~2min e baixa em "Artifacts"<br><br>
-    <strong>Link direto do Actions:</strong><br>
-    <a id="linkActions" href="#" target="_blank">Abrir aba Actions do repo</a>
+  <div class="box">
+    <strong>Como fica:</strong><br>
+    1. Clica no botão acima → abre Github com tudo preenchido<br>
+    2. Só clica no botão verde <b>"Run workflow"</b><br>
+    3. Espera 1-3min e baixa em <a id="linkArtifacts" target="_blank">Actions</a>
   </div>
 
   <script>
-    // TROCA AQUI PELO SEU USUARIO/REPO
-    const REPO = "seu-usuario/seu-repo"; 
+    // TROCA AQUI: seu-usuario/seu-repo
+    const REPO = "seu-usuario/seu-repo";
+    const WORKFLOW_FILE = "cortar.yml";
     
-    document.getElementById('linkActions').href = `https://github.com/${REPO}/actions`;
+    document.getElementById('linkArtifacts').href = `https://github.com/${REPO}/actions`;
     
-    function disparar() {
-      const url = document.getElementById('url').value;
-      const inicio = document.getElementById('inicio').value;
-      const duracao = document.getElementById('duracao').value;
-      const nome = document.getElementById('nome').value;
+    function rodar() {
+      const url = document.getElementById('url').value.trim();
+      const inicio = document.getElementById('inicio').value.trim();
+      const duracao = document.getElementById('duracao').value.trim();
+      const nome = document.getElementById('nome').value.trim();
+      const btn = document.getElementById('btn');
+      const status = document.getElementById('status');
       
-      if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
-        return alert('Cola um link válido do YouTube');
+      if (!url.includes('youtu')) {
+        alert('Cola um link válido do YouTube');
+        return;
       }
       
-      // Link que já preenche tudo no Github
-      const linkWorkflow = `https://github.com/${REPO}/actions/workflows/cortar.yml`;
-      window.open(linkWorkflow, '_blank');
+      btn.disabled = true;
+      status.textContent = 'Abrindo Github com dados preenchidos...';
       
-      alert(`Agora no Github:\n1. Clica em "Run workflow"\n2. Cola o link: ${url}\n3. Início: ${inicio}\n4. Duração: ${duracao}\n5. Nome: ${nome}\n6. Clica no botão verde "Run workflow"`);
+      // Monta URL que já preenche os inputs do workflow_dispatch
+      const params = new URLSearchParams();
+      params.set('inputs[url]', url);
+      params.set('inputs[inicio]', inicio);
+      params.set('inputs[duracao]', duracao);
+      params.set('inputs[nome]', nome);
+      
+      const workflowUrl = `https://github.com/${REPO}/actions/workflows/${WORKFLOW_FILE}?${params.toString()}`;
+      
+      // Abre o Github
+      window.open(workflowUrl, '_blank');
+      
+      setTimeout(() => {
+        btn.disabled = false;
+        status.innerHTML = 'Agora é só clicar em <b>Run workflow</b> no Github que abriu.<br>Acompanhe em <a href="https://github.com/' + REPO + '/actions" target="_blank">Actions</a>';
+      }, 2000);
     }
   </script>
 </body>
