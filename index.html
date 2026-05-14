@@ -126,42 +126,69 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh'
     const SUPABASE_FUNCTION_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pZWR3anl6dm1rZ3dmZHdoYWNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MzQ0MTIsImV4cCI6MjA3MDAxMDQxMn0.pIr6g27ClVzWQhVbcnpH4nvkVskzUJOCzzX14xWEhKg'
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-// Salva o HTML original do site antes de tudo
-const SITE_ORIGINAL = document.body.innerHTML;
-
-// 1. Joga tela de manutenção na cara do usuário na hora
-document.body.innerHTML = `
-  <div id="tela-offline" style="text-align:center; padding:40px; font-family:sans-serif; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:99999;">
-    <h2>🚧 Conectando ao servidor...</h2>
-    <p>Aguarde, verificando banco de dados.</p>
-  </div>
+// Cria a tela de manutenção mas deixa escondida
+const telaManutencao = document.createElement('div');
+telaManutencao.id = 'tela-offline';
+telaManutencao.style.cssText = 'display:none; text-align:center; padding:40px; font-family:sans-serif; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:99999;';
+telaManutencao.innerHTML = `
+  <h2>🚧 Conectando ao servidor...</h2>
+  <p>Aguarde, verificando banco de dados.</p>
 `;
+document.body.appendChild(telaManutencao);
 
-// 2. Função que testa se o Supabase tá vivo mesmo
+let tentandoReconectar = false;
+
+// Função que testa se o Supabase tá vivo
 async function testarSupabase() {
+  if (tentandoReconectar) return; // Evita rodar 2x ao mesmo tempo
+  tentandoReconectar = true;
+  
+  // Mostra a tela de manutenção
+  telaManutencao.style.display = 'block';
+  
   try {
-    // Tenta fazer uma query besta que sempre funciona
-    const { error } = await _supabase.from('qualquer_coisa').select('*').limit(1);
+    // Testa uma query real no Supabase com timeout de 5s
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
     
-    // Se deu erro de rede/timeout, cai no catch
-    if (error && error.message.includes('fetch')) throw error;
+    await _supabase.from('qualquer_coisa').select('*').limit(1).abortSignal(controller.signal);
+    clearTimeout(timeout);
     
-    // Se chegou aqui, Supabase tá vivo. Restaura o site.
-    document.body.innerHTML = SITE_ORIGINAL;
+    // Se chegou aqui, Supabase tá OK. Some com a tela.
+    telaManutencao.style.display = 'none';
+    tentandoReconectar = false;
     
   } catch (e) {
-    // Deu ruim. Mostra manutenção e tenta de novo em 5s
-    document.querySelector('#tela-offline').innerHTML = `
+    // Deu erro. Mantém na tela de manutenção e tenta de novo
+    telaManutencao.innerHTML = `
       <h2>🚧 Servidor em manutenção</h2>
       <p>O banco de dados está temporariamente indisponível.</p>
       <p>Tentando reconectar automaticamente...</p>
     `;
-    setTimeout(testarSupabase, 5000);
+    tentandoReconectar = false;
+    setTimeout(testarSupabase, 5000); // Tenta de novo em 5s
   }
 }
 
-// 3. Roda o teste 2 segundos depois de carregar a página
-setTimeout(testarSupabase, 2000);
+// Roda o teste assim que a página carregar
+testarSupabase();
+
+// Se qualquer fetch do Supabase falhar, mostra manutenção de novo
+const originalFetch = window.fetch;
+window.fetch = async (...args) => {
+  try {
+    const response = await originalFetch(...args);
+    if (args[0]?.includes?.('supabase.co') &&!response.ok) {
+      testarSupabase();
+    }
+    return response;
+  } catch (error) {
+    if (args[0]?.includes?.('supabase.co')) {
+      testarSupabase();
+    }
+    throw error;
+  }
+};
     const TAXA_FIXA = 0.40
     const TAXA_PERCENT = 0.0099
     const KEEP_ALIVE_ID = '00000000-0000-0000-0000-000000000001'
