@@ -126,41 +126,77 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh'
     const SUPABASE_FUNCTION_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pZWR3anl6dm1rZ3dmZHdoYWNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MzQ0MTIsImV4cCI6MjA3MDAxMDQxMn0.pIr6g27ClVzWQhVbcnpH4nvkVskzUJOCzzX14xWEhKg'
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-// Timeout de segurança pra não travar no "Conectando..."
-const timeoutSupabase = setTimeout(() => {
-  document.querySelector('#conectando').style.display = 'none';
-  document.querySelector('#login').style.display = 'none'; 
-  document.querySelector('#painel').style.display = 'none';
+// Função pra mostrar/esconder tela offline
+function toggleOffline(telaOffline) {
+  const existe = document.querySelector('#tela-offline');
   
-  // Mostra tela offline
-  const offline = document.createElement('div');
-  offline.innerHTML = `
-    <div style="text-align:center; padding:40px; font-family:sans-serif;">
-      <h2>🚧 Servidor em manutenção</h2>
-      <p>Nosso banco de dados está passando por manutenção.</p>
-      <p>Tente novamente em alguns minutos.</p>
-      <button onclick="location.reload()" style="padding:10px 20px; margin-top:20px;">
-        Tentar novamente
-      </button>
-    </div>
-  `;
-  document.body.appendChild(offline);
-}, 3000); // 3 segundos
+  if (telaOffline &&!existe) {
+    document.querySelector('#conectando')?.style.display = 'none';
+    document.querySelector('#login')?.style.display = 'none'; 
+    document.querySelector('#painel')?.style.display = 'none';
+    
+    const offline = document.createElement('div');
+    offline.id = 'tela-offline';
+    offline.innerHTML = `
+      <div style="text-align:center; padding:40px; font-family:sans-serif;">
+        <h2>🚧 Servidor em manutenção</h2>
+        <p>O banco de dados está temporariamente indisponível.</p>
+        <p>Recarregando automaticamente...</p>
+      </div>
+    `;
+    document.body.appendChild(offline);
+    
+    // Tenta reconectar a cada 10s
+    window.reconnectInterval = setInterval(() => {
+      location.reload();
+    }, 10000);
+    
+  } else if (!telaOffline && existe) {
+    existe.remove();
+    clearInterval(window.reconnectInterval);
+  }
+}
 
-// Se o Supabase conectar, cancela o timeout
+// Timeout inicial: se demorar 3s pra conectar, mostra offline
+const timeoutSupabase = setTimeout(() => toggleOffline(true), 3000);
+
+// Monitora conexão do Supabase
 _supabase.auth.onAuthStateChange((event, session) => {
-  clearTimeout(timeoutSupabase); // Conectou, cancela a tela offline
+  clearTimeout(timeoutSupabase);
   
   if (session) {
-    // mostra painel logado
-    document.querySelector('#conectando').style.display = 'none';
-    document.querySelector('#painel').style.display = 'block';
+    toggleOffline(false); // Conectou, some com tela offline
+    document.querySelector('#conectando')?.style.display = 'none';
+    document.querySelector('#painel')?.style.display = 'block';
   } else {
-    // mostra login
-    document.querySelector('#conectando').style.display = 'none';
-    document.querySelector('#login').style.display = 'block';
+    toggleOffline(false);
+    document.querySelector('#conectando')?.style.display = 'none';
+    document.querySelector('#login')?.style.display = 'block';
   }
 });
+
+// Intercepta TODAS as chamadas do Supabase pra detectar erro de rede
+const originalFetch = window.fetch;
+window.fetch = async (...args) => {
+  try {
+    const response = await originalFetch(...args);
+    
+    // Se for chamada do Supabase e der erro 500/503/timeout
+    if (args[0]?.includes?.('supabase.co') &&!response.ok) {
+      toggleOffline(true);
+    } else if (args[0]?.includes?.('supabase.co') && response.ok) {
+      toggleOffline(false); // Voltou, some com tela
+    }
+    
+    return response;
+  } catch (error) {
+    // Erro de rede: Supabase caiu
+    if (args[0]?.includes?.('supabase.co')) {
+      toggleOffline(true);
+    }
+    throw error;
+  }
+};
     const TAXA_FIXA = 0.40
     const TAXA_PERCENT = 0.0099
     const KEEP_ALIVE_ID = '00000000-0000-0000-0000-000000000001'
