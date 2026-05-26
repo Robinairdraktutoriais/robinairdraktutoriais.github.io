@@ -7,7 +7,7 @@ import schedule
 import random
 
 TELEGRAM_TOKEN = 'SEU_TOKEN_DO_BOTFATHER'
-CANAL_ID = '@seucanalofertas'
+CANAL_ID = 'https://t.me/afiliadosshopeebrl'
 
 # Pega esses dados no painel Shopee Afiliados > API
 PARTNER_ID = 12345678  # Seu Partner ID
