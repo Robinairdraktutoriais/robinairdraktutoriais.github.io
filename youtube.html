@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>YouTube Lite - Sem Anúncios</title>
+  <meta name="theme-color" content="#0f0f0f">
+  <title>YouTube Lite</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -55,13 +56,13 @@
   </style>
   
   <script>
-    // Contador de 3s pra dar tempo de ler
     let tempo = 3;
     function atualizar() {
       document.getElementById('contador').innerText = tempo;
       tempo--;
       if (tempo < 0) {
-        window.location.replace("https://www.youtube.com");
+        // Força o YouTube a abrir no modo escuro
+        window.location.replace("https://www.youtube.com/?theme=dark&app=m");
       } else {
         setTimeout(atualizar, 1000);
       }
@@ -83,7 +84,7 @@
   </div>
   
   <p class="info">
-    Este projeto é gratuito. Apoie para mantermos os servidores e removermos anúncios no app.
+    Este projeto é gratuito. Apoie para mantermos os servidores.
   </p>
 </body>
 </html>
