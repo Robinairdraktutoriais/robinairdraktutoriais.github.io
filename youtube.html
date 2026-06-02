@@ -1,31 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  body { margin:0; overflow:hidden; }
-  #apoio { position:fixed; bottom:10px; right:10px; z-index:9999; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>YouTube Lite</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0f0f0f;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    .loader {
+      border: 4px solid #333;
+      border-top: 4px solid #ff0000;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .apoio {
+      position: fixed;
+      bottom: 20px;
+      background: #FF5F5F;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 14px;
+    }
+  </style>
+  
+  <script>
+    // Redireciona pro YouTube depois de 1 segundo
+    setTimeout(function() {
+      window.location.replace("https://www.youtube.com");
+    }, 1000);
+  </script>
 </head>
 <body>
-
-<iframe id="yt" src="https://www.youtube.com" style="width:100%; height:100vh; border:none;"></iframe>
-
-<div id="apoio">
-  <a href="https://ko-fi.com/teuusuario" target="_blank">
-    <img src="apoiar.png" width="120">
+  <div class="loader"></div>
+  <p>Carregando YouTube Lite...</p>
+  
+  <a href="https://www.pixme.bio/SEU-USUARIO" class="apoio">
+    ❤️ Apoiar projeto via Pix
   </a>
-</div>
-
-<script>
-// Tenta esconder anúncios a cada 2s
-setInterval(() => {
-  try {
-    let frame = document.getElementById('yt').contentWindow.document;
-    frame.querySelectorAll('.ytp-ad-module, #player-ads').forEach(el => el.remove());
-  } catch(e) {}
-}, 2000);
-</script>
-
 </body>
 </html>
