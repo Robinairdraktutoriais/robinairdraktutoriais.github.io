@@ -3,58 +3,87 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>YouTube Lite</title>
+  <title>YouTube Lite - Sem Anúncios</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #0f0f0f;
       color: #fff;
-      font-family: Arial, sans-serif;
+      font-family: 'Roboto', Arial, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       flex-direction: column;
+      text-align: center;
+      padding: 20px;
     }
+    .logo { font-size: 28px; font-weight: bold; margin-bottom: 10px; }
+    .logo span { color: #ff0000; }
+    .sub { color: #aaa; margin-bottom: 30px; font-size: 14px; }
     .loader {
-      border: 4px solid #333;
-      border-top: 4px solid #ff0000;
+      border: 3px solid #333;
+      border-top: 3px solid #ff0000;
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin-bottom: 20px;
+      width: 35px;
+      height: 35px;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 30px;
     }
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
     .apoio {
-      position: fixed;
-      bottom: 20px;
-      background: #FF5F5F;
+      background: #00c851;
       color: #fff;
-      padding: 12px 24px;
-      border-radius: 25px;
+      padding: 14px 28px;
+      border-radius: 8px;
       text-decoration: none;
       font-weight: bold;
-      font-size: 14px;
+      font-size: 15px;
+      margin: 5px;
+      display: inline-block;
+    }
+    .info {
+      position: fixed;
+      bottom: 15px;
+      font-size: 11px;
+      color: #666;
+      max-width: 300px;
     }
   </style>
   
   <script>
-    // Redireciona pro YouTube depois de 1 segundo
-    setTimeout(function() {
-      window.location.replace("https://www.youtube.com");
-    }, 1000);
+    // Contador de 3s pra dar tempo de ler
+    let tempo = 3;
+    function atualizar() {
+      document.getElementById('contador').innerText = tempo;
+      tempo--;
+      if (tempo < 0) {
+        window.location.replace("https://www.youtube.com");
+      } else {
+        setTimeout(atualizar, 1000);
+      }
+    }
+    window.onload = atualizar;
   </script>
 </head>
 <body>
-  <div class="loader"></div>
-  <p>Carregando YouTube Lite...</p>
+  <div class="logo">YouTube <span>Lite</span></div>
+  <p class="sub">Versão otimizada e mantida pela comunidade</p>
   
-  <a href="https://www.pixme.bio/SEU-USUARIO" class="apoio">
-    ❤️ Apoiar projeto via Pix
-  </a>
+  <div class="loader"></div>
+  <p>Entrando em <span id="contador">3</span>s...</p>
+  
+  <div style="margin-top: 40px;">
+    <a href="https://livepix.gg/SEU-USUARIO" class="apoio">
+      💚 Apoiar com Pix
+    </a>
+  </div>
+  
+  <p class="info">
+    Este projeto é gratuito. Apoie para mantermos os servidores e removermos anúncios no app.
+  </p>
 </body>
 </html>
