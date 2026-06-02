@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { margin:0; overflow:hidden; }
+  #apoio { position:fixed; bottom:10px; right:10px; z-index:9999; }
+</style>
+</head>
+<body>
+
+<iframe id="yt" src="https://www.youtube.com" style="width:100%; height:100vh; border:none;"></iframe>
+
+<div id="apoio">
+  <a href="https://ko-fi.com/teuusuario" target="_blank">
+    <img src="apoiar.png" width="120">
+  </a>
+</div>
+
+<script>
+// Tenta esconder anúncios a cada 2s
+setInterval(() => {
+  try {
+    let frame = document.getElementById('yt').contentWindow.document;
+    frame.querySelectorAll('.ytp-ad-module, #player-ads').forEach(el => el.remove());
+  } catch(e) {}
+}, 2000);
+</script>
+
+</body>
+</html>
