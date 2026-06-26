@@ -2,65 +2,95 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Ofertas do Dia</title>
+  <title>Ofertas Imperdíveis</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Fonte bonita -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
 
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
+      font-family: 'Poppins', sans-serif;
+      background: #f0f2f5;
       margin: 0;
-      padding: 0;
     }
 
     header {
-      background: #2ecc71;
+      background: linear-gradient(90deg, #2ecc71, #27ae60);
       color: white;
-      padding: 15px;
+      padding: 20px;
       text-align: center;
-      font-size: 22px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .topo-sub {
+      text-align: center;
+      color: #555;
+      padding: 10px;
+      font-size: 14px;
     }
 
     .container {
       padding: 15px;
+      max-width: 600px;
+      margin: auto;
     }
 
-    .produto {
+    .card {
       background: white;
+      border-radius: 12px;
       padding: 15px;
       margin-bottom: 15px;
-      border-radius: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      transition: 0.2s;
     }
 
-    .produto h2 {
-      margin: 0 0 10px;
+    .card:hover {
+      transform: scale(1.02);
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 18px;
     }
 
     .preco {
       color: #e74c3c;
-      font-size: 20px;
+      font-size: 22px;
       font-weight: bold;
+      margin: 10px 0;
     }
 
     .botao {
-      display: inline-block;
-      margin-top: 10px;
+      display: block;
+      text-align: center;
       background: #3498db;
       color: white;
       padding: 10px;
-      border-radius: 5px;
+      border-radius: 8px;
       text-decoration: none;
+      font-weight: bold;
     }
 
     .botao:hover {
       background: #2980b9;
     }
 
+    .badge {
+      background: #ffcc00;
+      color: black;
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 5px;
+      display: inline-block;
+      margin-bottom: 5px;
+    }
+
     footer {
       text-align: center;
-      padding: 10px;
-      font-size: 14px;
+      padding: 15px;
+      font-size: 13px;
       color: #777;
     }
   </style>
@@ -69,33 +99,45 @@
 <body>
 
 <header>
-  🛒 Ofertas do Dia - Economize Agora
+  🛒 Ofertas Imperdíveis
 </header>
+
+<div class="topo-sub">
+  Promoções atualizadas todos os dias 🔥
+</div>
 
 <div class="container">
 
-  <div class="produto">
+  <div class="card">
+    <span class="badge">🔥 Oferta do dia</span>
     <h2>Arroz 5kg</h2>
     <p class="preco">R$ 19,90</p>
-    <a class="botao" href="#">Ver Oferta</a>
+    <a class="botao" href="#">Ver oferta</a>
   </div>
 
-  <div class="produto">
+  <div class="card">
+    <span class="badge">💥 Super desconto</span>
     <h2>Óleo de Soja 900ml</h2>
     <p class="preco">R$ 4,99</p>
-    <a class="botao" href="#">Ver Oferta</a>
+    <a class="botao" href="#">Ver oferta</a>
   </div>
 
-  <div class="produto">
+  <div class="card">
+    <span class="badge">🛍️ Mais vendido</span>
     <h2>Feijão 1kg</h2>
     <p class="preco">R$ 6,49</p>
-    <a class="botao" href="#">Ver Oferta</a>
+    <a class="botao" href="#">Ver oferta</a>
+  </div>
+
+  <!-- ESPAÇO PARA ANÚNCIO -->
+  <div style="margin:20px 0; text-align:center;">
+    <!-- COLE AQUI O CÓDIGO DO ADSENSE -->
   </div>
 
 </div>
 
 <footer>
-  Site de ofertas atualizado diariamente
+  © 2026 - Site de ofertas | Economize sempre 💰
 </footer>
 
 </body>
