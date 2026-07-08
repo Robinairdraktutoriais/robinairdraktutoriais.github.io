@@ -1,0 +1,1 @@
+241|2.4.1|https://github.com/seuuser/mod/releases/download/v2.4.1/app.apk|Correcao de bugs-Novo tema AMOLED-Login corrigido|false
