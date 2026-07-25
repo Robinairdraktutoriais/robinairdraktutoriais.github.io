@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Redirecionando...</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- AQUI VOCÊ COLA SEU CÓDIGO DA MONETAG / ADSTERRA -->
+  <script src="COLA SEU LINK DA MONETAG AQUI"></script>
+  <style>
+    body{font-family:Arial;background:#111;color:#fff;text-align:center;padding:40px}
+    #timer{font-size:60px;margin:20px}
+    button{padding:15px 30px;font-size:18px;background:#00ff88;border:none;border-radius:10px}
+  </style>
+</head>
+<body>
+  <h2>Seu link está quase pronto...</h2>
+  <p>Aguarde <span id="timer">5</span> segundos</p>
+
+  <!-- AQUI FICA O BANNER DO SEU ANÚNCIO -->
+  <div id="anuncio" style="margin:20px 0;background:#222;padding:20px">ANÚNCIO AQUI</div>
+
+  <button id="btn" style="display:none">CONTINUAR</button>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const codigo = params.get('c');
+
+  fetch('links.json')
+   .then(r => r.json())
+   .then(links => {
+      const destino = links[codigo];
+      if(!destino){ document.body.innerHTML = "Link não encontrado"; return; }
+
+      let tempo = 5;
+      const intervalo = setInterval(()=>{
+        tempo--;
+        document.getElementById('timer').innerText = tempo;
+        if(tempo <= 0){
+          clearInterval(intervalo);
+          document.getElementById('btn').style.display = 'block';
+          document.getElementById('timer').innerText = "0";
+        }
+      },1000);
+
+      document.getElementById('btn').onclick = () => {
+        window.location.href = destino;
+      }
+    });
+</script>
+</body>
+</html>
