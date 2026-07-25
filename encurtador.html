@@ -1,50 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Redirecionando...</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- AQUI VOCÊ COLA SEU CÓDIGO DA MONETAG / ADSTERRA -->
-  <script src="COLA SEU LINK DA MONETAG AQUI"></script>
-  <style>
-    body{font-family:Arial;background:#111;color:#fff;text-align:center;padding:40px}
-    #timer{font-size:60px;margin:20px}
-    button{padding:15px 30px;font-size:18px;background:#00ff88;border:none;border-radius:10px}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redirecionando...</title>
+<style>
+ body{font-family:Arial;background:#111;color:#fff;text-align:center;padding:30px}
+ #timer{font-size:60px}
+ button{padding:15px 30px;font-size:18px;background:#00ff88;border:none;border-radius:10px;margin-top:20px}
+</style>
 </head>
 <body>
-  <h2>Seu link está quase pronto...</h2>
-  <p>Aguarde <span id="timer">5</span> segundos</p>
-
-  <!-- AQUI FICA O BANNER DO SEU ANÚNCIO -->
-  <div id="anuncio" style="margin:20px 0;background:#222;padding:20px">ANÚNCIO AQUI</div>
-
-  <button id="btn" style="display:none">CONTINUAR</button>
+<h2 id="msg">Carregando link...</h2>
+<p>Aguarde <span id="timer">5</span>s</p>
+<button id="btn" style="display:none">CONTINUAR</button>
+<p id="debug" style="color:#888;font-size:12px;margin-top:30px"></p>
 
 <script>
-  const params = new URLSearchParams(window.location.search);
-  const codigo = params.get('c');
+// SEUS LINKS AQUI DIRETO - SEM PRECISAR DE links.json
+const links = {
+  "zap": "https://wa.me/5500000000000",
+  "teste": "https://google.com",
+  "insta": "https://instagram.com/rtmods23"
+};
 
-  fetch('links.json')
-   .then(r => r.json())
-   .then(links => {
-      const destino = links[codigo];
-      if(!destino){ document.body.innerHTML = "Link não encontrado"; return; }
+const params = new URLSearchParams(window.location.search);
+const codigo = params.get('c');
 
-      let tempo = 5;
-      const intervalo = setInterval(()=>{
-        tempo--;
-        document.getElementById('timer').innerText = tempo;
-        if(tempo <= 0){
-          clearInterval(intervalo);
-          document.getElementById('btn').style.display = 'block';
-          document.getElementById('timer').innerText = "0";
-        }
-      },1000);
+document.getElementById('debug').innerText = `Código recebido: "${codigo}" | Links disponíveis: ${Object.keys(links).join(', ')}`;
 
-      document.getElementById('btn').onclick = () => {
-        window.location.href = destino;
-      }
-    });
+if(!codigo){
+  document.getElementById('msg').innerText = 'Nenhum código! Use?c=zap no final do link';
+} else if(!links[codigo]){
+  document.getElementById('msg').innerText = `Link "${codigo}" não encontrado`;
+} else {
+  const destino = links[codigo];
+  document.getElementById('msg').innerText = 'Seu link está quase pronto!';
+  let tempo = 5;
+  const intervalo = setInterval(()=>{
+    tempo--;
+    document.getElementById('timer').innerText = tempo;
+    if(tempo<=0){
+      clearInterval(intervalo);
+      document.getElementById('btn').style.display='block';
+    }
+  },1000);
+  document.getElementById('btn').onclick = ()=> window.location.href = destino;
+}
 </script>
 </body>
 </html>
