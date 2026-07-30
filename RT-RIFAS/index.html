@@ -4,9 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RT RIFAS - Supabase V4 (Key Nova)</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
-<style>body{font-family:'Outfit',sans-serif}.num{transition:.15s}.num:active{transform:scale(.9)}</style>
+<style>
+  body{font-family:'Outfit',sans-serif; background:#0f0f12; color:white}
+ .num{transition:.15s}
+ .num:active{transform:scale(.9)}
+ .line-clamp-1{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+</style>
 </head>
 <body class="bg-[#0f0f12] text-white min-h-screen">
 <div id="app"></div>
@@ -14,7 +20,7 @@
 // === CONFIG CORRIGIDO COM A NOVA KEY ===
 const SUPABASE_URL = "https://euwxrrqbfyhocqitbjtb.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_BeKGb9qgbH7kYV4VrB9G1Q_pT76F08h";
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let user=null, rifas=[], currentRifa=null, numeros=[], selecionados=new Set(), view='home';
 
@@ -97,7 +103,6 @@ function renderLogin(){
     <button onclick="doLogin()" class="w-full bg-violet-600 p-3 rounded-xl font-bold mb-3">Entrar</button>
     <button onclick="doCadastro()" class="w-full bg-white/10 p-3 rounded-xl font-bold">Cadastrar</button>
     <p id="authMsg" class="text-xs text-center mt-4 text-white/40 min-h-[16px]"></p>
-    <p class="text-[10px] text-white/20 text-center mt-2">Key: ${SUPABASE_ANON_KEY.slice(0,20)}...</p>
   </div>`;
 }
 
@@ -110,12 +115,12 @@ function renderCriar(){
   if(!user){loginView(); return '';}
   return `<div class="max-w-xl mx-auto bg-[#1a1a20] p-6 md:p-8 rounded-[24px] border border-white/10">
     <h1 class="text-2xl font-black mb-6">Criar Nova Rifa</h1>
-    <input id="c_titulo" placeholder="Ex: Kit M10 30 números" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 mb-3">
+    <input id="c_titulo" placeholder="Ex: Fone de ouvido bluetooth m10" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 mb-3">
     <input id="c_foto" placeholder="Link da foto (https://)" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 mb-3">
-    <div class="grid grid-cols-2 gap-3 mb-3"><select id="c_qtd" class="bg-black/50 border border-white/10 rounded-xl p-3"><option value="10">10 números</option><option value="30" selected>30 números</option><option value="50">50</option><option value="100">100</option><option value="200">200</option><option value="500">500</option></select><input id="c_valor" type="number" step="0.01" value="5" placeholder="Valor R$" class="bg-black/50 border border-white/10 rounded-xl p-3"></div>
+    <div class="grid grid-cols-2 gap-3 mb-3"><select id="c_qtd" class="bg-black/50 border border-white/10 rounded-xl p-3"><option value="10">10 números</option><option value="30" selected>30 números</option><option value="50">50</option><option value="100">100</option><option value="200">200</option><option value="500">500</option></select><input id="c_valor" type="number" step="0.01" value="4" placeholder="Valor R$" class="bg-black/50 border border-white/10 rounded-xl p-3"></div>
     <textarea id="c_desc" placeholder="Descrição do prêmio" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 mb-3"></textarea>
     <input id="c_pix" placeholder="Sua chave PIX (vai direto pra você)" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 mb-3">
-    <input id="c_whats" placeholder="Seu WhatsApp com DDD ex: 38999999999" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 mb-4">
+    <input id="c_whats" placeholder="Seu WhatsApp com DDD ex: 38999146450" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 mb-4">
     <button onclick="doCriar()" id="btnCriar" class="w-full bg-violet-600 p-4 rounded-xl font-black text-lg">CRIAR NO SUPABASE</button>
   </div>`;
 }
@@ -175,9 +180,9 @@ async function doCadastro(){
   const {data,error}=await supabaseClient.auth.signUp({email,password:senha});
   if(error){ msg.innerText='Erro: '+error.message; return; }
   if(data.user){
-    try { await supabaseClient.from('profiles').insert({id:data.user.id,email}); } catch(e){ console.log('profiles opcional', e) }
+    try { await supabaseClient.from('profiles').insert({id:data.user.id,email}); } catch(e){}
   }
-  msg.innerText='Cadastro ok! Se ativou confirmação de email, olhe seu Gmail. Já pode clicar em Entrar.';
+  msg.innerText='Cadastro ok! Já pode clicar em Entrar.';
   msg.className='text-xs text-center mt-4 text-green-400';
 }
 
@@ -201,7 +206,6 @@ async function doCriar(){
 }
 
 function toggleNum(n){if(selecionados.has(n)) selecionados.delete(n); else selecionados.add(n); render();}
-
 async function reservar(){
   if(!selecionados.size) return alert('Selecione números');
   const nome=document.getElementById('b_nome').value; const whats=document.getElementById('b_whats').value;
@@ -212,23 +216,19 @@ async function reservar(){
   document.getElementById('modal').innerHTML=`<div class="min-h-screen bg-black/80 flex items-center justify-center p-4"><div class="bg-[#1a1a20] p-8 rounded-[24px] max-w-sm w-full border border-white/10 text-center"><div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">✓</div><h2 class="text-xl font-black">Reservado!</h2><p class="text-white/60 text-sm mt-2">Pague R$ ${total.toFixed(2)} no PIX</p><div class="mt-4 bg-black p-4 rounded-xl"><p class="text-xs text-white/40">CHAVE PIX</p><p class="font-mono break-all mt-1 text-sm">${currentRifa.pix}</p><button onclick="navigator.clipboard.writeText('${currentRifa.pix}');alert('PIX copiado!')" class="mt-3 w-full bg-white text-black py-2 rounded-full font-bold text-sm">Copiar PIX</button></div><a href="https://wa.me/55${currentRifa.whatsapp}?text=Reservei%20${nums.length}%20numeros%20na%20${encodeURIComponent(currentRifa.titulo)}" target="_blank" class="block mt-3 w-full bg-green-600 p-3 rounded-xl font-bold">WhatsApp Dono</a><button onclick="document.getElementById('modal').classList.add('hidden')" class="mt-3 text-white/50 text-sm">Fechar</button></div></div>`;
   document.getElementById('modal').classList.remove('hidden'); await loadNumeros(currentRifa.id);
 }
-
 async function abrirGerenciar(rifaId){
   const div=document.getElementById('ger-'+rifaId); div.classList.toggle('hidden'); if(div.classList.contains('hidden')) return;
   div.innerHTML='Carregando...'; const {data}=await supabaseClient.from('numeros').select('*').eq('rifa_id',rifaId).order('numero');
   div.innerHTML=`<div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">${data.map(n=>`<div class="bg-black/40 p-2 rounded-xl text-xs"><b>${String(n.numero).padStart(2,'0')}</b> - ${n.status}<br>${n.comprador_nome||'-'}<div class="flex gap-1 mt-1"><button onclick="mudarStatus('${rifaId}',${n.numero},'pago')" class="bg-green-600 px-2 py-1 rounded">Pago</button><button onclick="mudarStatus('${rifaId}',${n.numero},'disponivel')" class="bg-white/10 px-2 py-1 rounded">Liberar</button></div></div>`).join('')}</div><button onclick="sortear('${rifaId}')" class="mt-4 w-full bg-violet-600 p-3 rounded-xl font-bold">Sortear Vencedor</button>`;
 }
-
 async function mudarStatus(rifaId,numero,status){
   let upd={status}; if(status==='disponivel') upd={status,comprador_nome:null,comprador_whats:null};
   await supabaseClient.from('numeros').update(upd).eq('rifa_id',rifaId).eq('numero',numero); abrirGerenciar(rifaId); setTimeout(()=>abrirGerenciar(rifaId),300);
 }
-
 async function sortear(rifaId){
   const {data}=await supabaseClient.from('numeros').select('*').eq('rifa_id',rifaId).in('status',['pago','reservado']);
   if(!data.length) return alert('Nenhum vendido'); const v=data[Math.floor(Math.random()*data.length)]; alert(`VENCEDOR: Nº ${v.numero} - ${v.comprador_nome} - ${v.comprador_whats}`);
 }
-
 init();
 </script>
 </body>
