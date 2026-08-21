@@ -12,6 +12,8 @@
 .num{transition:.15s}
 .num:active{transform:scale(.9)}
 .line-clamp-1{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+@keyframes spin{to{transform:rotate(360deg)}}
+.animate-spin{animation:spin 1s linear infinite}
 </style>
 </head>
 <body class="bg-[#0f0f12] text-white min-h-screen">
@@ -23,8 +25,17 @@ const SUPABASE_ANON_KEY = "sb_publishable_BeKGb9qgbH7kYV4VrB9G1Q_pT76F08h";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let user=null, rifas=[], currentRifa=null, numeros=[], selecionados=new Set(), view='home';
+let realtimeChannel = null;
 
 async function init(){
+  document.getElementById('app').innerHTML = `
+    <div class="min-h-screen flex items-center justify-center">
+      <div class="text-center">
+        <div class="w-12 h-12 border-4 border-violet-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <p class="text-white/50 mt-4 text-sm">Carregando rifas...</p>
+      </div>
+    </div>
+  `;
   const {data}=await supabaseClient.auth.getSession();
   user=data.session?.user||null;
   supabaseClient.auth.onAuthStateChange((e,s)=>{
@@ -50,7 +61,12 @@ function checkHash(){
 }
 
 async function loadRifas(){
-  const {data, error}=await supabaseClient.from('rifas').select('*').eq('status','ativa').order('created_at',{ascending:false});
+  const {data, error}=await supabaseClient
+  .from('rifas')
+  .select('id,titulo,foto,total_numeros,valor,status,created_at')
+  .eq('status','ativa')
+  .order('created_at',{ascending:false})
+  .limit(12);
   if(error) console.log('Erro loadRifas', error.message);
   if(data) rifas=data;
   render();
@@ -61,13 +77,36 @@ async function loadRifa(id){
   const {data}=await supabaseClient.from('rifas').select('*').eq('id',id).single();
   if(!data){alert('Rifa não encontrada'); location.hash=''; return;}
   currentRifa=data;
+  if(realtimeChannel) {
+    await supabaseClient.removeChannel(realtimeChannel);
+    realtimeChannel = null;
+  }
   await loadNumeros(id);
-  supabaseClient.channel('rifa-'+id).on('postgres_changes',{event:'*',schema:'public',table:'numeros',filter:`rifa_id=eq.${id}`},()=>loadNumeros(id)).subscribe();
+  realtimeChannel = supabaseClient.channel('rifa-'+id)
+  .on('postgres_changes',{
+      event:'UPDATE',
+      schema:'public',
+      table:'numeros',
+      filter:`rifa_id=eq.${id}`
+    },(payload)=>{
+      const idx = numeros.findIndex(n => n.numero === payload.new.numero);
+      if(idx >= 0) {
+        numeros[idx] = payload.new;
+        render();
+      }
+    })
+  .subscribe();
 }
 
 async function loadNumeros(rifaId){
-  const {data}=await supabaseClient.from('numeros').select('*').eq('rifa_id',rifaId).order('numero');
-  numeros=data||[]; render();
+  const {data}=await supabaseClient
+  .from('numeros')
+  .select('*')
+  .eq('rifa_id',rifaId)
+  .order('numero')
+  .limit(500);
+  numeros=data||[];
+  render();
 }
 
 async function loadMeuPainel(){
@@ -108,7 +147,26 @@ function renderLogin(){
 
 function renderHome(){
   if(!rifas.length) return `<div class="text-center mt-20"><h2 class="text-2xl font-bold">Nenhuma rifa ativa</h2><p class="text-white/50 mt-2">Crie a primeira no seu banco real</p><button onclick="criarView()" class="mt-6 bg-violet-600 px-8 py-3 rounded-full font-bold">+ Criar Rifa</button></div>`;
-  return `<h1 class="text-3xl font-black mb-6">Rifas Ativas • ${rifas.length}</h1><div class="grid md:grid-cols-3 gap-4">${rifas.map(r=>`<div onclick="location.hash='#rifa/${r.id}'" class="cursor-pointer bg-[#1a1a20] rounded-[20px] overflow-hidden border border-white/5 hover:border-violet-600/50 transition"><img src="${r.foto||'https://images.unsplash.com/photo-1607083206968-13611e3d76db?w=400'}" class="w-full h-48 object-cover"><div class="p-4"><h3 class="font-bold line-clamp-1">${r.titulo}</h3><p class="text-xs text-white/50 mt-1">${r.total_numeros} números • R$ ${Number(r.valor).toFixed(2)}/nº</p><div class="mt-3 flex justify-between items-center"><span class="text-violet-400 font-bold text-sm">Ver rifa →</span><span class="text-[10px] bg-white/10 px-2 py-1 rounded-full">${r.status}</span></div></div></div>`).join('')}</div>`;
+  return `<h1 class="text-3xl font-black mb-6">Rifas Ativas • ${rifas.length}</h1>
+  <div class="grid md:grid-cols-3 gap-4">
+    ${rifas.map(r=>`
+    <div onclick="location.hash='#rifa/${r.id}'" class="cursor-pointer bg-[#1a1a20] rounded-[20px] overflow-hidden border border-white/5 hover:border-violet-600/50 transition">
+      <img
+        src="${r.foto||'https://images.unsplash.com/photo-1607083206968-13611e3d76db?w=400'}"
+        class="w-full h-48 object-cover"
+        loading="lazy"
+        onerror="this.src='https://images.unsplash.com/photo-1607083206968-13611e3d76db?w=400'"
+      >
+      <div class="p-4">
+        <h3 class="font-bold line-clamp-1">${r.titulo}</h3>
+        <p class="text-xs text-white/50 mt-1">${r.total_numeros} números • R$ ${Number(r.valor).toFixed(2)}/nº</p>
+        <div class="mt-3 flex justify-between items-center">
+          <span class="text-violet-400 font-bold text-sm">Ver rifa →</span>
+          <span class="text-[10px] bg-white/10 px-2 py-1 rounded-full">${r.status}</span>
+        </div>
+      </div>
+    </div>`).join('')}
+  </div>`;
 }
 
 function renderCriar(){
@@ -206,8 +264,6 @@ async function doCriar(){
 }
 
 function toggleNum(n){if(selecionados.has(n)) selecionados.delete(n); else selecionados.add(n); render();}
-
-// === FUNÇÃO ALTERADA: AGORA CHAMA EDGE FUNCTION E GERA PIX ===
 async function reservar(){
   if(!selecionados.size) return alert('Selecione números');
   const nome=document.getElementById('b_nome').value.trim();
