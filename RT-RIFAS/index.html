@@ -21,7 +21,7 @@
 <body class="bg-[#0f0f12] text-white min-h-screen">
 <div id="app"></div>
 <script>
-// === CONFIG ===
+// === CONFIG - SEM BARRA NO FINAL ===
 const SUPABASE_URL = "https://euwxrrqbfyhocqitbjtb.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_BeKGb9qgbH7kYV4VrB9G1Q_pT76F08h";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -215,14 +215,28 @@ function loginView(){ view='login'; location.hash='#login'; render(); }
 function criarView(){ view='criar'; location.hash='#criar'; render(); }
 function painelView(){ view='painel'; location.hash='#painel'; loadMeuPainel(); }
 
+// LOGIN COM TRATAMENTO DE ERRO MELHOR
 async function doLogin(){
   const email=document.getElementById('email').value.trim();
   const senha=document.getElementById('senha').value;
   const msg=document.getElementById('authMsg');
   msg.innerText='Entrando...';
-  const {error}=await supabaseClient.auth.signInWithPassword({email,password:senha});
-  if(error) msg.innerText='Erro: '+error.message;
-  else { msg.innerText='Logado!'; location.hash=''; view='home'; await loadRifas(); render();}
+  msg.className='text-xs text-center mt-4 text-white/40';
+
+  try {
+    const {data, error}=await supabaseClient.auth.signInWithPassword({email,password:senha});
+    if(error) throw error;
+    msg.innerText='Logado!';
+    msg.className='text-xs text-center mt-4 text-green-400';
+    location.hash='';
+    view='home';
+    await loadRifas();
+    render();
+  } catch(err) {
+    console.log('Erro completo:', err);
+    msg.innerText='Erro: ' + (err.message || 'Falha de conexão. Verifique CORS/URL no Supabase');
+    msg.className='text-xs text-center mt-4 text-red-400';
+  }
 }
 
 async function doCadastro(){
@@ -231,13 +245,18 @@ async function doCadastro(){
   const msg=document.getElementById('authMsg');
   if(!email ||!senha){ msg.innerText='Digite email e senha (min 6)'; return; }
   msg.innerText='Cadastrando...';
-  const {data,error}=await supabaseClient.auth.signUp({email,password:senha});
-  if(error){ msg.innerText='Erro: '+error.message; return; }
-  if(data.user){
-    try { await supabaseClient.from('profiles').insert({id:data.user.id,email}); } catch(e){}
+  try {
+    const {data,error}=await supabaseClient.auth.signUp({email,password:senha});
+    if(error) throw error;
+    if(data.user){
+      try { await supabaseClient.from('profiles').insert({id:data.user.id,email}); } catch(e){console.log('Erro profile:', e)}
+    }
+    msg.innerText='Cadastro ok! Já pode clicar em Entrar.';
+    msg.className='text-xs text-center mt-4 text-green-400';
+  } catch(err) {
+    msg.innerText='Erro: '+err.message;
+    msg.className='text-xs text-center mt-4 text-red-400';
   }
-  msg.innerText='Cadastro ok! Já pode clicar em Entrar.';
-  msg.className='text-xs text-center mt-4 text-green-400';
 }
 
 async function logout(){await supabaseClient.auth.signOut(); user=null; location.hash=''; view='home'; render(); loadRifas();}
@@ -314,7 +333,7 @@ async function reservar(){
 async function abrirGerenciar(rifaId){
   const div=document.getElementById('ger-'+rifaId); div.classList.toggle('hidden'); if(div.classList.contains('hidden')) return;
   div.innerHTML='Carregando...'; const {data}=await supabaseClient.from('numeros').select('*').eq('rifa_id',rifaId).order('numero');
-  div.innerHTML=`<div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">${data.map(n=>`<div class="bg-black/40 p-2 rounded-xl text-xs"><b>${String(n.numero).padStart(2,'0')}</b> - ${n.status}<br>${n.comprador_nome||'-'}<div class="flex gap-1 mt-1"><button onclick="mudarStatus('${rifaId}',${n.numero},'pago')" class="bg-green-600 px-2 py-1 rounded">Pago</button><button onclick="mudarStatus('${rifaId}',${n.numero},'disponivel')" class="bg-white/10 px-2 py-1 rounded">Liberar</button></div>`).join('')}</div><button onclick="sortear('${rifaId}')" class="mt-4 w-full bg-violet-600 p-3 rounded-xl font-bold">Sortear Vencedor</button>`;
+  div.innerHTML=`<div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">${data.map(n=>`<div class="bg-black/40 p-2 rounded-xl text-xs"><b>${String(n.numero).padStart(2,'0')}</b> - ${n.status}<br>${n.comprador_nome||'-'}<div class="flex gap-1 mt-1"><button onclick="mudarStatus('${rifaId}',${n.numero},'pago')" class="bg-green-600 px-2 py-1 rounded">Pago</button><button onclick="mudarStatus('${rifaId}',${n.numero},'disponivel')" class="bg-white/10 px-2 py-1 rounded">Liberar</button></div></div>`).join('')}</div><button onclick="sortear('${rifaId}')" class="mt-4 w-full bg-violet-600 p-3 rounded-xl font-bold">Sortear Vencedor</button>`;
 }
 async function mudarStatus(rifaId,numero,status){
   let upd={status}; if(status==='disponivel') upd={status,comprador_nome:null,comprador_whats:null,pedido_id:null};
