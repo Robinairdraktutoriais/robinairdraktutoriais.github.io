@@ -14,6 +14,8 @@
 .line-clamp-1{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 @keyframes spin{to{transform:rotate(360deg)}}
 .animate-spin{animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.animate-pulse{animation:pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}
 </style>
 </head>
 <body class="bg-[#0f0f12] text-white min-h-screen">
@@ -26,27 +28,28 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 
 let user=null, rifas=[], currentRifa=null, numeros=[], selecionados=new Set(), view='home';
 let realtimeChannel = null;
+let loadingRifas = true;
 
 async function init(){
-  document.getElementById('app').innerHTML = `
-    <div class="min-h-screen flex items-center justify-center">
-      <div class="text-center">
-        <div class="w-12 h-12 border-4 border-violet-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-        <p class="text-white/50 mt-4 text-sm">Carregando rifas...</p>
-      </div>
-    </div>
-  `;
-  const {data}=await supabaseClient.auth.getSession();
-  user=data.session?.user||null;
-  supabaseClient.auth.onAuthStateChange((e,s)=>{
-    user=s?.user||null;
-    if(e==='SIGNED_IN'){ view='home'; location.hash=''; }
-    render();
-    if(user) loadRifas();
-  });
-  await loadRifas();
-  checkHash();
+  view = 'home';
   render();
+  try {
+    const {data} = await supabaseClient.auth.getSession();
+    user = data.session?.user || null;
+    supabaseClient.auth.onAuthStateChange((e,s)=>{
+      user=s?.user||null;
+      if(e==='SIGNED_IN'){ view='home'; location.hash=''; }
+      render();
+      if(user) loadRifas();
+    });
+    await loadRifas();
+    checkHash();
+    render();
+  } catch(err) {
+    console.log('Erro init:', err);
+    loadingRifas = false;
+    render();
+  }
 }
 
 window.addEventListener('hashchange', checkHash);
@@ -61,14 +64,19 @@ function checkHash(){
 }
 
 async function loadRifas(){
-  const {data, error}=await supabaseClient
-  .from('rifas')
-  .select('id,titulo,foto,total_numeros,valor,status,created_at')
-  .eq('status','ativa')
-  .order('created_at',{ascending:false})
-  .limit(12);
-  if(error) console.log('Erro loadRifas', error.message);
-  if(data) rifas=data;
+  loadingRifas = true;
+  render();
+  try {
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000));
+    const query = supabaseClient.from('rifas').select('id,titulo,foto,total_numeros,valor,status').eq('status','ativa').order('created_at',{ascending:false}).limit(8);
+    const {data, error} = await Promise.race([query, timeout]);
+    if(error) throw error;
+    rifas = data || [];
+  } catch(err) {
+    console.log('Erro/timeout loadRifas:', err.message);
+    rifas = [];
+  }
+  loadingRifas = false;
   render();
   if(view==='painel') loadMeuPainel();
 }
@@ -82,29 +90,14 @@ async function loadRifa(id){
     realtimeChannel = null;
   }
   await loadNumeros(id);
-  realtimeChannel = supabaseClient.channel('rifa-'+id)
-  .on('postgres_changes',{
-      event:'UPDATE',
-      schema:'public',
-      table:'numeros',
-      filter:`rifa_id=eq.${id}`
-    },(payload)=>{
+  realtimeChannel = supabaseClient.channel('rifa-'+id).on('postgres_changes',{event:'UPDATE',schema:'public',table:'numeros',filter:`rifa_id=eq.${id}`},(payload)=>{
       const idx = numeros.findIndex(n => n.numero === payload.new.numero);
-      if(idx >= 0) {
-        numeros[idx] = payload.new;
-        render();
-      }
-    })
-  .subscribe();
+      if(idx >= 0) {numeros[idx] = payload.new;render();}
+    }).subscribe();
 }
 
 async function loadNumeros(rifaId){
-  const {data}=await supabaseClient
-  .from('numeros')
-  .select('*')
-  .eq('rifa_id',rifaId)
-  .order('numero')
-  .limit(500);
+  const {data}=await supabaseClient.from('numeros').select('*').eq('rifa_id',rifaId).order('numero').limit(500);
   numeros=data||[];
   render();
 }
@@ -146,24 +139,27 @@ function renderLogin(){
 }
 
 function renderHome(){
+  if(loadingRifas) return `
+    <h1 class="text-3xl font-black mb-6">Rifas Ativas</h1>
+    <div class="grid md:grid-cols-3 gap-4">
+      ${Array(6).fill(0).map(()=>`
+        <div class="bg-[#1a1a20] rounded-[20px] overflow-hidden border border-white/5 animate-pulse">
+          <div class="w-full h-48 bg-white/5"></div>
+          <div class="p-4"><div class="h-4 bg-white/5 rounded w-3/4 mb-2"></div><div class="h-3 bg-white/5 rounded w-1/2"></div></div>
+        </div>
+      `).join('')}
+    </div>
+  `;
   if(!rifas.length) return `<div class="text-center mt-20"><h2 class="text-2xl font-bold">Nenhuma rifa ativa</h2><p class="text-white/50 mt-2">Crie a primeira no seu banco real</p><button onclick="criarView()" class="mt-6 bg-violet-600 px-8 py-3 rounded-full font-bold">+ Criar Rifa</button></div>`;
   return `<h1 class="text-3xl font-black mb-6">Rifas Ativas • ${rifas.length}</h1>
   <div class="grid md:grid-cols-3 gap-4">
     ${rifas.map(r=>`
     <div onclick="location.hash='#rifa/${r.id}'" class="cursor-pointer bg-[#1a1a20] rounded-[20px] overflow-hidden border border-white/5 hover:border-violet-600/50 transition">
-      <img
-        src="${r.foto||'https://images.unsplash.com/photo-1607083206968-13611e3d76db?w=400'}"
-        class="w-full h-48 object-cover"
-        loading="lazy"
-        onerror="this.src='https://images.unsplash.com/photo-1607083206968-13611e3d76db?w=400'"
-      >
+      <img src="${r.foto||'https://images.unsplash.com/photo-1607083206968-13611e3d76db?w=400'}" class="w-full h-48 object-cover" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1607083206968-13611e3d76db?w=400'">
       <div class="p-4">
         <h3 class="font-bold line-clamp-1">${r.titulo}</h3>
         <p class="text-xs text-white/50 mt-1">${r.total_numeros} números • R$ ${Number(r.valor).toFixed(2)}/nº</p>
-        <div class="mt-3 flex justify-between items-center">
-          <span class="text-violet-400 font-bold text-sm">Ver rifa →</span>
-          <span class="text-[10px] bg-white/10 px-2 py-1 rounded-full">${r.status}</span>
-        </div>
+        <div class="mt-3 flex justify-between items-center"><span class="text-violet-400 font-bold text-sm">Ver rifa →</span><span class="text-[10px] bg-white/10 px-2 py-1 rounded-full">${r.status}</span></div>
       </div>
     </div>`).join('')}
   </div>`;
@@ -318,7 +314,7 @@ async function reservar(){
 async function abrirGerenciar(rifaId){
   const div=document.getElementById('ger-'+rifaId); div.classList.toggle('hidden'); if(div.classList.contains('hidden')) return;
   div.innerHTML='Carregando...'; const {data}=await supabaseClient.from('numeros').select('*').eq('rifa_id',rifaId).order('numero');
-  div.innerHTML=`<div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">${data.map(n=>`<div class="bg-black/40 p-2 rounded-xl text-xs"><b>${String(n.numero).padStart(2,'0')}</b> - ${n.status}<br>${n.comprador_nome||'-'}<div class="flex gap-1 mt-1"><button onclick="mudarStatus('${rifaId}',${n.numero},'pago')" class="bg-green-600 px-2 py-1 rounded">Pago</button><button onclick="mudarStatus('${rifaId}',${n.numero},'disponivel')" class="bg-white/10 px-2 py-1 rounded">Liberar</button></div></div>`).join('')}</div><button onclick="sortear('${rifaId}')" class="mt-4 w-full bg-violet-600 p-3 rounded-xl font-bold">Sortear Vencedor</button>`;
+  div.innerHTML=`<div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">${data.map(n=>`<div class="bg-black/40 p-2 rounded-xl text-xs"><b>${String(n.numero).padStart(2,'0')}</b> - ${n.status}<br>${n.comprador_nome||'-'}<div class="flex gap-1 mt-1"><button onclick="mudarStatus('${rifaId}',${n.numero},'pago')" class="bg-green-600 px-2 py-1 rounded">Pago</button><button onclick="mudarStatus('${rifaId}',${n.numero},'disponivel')" class="bg-white/10 px-2 py-1 rounded">Liberar</button></div>`).join('')}</div><button onclick="sortear('${rifaId}')" class="mt-4 w-full bg-violet-600 p-3 rounded-xl font-bold">Sortear Vencedor</button>`;
 }
 async function mudarStatus(rifaId,numero,status){
   let upd={status}; if(status==='disponivel') upd={status,comprador_nome:null,comprador_whats:null,pedido_id:null};
