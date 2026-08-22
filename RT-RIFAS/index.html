@@ -150,7 +150,15 @@ function renderHome(){
       `).join('')}
     </div>
   `;
-  if(!rifas.length) return `<div class="text-center mt-20"><h2 class="text-2xl font-bold">Nenhuma rifa ativa</h2><p class="text-white/50 mt-2">Crie a primeira no seu banco real</p><button onclick="criarView()" class="mt-6 bg-violet-600 px-8 py-3 rounded-full font-bold">+ Criar Rifa</button></div>`;
+  if(!rifas.length) return `
+    <div class="text-center mt-20">
+      <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+        <svg class="w-10 h-10 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+      </div>
+      <h2 class="text-2xl font-bold">Nenhuma rifa ativa</h2>
+      <p class="text-white/50 mt-2">Seja o primeiro a criar uma rifa</p>
+      <button onclick="criarView()" class="mt-6 bg-violet-600 px-8 py-3 rounded-full font-bold">+ Criar Rifa</button>
+    </div>`;
   return `<h1 class="text-3xl font-black mb-6">Rifas Ativas • ${rifas.length}</h1>
   <div class="grid md:grid-cols-3 gap-4">
     ${rifas.map(r=>`
@@ -187,7 +195,7 @@ function renderRifaPage(){
   const total=currentRifa.total_numeros;
   const progress=Math.round((pagos+reservados)/total*100);
   return `<div class="grid md:grid-cols-[340px_1fr] gap-6">
-    <div class="bg-[#1a1a20] rounded-[24px] overflow-hidden border border-white/10 h-fit"><img src="${currentRifa.foto}" class="w-full h-64 object-cover"><div class="p-5"><h1 class="text-xl font-black">${currentRifa.titulo}</h1><p class="text-white/60 text-sm mt-2">${currentRifa.descricao||''}</p><div class="mt-4"><div class="flex justify-between text-xs mb-1"><span>${progress}% vendido</span><span>${pagos+reservados}/${total}</span></div><div class="w-full h-2 bg-white/10 rounded-full"><div class="h-2 bg-violet-600 rounded-full" style="width:${progress}%"></div></div></div><div class="mt-4 bg-violet-600/10 border border-violet-600/30 p-3 rounded-xl"><p class="text-xs text-violet-400 font-bold">✓ PIX AUTOMÁTICO ATIVO</p><p class="text-[11px] text-white/50 mt-1">Pagamento confirmado na hora</p></div></div></div>
+    <div class="bg-[#1a1a20] rounded-[24px] overflow-hidden border border-white/10 h-fit"><img src="${currentRifa.foto}" class="w-full h-64 object-cover"><div class="p-5"><h1 class="text-xl font-black">${currentRifa.titulo}</h1><p class="text-white/60 text-sm mt-2">${currentRifa.descricao||''}</p><div class="mt-4"><div class="flex justify-between text-xs mb-1"><span>${progress}% vendido</span><span>${pagos+reservados}/${total}</span></div><div class="w-full h-2 bg-white/10 rounded-full"><div class="h-2 bg-violet-600 rounded-full" style="width:${progress}%"></div></div><div class="mt-4 bg-violet-600/10 border border-violet-600/30 p-3 rounded-xl"><p class="text-xs text-violet-400 font-bold">✓ PIX AUTOMÁTICO ATIVO</p><p class="text-[11px] text-white/50 mt-1">Pagamento confirmado na hora</p></div>
     <div class="bg-[#1a1a20] rounded-[24px] p-5 border border-white/10">
       <div class="flex flex-wrap gap-3 mb-4 text-[11px]"><span class="flex items-center gap-1"><span class="w-3 h-3 bg-[#2a2a32] rounded"></span> Livre (${disponiveis})</span><span class="flex items-center gap-1"><span class="w-3 h-3 bg-yellow-400 rounded"></span> Selecionado</span><span class="flex items-center gap-1"><span class="w-3 h-3 bg-orange-500 rounded"></span> Reservado</span><span class="flex items-center gap-1"><span class="w-3 h-3 bg-green-500 rounded"></span> Pago</span></div>
       <div class="grid grid-cols-5 sm:grid-cols-10 gap-2">${numeros.map(n=>{
@@ -215,14 +223,12 @@ function loginView(){ view='login'; location.hash='#login'; render(); }
 function criarView(){ view='criar'; location.hash='#criar'; render(); }
 function painelView(){ view='painel'; location.hash='#painel'; loadMeuPainel(); }
 
-// LOGIN COM TRATAMENTO DE ERRO MELHOR
 async function doLogin(){
   const email=document.getElementById('email').value.trim();
   const senha=document.getElementById('senha').value;
   const msg=document.getElementById('authMsg');
   msg.innerText='Entrando...';
   msg.className='text-xs text-center mt-4 text-white/40';
-
   try {
     const {data, error}=await supabaseClient.auth.signInWithPassword({email,password:senha});
     if(error) throw error;
