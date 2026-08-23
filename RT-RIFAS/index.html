@@ -1,54 +1,174 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rifa NOME-PRÊMIO</title>
+  <title>Rifa | NOME-DO-PREMIO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial; max-width: 500px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
-    .card { background: white; padding: 20px; border-radius: 10px; margin: 10px 0; }
-    .numero { display: inline-block; width: 40px; height: 40px; margin: 3px; 
-              background: #28a745; color: white; text-align: center; line-height: 40px; 
-              border-radius: 5px; font-weight: bold; }
-    .vendido { background: #ccc; }
-    .btn { background: #25D366; color: white; padding: 15px; text-align: center; 
-           border-radius: 8px; text-decoration: none; display: block; font-weight: bold; }
+    :root {
+      --bg: #0f172a; 
+      --card: #1e293b;
+      --green: #22c55e;
+      --green-dark: #16a34a;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --sold: #334155;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Poppins', sans-serif; 
+      background: var(--bg); 
+      color: var(--text);
+      padding: 16px;
+      line-height: 1.6;
+    }
+    .container { max-width: 480px; margin: 0 auto; }
+    .card { 
+      background: var(--card); 
+      border-radius: 16px; 
+      padding: 24px; 
+      margin-bottom: 16px;
+      border: 1px solid #334155;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .header { text-align: center; }
+    .badge {
+      display: inline-block;
+      background: var(--green);
+      color: #000;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    h1 { font-size: 24px; margin-bottom: 8px; }
+    .preco { 
+      font-size: 32px; 
+      font-weight: 700; 
+      color: var(--green);
+      margin: 12px 0;
+    }
+    .preco span { font-size: 16px; color: var(--text-muted); }
+    img.premio { 
+      width: 100%; 
+      border-radius: 12px; 
+      margin: 16px 0;
+      border: 2px solid var(--green);
+    }
+    .btn-whatsapp {
+      background: var(--green);
+      color: #000;
+      padding: 16px;
+      border-radius: 12px;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+      font-weight: 700;
+      font-size: 16px;
+      margin-top: 16px;
+      transition: 0.2s;
+    }
+    .btn-whatsapp:hover { background: var(--green-dark); transform: scale(1.02); }
+    .info { display: flex; justify-content: space-between; margin: 12px 0; font-size: 14px; }
+    .info span { color: var(--text-muted); }
+    .numeros-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 6px;
+      margin: 16px 0;
+    }
+    .numero {
+      background: var(--green);
+      color: #000;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .numero:hover { transform: scale(1.1); }
+    .vendido {
+      background: var(--sold);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+    .legenda { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+    .legenda div { display: flex; align-items: center; gap: 6px; }
+    .dot { width: 12px; height: 12px; border-radius: 3px; }
+    .dot.livre { background: var(--green); }
+    .dot.vendido { background: var(--sold); }
+    .footer { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 24px; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>🔥 Rifa NOME-PRÊMIO</h1>
-    <img src="LINK-DA-FOTO-PREMIO" width="100%" style="border-radius: 10px">
-    <h2>Valor: R$ 5,00 por número</h2>
-    <p><b>Sorteio:</b> 25/08/2026 ao vivo no Instagram @seuuser</p>
-    <p><b>Pix:</b> CHAVE-PIX</p>
-    <a href="https://wa.me/55SEUWHATSAPP?text=Quero%20o%20numero%20" class="btn">Chamar no WhatsApp pra escolher</a>
-  </div>
+  <div class="container">
+    
+    <div class="card header">
+      <div class="badge">AÇÃO ENTRE AMIGOS</div>
+      <h1>NOME-DO-PREMIO</h1>
+      <div class="preco">R$ 5 <span>por número</span></div>
+      <img src="LINK-DA-FOTO-DO-PREMIO" alt="Prêmio" class="premio">
+      
+      <div class="info">
+        <span>Sorteio:</span>
+        <b>DATA-DO-SORTEIO às 21h</b>
+      </div>
+      <div class="info">
+        <span>Pix:</span>
+        <b>SUA-CHAVE-PIX</b>
+      </div>
+      
+      <a href="https://wa.me/55SEU-WHATSAPP?text=Olá!%20Quero%20participar%20da%20rifa%20do%20NOME-DO-PREMIO.%20Quais%20números%20estão%20livres?" class="btn-whatsapp">
+        QUERO ESCOLHER MEU NÚMERO
+      </a>
+    </div>
 
-  <div class="card">
-    <h3>Números disponíveis</h3>
-    <div id="numeros"></div>
-    <p>Verde = livre | Cinza = vendido</p>
-  </div>
+    <div class="card">
+      <h3 style="margin-bottom: 8px;">Números disponíveis</h3>
+      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 12px;">
+        Clique no WhatsApp acima pra reservar o seu
+      </p>
+      <div class="numeros-grid" id="numeros"></div>
+      <div class="legenda">
+        <div><div class="dot livre"></div> Disponível</div>
+        <div><div class="dot vendido"></div> Vendido</div>
+      </div>
+    </div>
 
-  <div class="card">
-    <h3>Como funciona</h3>
-    <p>1. Escolhe o número no WhatsApp<br>
-       2. Faz o Pix de R$5<br>
-       3. Mando seu nome na lista<br>
-       4. Sorteio ao vivo com ganhador de Taiobeiras</p>
+    <div class="card">
+      <h3 style="margin-bottom: 12px;">Regras</h3>
+      <p style="color: var(--text-muted); font-size: 14px;">
+        1. Escolha o número no WhatsApp<br>
+        2. Pagamento via Pix para garantir<br>
+        3. Sorteio ao vivo pelo Instagram @SEU-INSTA<br>
+        4. Entrega em Taiobeiras - MG
+      </p>
+    </div>
+
+    <div class="footer">
+      Site seguro hospedado no GitHub | Dúvidas? Chama no Zap
+    </div>
+
   </div>
 
 <script>
-// TROCA AQUI OS NÚMEROS VENDIDOS
-const vendidos = [5, 12, 23, 47, 88]; 
+  // ATUALIZA AQUI OS NÚMEROS VENDIDOS
+  const numerosVendidos = [3, 8, 15, 22, 34, 47, 50, 61, 79, 88, 99]; 
+  const totalNumeros = 100;
 
-let html = '';
-for(let i = 1; i <= 100; i++) {
-  let classe = vendidos.includes(i) ? 'numero vendido' : 'numero';
-  html += `<div class="${classe}">${i}</div>`;
-}
-document.getElementById('numeros').innerHTML = html;
+  let html = '';
+  for(let i = 1; i <= totalNumeros; i++) {
+    let classe = numerosVendidos.includes(i) ? 'numero vendido' : 'numero';
+    html += `<div class="${classe}">${i.toString().padStart(2, '0')}</div>`;
+  }
+  document.getElementById('numeros').innerHTML = html;
 </script>
+
 </body>
 </html>
