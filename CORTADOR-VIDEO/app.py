@@ -25,17 +25,17 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-WORK_ROOT = Path(os.getenv("WORK_ROOT", "/tmp/youtube-cortador"))
+# CORRIGIDO: Termux não tem /tmp, então usa TMPDIR do sistema
+TMPDIR = os.environ.get("TMPDIR", "/data/data/com.termux/files/usr/tmp")
+WORK_ROOT = Path(os.getenv("WORK_ROOT", TMPDIR)) / "youtube-cortador"
 WORK_ROOT.mkdir(parents=True, exist_ok=True)
 
 ALLOWED_MINUTES = {1, 3, 5, 10}
 YOUTUBE_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be", "www.youtu.be"}
 
-
 class CutRequest(BaseModel):
     url: str = Field(min_length=10, max_length=2048)
     minutes: int
-
 
 def validate_youtube_url(url: str) -> str:
     try:
@@ -62,7 +62,6 @@ def validate_youtube_url(url: str) -> str:
 
     return url
 
-
 def run_command(cmd: list[str], timeout: int = 3600) -> subprocess.CompletedProcess:
     try:
         return subprocess.run(
@@ -76,21 +75,18 @@ def run_command(cmd: list[str], timeout: int = 3600) -> subprocess.CompletedProc
     except subprocess.TimeoutExpired:
         raise HTTPException(status_code=504, detail="O processamento demorou demais e foi interrompido.")
 
-
 def safe_title(text: str) -> str:
-    text = re.sub(r"[^\w\- .()]+", "_", text, flags=re.UNICODE).strip()
+    text = re.sub(r"[^\w\-.()]+", "_", text, flags=re.UNICODE).strip()
     return text[:80] or "video"
-
 
 def get_video_title(url: str) -> str:
     result = run_command([
         "yt-dlp", "--no-playlist", "--print", "%(title)s", url
     ], timeout=120)
-    if result.returncode != 0:
+    if result.returncode!= 0:
         detail = result.stderr[-1200:] or "Não foi possível obter os dados do vídeo."
         raise HTTPException(status_code=502, detail=detail)
     return result.stdout.strip().splitlines()[0] if result.stdout.strip() else "video"
-
 
 def download_video(url: str, output: Path) -> None:
     # MP4 final para facilitar o processamento com FFmpeg.
@@ -103,10 +99,9 @@ def download_video(url: str, output: Path) -> None:
         "-o", str(output),
         url,
     ], timeout=3600)
-    if result.returncode != 0 or not output.exists():
+    if result.returncode!= 0 or not output.exists():
         detail = result.stderr[-1600:] or "Não foi possível baixar o vídeo."
         raise HTTPException(status_code=502, detail=detail)
-
 
 def make_cuts(source: Path, out_dir: Path, minutes: int) -> list[Path]:
     segment_seconds = minutes * 60
@@ -124,7 +119,7 @@ def make_cuts(source: Path, out_dir: Path, minutes: int) -> list[Path]:
         str(pattern),
     ], timeout=3600)
 
-    if result.returncode != 0:
+    if result.returncode!= 0:
         # Fallback: recodifica para obter cortes mais precisos.
         result = run_command([
             "ffmpeg", "-hide_banner", "-loglevel", "error",
@@ -138,7 +133,7 @@ def make_cuts(source: Path, out_dir: Path, minutes: int) -> list[Path]:
             str(pattern),
         ], timeout=3600)
 
-    if result.returncode != 0:
+    if result.returncode!= 0:
         detail = result.stderr[-1600:] or "O FFmpeg não conseguiu criar os cortes."
         raise HTTPException(status_code=500, detail=detail)
 
@@ -147,17 +142,14 @@ def make_cuts(source: Path, out_dir: Path, minutes: int) -> list[Path]:
         raise HTTPException(status_code=500, detail="Nenhum corte foi gerado.")
     return files
 
-
 def make_zip(files: list[Path], zip_path: Path) -> None:
     with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         for file in files:
             zf.write(file, arcname=file.name)
 
-
 @app.get("/")
 def root():
     return {"ok": True, "service": "YouTube Cortador Backend", "version": "1.0.0"}
-
 
 @app.get("/health")
 def health():
@@ -166,7 +158,6 @@ def health():
         "yt_dlp": shutil.which("yt-dlp") is not None,
         "ffmpeg": shutil.which("ffmpeg") is not None,
     }
-
 
 @app.post("/cut")
 def cut_video(request: CutRequest):
