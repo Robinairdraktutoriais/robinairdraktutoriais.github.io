@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube Cortador</title>
+<meta name="description" content="Divida vídeos autorizados em cortes de 1, 3, 5 ou 10 minutos.">
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:linear-gradient(145deg,#090b10,#171b24);color:#fff;display:flex;align-items:center;justify-content:center;padding:18px}
+.container{width:100%;max-width:620px}
+.card{background:rgba(25,28,36,.94);border:1px solid #303542;border-radius:22px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.logo{font-size:42px;text-align:center;margin-bottom:4px}
+h1{text-align:center;margin:0;font-size:28px}
+.subtitle{text-align:center;color:#aeb4c0;margin:8px 0 25px}
+label{display:block;margin:14px 0 7px;font-weight:700}
+input,select,button{width:100%;height:50px;border-radius:12px;font-size:16px}
+input,select{border:1px solid #3a3f4c;background:#101319;color:#fff;padding:0 14px;outline:none}
+input:focus,select:focus{border-color:#777}
+button{border:0;background:#fff;color:#101114;font-weight:800;margin-top:18px;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+.status{margin-top:18px;padding:13px;border-radius:12px;background:#101319;color:#c9ced8;display:none;white-space:pre-wrap}
+.progress{height:9px;background:#30343d;border-radius:99px;margin-top:14px;overflow:hidden;display:none}
+.progress div{height:100%;width:0;background:#fff;transition:width .25s}
+.note{font-size:12px;color:#969dab;line-height:1.5;margin-top:18px}
+.settings{margin-top:20px;border-top:1px solid #30343d;padding-top:16px}
+.settings summary{cursor:pointer;color:#cbd0da}
+.small{font-size:12px;color:#9299a6}
+footer{text-align:center;color:#747b88;font-size:12px;margin-top:15px}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="card">
+<div class="logo">🎬</div>
+<h1>YouTube Cortador</h1>
+<p class="subtitle">Divida um vídeo autorizado em partes automaticamente.</p>
+
+<label for="url">Link do YouTube</label>
+<input id="url" type="url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off">
+
+<label for="minutes">Tamanho de cada corte</label>
+<select id="minutes">
+<option value="1">1 minuto</option>
+<option value="3">3 minutos</option>
+<option value="5" selected>5 minutos</option>
+<option value="10">10 minutos</option>
+</select>
+
+<button id="cut">✂️ Dividir vídeo</button>
+
+<div id="progress" class="progress"><div id="bar"></div></div>
+<div id="status" class="status"></div>
+
+<div class="settings">
+<details>
+<summary>⚙️ Configuração do servidor</summary>
+<label for="backend">URL do backend</label>
+<input id="backend" type="url" placeholder="https://seu-backend.exemplo.com">
+<p class="small">No GitHub Pages, coloque aqui o endereço público do servidor que executará o processamento.</p>
+</details>
+</div>
+
+<p class="note">
+Use somente vídeos que você possui ou para os quais tenha autorização para baixar e processar.
+O GitHub Pages hospeda este arquivo, mas o download/processamento do vídeo precisa ser executado pelo backend.
+</p>
+</div>
+<footer>Seu projeto • YouTube Cortador</footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const savedBackend = localStorage.getItem("ytc_backend");
+if (savedBackend) $("backend").value = savedBackend;
+
+$("backend").addEventListener("change", () => {
+  localStorage.setItem("ytc_backend", $("backend").value.trim().replace(/\/+$/,""));
+});
+
+function status(text, show=true){
+  $("status").textContent = text;
+  $("status").style.display = show ? "block" : "none";
+}
+
+$("cut").addEventListener("click", async () => {
+  const url = $("url").value.trim();
+  const minutes = Number($("minutes").value);
+  const backend = $("backend").value.trim().replace(/\/+$/,"");
+
+  if (!url) {
+    status("Cole o link do YouTube primeiro.");
+    $("url").focus();
+    return;
+  }
+
+  if (!/^https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)/i.test(url)) {
+    status("Esse endereço não parece ser um link válido do YouTube.");
+    return;
+  }
+
+  if (!backend) {
+    status("Abra ⚙️ Configuração do servidor e informe a URL do backend.");
+    return;
+  }
+
+  localStorage.setItem("ytc_backend", backend);
+
+  $("cut").disabled = true;
+  $("progress").style.display = "block";
+  $("bar").style.width = "15%";
+  status("Enviando pedido ao servidor...\nO processamento pode levar algum tempo.");
+
+  try {
+    const response = await fetch(backend + "/cut", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({url:url, minutes:minutes})
+    });
+
+    $("bar").style.width = "70%";
+
+    if (!response.ok) {
+      let message = "O servidor retornou um erro.";
+      try {
+        const data = await response.json();
+        message = data.detail || message;
+      } catch {
+        const text = await response.text();
+        if (text) message = text;
+      }
+      throw new Error(message);
+    }
+
+    const blob = await response.blob();
+    $("bar").style.width = "100%";
+
+    const disposition = response.headers.get("Content-Disposition") || "";
+    const match = disposition.match(/filename="?([^"]+)"?/i);
+    const filename = match ? match[1] : "cortes.zip";
+
+    const a = document.createElement("a");
+    const objectUrl = URL.createObjectURL(blob);
+    a.href = objectUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
+
+    status("✅ Pronto!\nO arquivo ZIP com os cortes foi baixado.");
+  } catch (error) {
+    $("bar").style.width = "0%";
+    status("❌ Não foi possível processar o vídeo.\n\n" + error.message);
+  } finally {
+    $("cut").disabled = false;
+  }
+});
+</script>
+</body>
+</html>
