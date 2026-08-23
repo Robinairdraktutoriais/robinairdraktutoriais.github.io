@@ -96,7 +96,11 @@ $("cut").addEventListener("click", async () => {
     return;
   }
 
-  if (!/^https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)/i.test(url)) {
+  // Aceita links comuns do YouTube, incluindo vídeos normais, Shorts e lives.
+  const youtubePattern =
+    /^https?:\/\/(www\.)?(youtube\.com\/(watch\?v=|live\/|shorts\/)|youtu\.be\/)[^\s]+/i;
+
+  if (!youtubePattern.test(url)) {
     status("Esse endereço não parece ser um link válido do YouTube.");
     return;
   }
