@@ -213,7 +213,7 @@
 <script>
   // ===== PEGA DADOS DO config.js =====
   const ADMIN_USER = CONFIG.USER;
-  const ADMIN_PASS_HASH = CONFIG.PASS_HASH;
+  const ADMIN_PASS = CONFIG.PASS;
   const TOTAL_NUMEROS = 100;
   // ===============================================
 
@@ -225,26 +225,16 @@
     mostrarPainel();
   }
 
-  async function fazerLogin() {
+  function fazerLogin() {
     const usuario = document.getElementById('usuario').value;
     const senha = document.getElementById('senha').value;
     
-    const hashDigitado = await gerarHash(senha);
-    
-    if (usuario === ADMIN_USER && hashDigitado === ADMIN_PASS_HASH) {
+    if (usuario === ADMIN_USER && senha === ADMIN_PASS) {
       localStorage.setItem('rifa_admin_logado', 'true');
       mostrarPainel();
     } else {
       document.getElementById('erro-login').style.display = 'block';
     }
-  }
-
-  async function gerarHash(texto) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(texto);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
   function sair() {
