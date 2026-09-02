@@ -15,7 +15,6 @@
       --text-muted: #94a3b8;
       --sold: #334155;
       --red: #ef4444;
-      --admin: #f59e0b;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -25,8 +24,8 @@
       padding: 16px 16px 80px 16px;
       line-height: 1.6;
     }
-   .container { max-width: 480px; margin: 0 auto; }
-   .card {
+  .container { max-width: 480px; margin: 0 auto; }
+  .card {
       background: var(--card);
       border-radius: 16px;
       padding: 24px;
@@ -34,8 +33,8 @@
       border: 1px solid #334155;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
-   .header { text-align: center; }
-   .badge {
+  .header { text-align: center; }
+  .badge {
       display: inline-block;
       background: var(--green);
       color: #000;
@@ -45,19 +44,7 @@
       font-weight: 700;
       margin-bottom: 12px;
     }
-   .admin-bar {
-      display: none;
-      background: var(--admin);
-      color: #000;
-      padding: 12px;
-      border-radius: 12px;
-      text-align: center;
-      font-weight: 700;
-      margin-bottom: 16px;
-      font-size: 14px;
-    }
-   .admin-bar.ativo { display: block; }
-   .timer {
+  .timer {
       background: var(--red);
       color: white;
       padding: 8px 16px;
@@ -68,13 +55,13 @@
       display: inline-block;
     }
     h1 { font-size: 24px; margin-bottom: 8px; }
-   .preco {
+  .preco {
       font-size: 32px;
       font-weight: 700;
       color: var(--green);
       margin: 12px 0;
     }
-   .preco span { font-size: 16px; color: var(--text-muted); }
+  .preco span { font-size: 16px; color: var(--text-muted); }
     img.premio {
       width: 100%;
       border-radius: 12px;
@@ -84,7 +71,7 @@
       background: var(--sold);
       object-fit: cover;
     }
-   .btn-whatsapp {
+  .btn-whatsapp {
       background: var(--green);
       color: #000;
       padding: 16px;
@@ -97,8 +84,8 @@
       margin-top: 16px;
       transition: 0.2s;
     }
-   .btn-whatsapp:hover { background: var(--green-dark); transform: scale(1.02); }
-   .btn-flutuante {
+  .btn-whatsapp:hover { background: var(--green-dark); transform: scale(1.02); }
+  .btn-flutuante {
       position: fixed;
       bottom: 16px;
       right: 16px;
@@ -115,9 +102,9 @@
       box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
       z-index: 999;
     }
-   .info { display: flex; justify-content: space-between; margin: 12px 0; font-size: 14px; }
-   .info span { color: var(--text-muted); }
-   .pix-box {
+  .info { display: flex; justify-content: space-between; margin: 12px 0; font-size: 14px; }
+  .info span { color: var(--text-muted); }
+  .pix-box {
       background: var(--bg);
       padding: 12px;
       border-radius: 8px;
@@ -126,26 +113,26 @@
       border: 1px dashed var(--green);
       text-align: center;
     }
-   .pix-box:active { background: var(--sold); }
-   .progresso {
+  .pix-box:active { background: var(--sold); }
+  .progresso {
       background: var(--bg);
       border-radius: 8px;
       height: 8px;
       margin: 12px 0;
       overflow: hidden;
     }
-   .progresso-bar {
+  .progresso-bar {
       background: var(--green);
       height: 100%;
       transition: 0.3s;
     }
-   .numeros-grid {
+  .numeros-grid {
       display: grid;
       grid-template-columns: repeat(10, 1fr);
       gap: 6px;
       margin: 16px 0;
     }
-   .numero {
+  .numero {
       background: var(--green);
       color: #000;
       aspect-ratio: 1;
@@ -159,31 +146,24 @@
       transition: 0.2s;
       user-select: none;
     }
-   .numero:hover { transform: scale(1.1); background: var(--green-dark); }
-   .vendido {
+  .numero:hover { transform: scale(1.1); background: var(--green-dark); }
+  .vendido {
       background: var(--sold);
       color: var(--text-muted);
       cursor: not-allowed;
     }
-   .vendido:hover { transform: none; background: var(--sold); }
-   .admin-ativo.numero { cursor: pointer; }
-   .admin-ativo.vendido { cursor: pointer; background: var(--red); color: white; }
-   .admin-ativo.vendido:hover { transform: scale(1.1); background: #dc2626; }
-   .legenda { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); margin-top: 8px; }
-   .legenda div { display: flex; align-items: center; gap: 6px; }
-   .dot { width: 12px; height: 12px; border-radius: 3px; }
-   .dot.livre { background: var(--green); }
-   .dot.vendido { background: var(--sold); }
-   .footer { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 24px; }
-   .alerta { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
+  .vendido:hover { transform: none; background: var(--sold); }
+  .legenda { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+  .legenda div { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 12px; height: 12px; border-radius: 3px; }
+  .dot.livre { background: var(--green); }
+  .dot.vendido { background: var(--sold); }
+  .footer { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 24px; }
+  .alerta { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
   </style>
 </head>
 <body>
   <div class="container">
-
-    <div class="admin-bar" id="admin-bar">
-      🔓 MODO ADMIN ATIVO - Clique nos números para marcar/desmarcar como vendido
-    </div>
 
     <div class="card header">
       <div class="badge">AÇÃO ENTRE AMIGOS</div>
@@ -220,7 +200,7 @@
       <div class="progresso">
         <div class="progresso-bar" id="barra-progresso" style="width: 0%"></div>
       </div>
-      <p style="color: var(--text-muted); font-size: 14px; margin: 12px 0;" id="instrucao-numeros">
+      <p style="color: var(--text-muted); font-size: 14px; margin: 12px 0;">
         Clique no número desejado para reservar 👇
       </p>
       <div class="numeros-grid" id="numeros"></div>
@@ -251,7 +231,6 @@
 <script>
   // ===== CONFIGURAÇÃO - ALTERAR AQUI =====
   const config = {
-    senhaAdmin: 'rifa123', // TROQUE A SENHA AQUI!
     totalNumeros: 100,
     whatsapp: '5538991464508',
     nomePremio: 'ALTERAR: Nome do Prêmio',
@@ -262,18 +241,8 @@
   };
   // ========================================
 
-  // Verifica se é admin pela URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const modoAdmin = urlParams.get('admin') === config.senhaAdmin;
-
-  // Carrega números vendidos do localStorage
+  // Carrega números vendidos do localStorage - mesmos dados do admin
   let numerosVendidos = JSON.parse(localStorage.getItem('rifa_vendidos') || '[]');
-
-  if (modoAdmin) {
-    document.getElementById('admin-bar').classList.add('ativo');
-    document.getElementById('instrucao-numeros').textContent = 'Clique para marcar como vendido ou liberar 👇';
-    document.body.classList.add('admin-ativo');
-  }
 
   // Atualiza infos da página
   document.getElementById('chave-pix').textContent = config.chavePix;
@@ -298,39 +267,24 @@
 
     for(let i = 1; i <= config.totalNumeros; i++) {
       if(numerosVendidos.includes(i)) {
-        html += `<div class="numero vendido" onclick="toggleNumero(${i})">${i.toString().padStart(2, '0')}</div>`;
+        html += `<div class="numero vendido">${i.toString().padStart(2, '0')}</div>`;
       } else {
-        html += `<div class="numero" onclick="toggleNumero(${i})">${i.toString().padStart(2, '0')}</div>`;
+        html += `<div class="numero" onclick="reservarNumero(${i})">${i.toString().padStart(2, '0')}</div>`;
       }
     }
     document.getElementById('numeros').innerHTML = html;
   }
 
-  // Função que funciona diferente no modo admin vs normal
-  function toggleNumero(num) {
-    if (modoAdmin) {
-      // Modo admin: marca/desmarca
-      if (numerosVendidos.includes(num)) {
-        numerosVendidos = numerosVendidos.filter(n => n!== num);
-      } else {
-        numerosVendidos.push(num);
-      }
-      localStorage.setItem('rifa_vendidos', JSON.stringify(numerosVendidos));
-      renderizarNumeros();
-    } else {
-      // Modo normal: manda pro WhatsApp
-      const msg = `Olá! Quero reservar o número ${num} da rifa do ${config.nomePremio}. Ainda está disponível?`;
-      window.open(`https://wa.me/${config.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
-    }
+  function reservarNumero(num) {
+    const msg = `Olá! Quero reservar o número ${num} da rifa do ${config.nomePremio}. Ainda está disponível?`;
+    window.open(`https://wa.me/${config.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
-  // Função copiar Pix
   function copiarPix() {
     navigator.clipboard.writeText(config.chavePix.split(' - ')[0]);
     alert('Chave Pix copiada! ✅');
   }
 
-  // Timer pro sorteio
   function atualizarTimer() {
     const agora = new Date().getTime();
     const sorteio = new Date(config.dataSorteio).getTime();
@@ -349,6 +303,12 @@
   renderizarNumeros();
   atualizarTimer();
   setInterval(atualizarTimer, 60000);
+  
+  // Atualiza números a cada 3s caso você marque no admin em outra aba
+  setInterval(() => {
+    numerosVendidos = JSON.parse(localStorage.getItem('rifa_vendidos') || '[]');
+    renderizarNumeros();
+  }, 3000);
 </script>
 
 </body>
