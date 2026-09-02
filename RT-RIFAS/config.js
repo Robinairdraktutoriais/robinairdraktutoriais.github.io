@@ -1,5 +1,5 @@
 // config.js - NÃO COMMITAR ESSE ARQUIVO
 const CONFIG = {
-  USER: 'joao',
-  PASS_HASH: 'a1d0c6e83f027327d8461063f4ac58a6'
+  USER: 'João',
+  PASS_HASH: 'f8e4d1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6'
 };
