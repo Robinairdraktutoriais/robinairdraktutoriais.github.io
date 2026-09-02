@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rifa | NOME-DO-PREMIO</title>
+  <title>Rifa | Prêmio Surpresa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -14,13 +14,14 @@
       --text: #f1f5f9;
       --text-muted: #94a3b8;
       --sold: #334155;
+      --red: #ef4444;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { 
       font-family: 'Poppins', sans-serif; 
       background: var(--bg); 
       color: var(--text);
-      padding: 16px;
+      padding: 16px 16px 80px 16px;
       line-height: 1.6;
     }
     .container { max-width: 480px; margin: 0 auto; }
@@ -43,6 +44,16 @@
       font-weight: 700;
       margin-bottom: 12px;
     }
+    .timer {
+      background: var(--red);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      margin: 12px 0;
+      display: inline-block;
+    }
     h1 { font-size: 24px; margin-bottom: 8px; }
     .preco { 
       font-size: 32px; 
@@ -56,6 +67,9 @@
       border-radius: 12px; 
       margin: 16px 0;
       border: 2px solid var(--green);
+      min-height: 200px;
+      background: var(--sold);
+      object-fit: cover;
     }
     .btn-whatsapp {
       background: var(--green);
@@ -71,8 +85,47 @@
       transition: 0.2s;
     }
     .btn-whatsapp:hover { background: var(--green-dark); transform: scale(1.02); }
+    .btn-flutuante {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      background: var(--green);
+      color: #000;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+      z-index: 999;
+    }
     .info { display: flex; justify-content: space-between; margin: 12px 0; font-size: 14px; }
     .info span { color: var(--text-muted); }
+    .pix-box {
+      background: var(--bg);
+      padding: 12px;
+      border-radius: 8px;
+      margin: 8px 0;
+      cursor: pointer;
+      border: 1px dashed var(--green);
+      text-align: center;
+    }
+    .pix-box:active { background: var(--sold); }
+    .progresso {
+      background: var(--bg);
+      border-radius: 8px;
+      height: 8px;
+      margin: 12px 0;
+      overflow: hidden;
+    }
+    .progresso-bar {
+      background: var(--green);
+      height: 100%;
+      transition: 0.3s;
+    }
     .numeros-grid {
       display: grid;
       grid-template-columns: repeat(10, 1fr);
@@ -92,18 +145,20 @@
       cursor: pointer;
       transition: 0.2s;
     }
-    .numero:hover { transform: scale(1.1); }
+    .numero:hover { transform: scale(1.1); background: var(--green-dark); }
     .vendido {
       background: var(--sold);
       color: var(--text-muted);
       cursor: not-allowed;
     }
+    .vendido:hover { transform: none; background: var(--sold); }
     .legenda { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); margin-top: 8px; }
     .legenda div { display: flex; align-items: center; gap: 6px; }
     .dot { width: 12px; height: 12px; border-radius: 3px; }
     .dot.livre { background: var(--green); }
     .dot.vendido { background: var(--sold); }
     .footer { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 24px; }
+    .alerta { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -111,28 +166,41 @@
     
     <div class="card header">
       <div class="badge">AÇÃO ENTRE AMIGOS</div>
-      <h1>NOME-DO-PREMIO</h1>
+      <div class="timer" id="timer">Sorteio em breve</div>
+      <h1>ALTERAR: Nome do Prêmio Aqui</h1>
       <div class="preco">R$ 5 <span>por número</span></div>
-      <img src="LINK-DA-FOTO-DO-PREMIO" alt="Prêmio" class="premio">
+      <img src="https://via.placeholder.com/400x300/1e293b/22c55e?text=Foto+do+Prêmio" alt="Prêmio" class="premio" id="foto-premio">
       
       <div class="info">
         <span>Sorteio:</span>
-        <b>DATA-DO-SORTEIO às 21h</b>
-      </div>
-      <div class="info">
-        <span>Pix:</span>
-        <b>SUA-CHAVE-PIX</b>
+        <b>ALTERAR: 15/09/2026 às 21h</b>
       </div>
       
-      <a href="https://wa.me/55SEU-WHATSAPP?text=Olá!%20Quero%20participar%20da%20rifa%20do%20NOME-DO-PREMIO.%20Quais%20números%20estão%20livres?" class="btn-whatsapp">
+      <div class="info">
+        <span>Pix - Clique para copiar:</span>
+      </div>
+      <div class="pix-box" onclick="copiarPix()">
+        <b id="chave-pix">ALTERAR: 3899999-8888 - Seu Nome</b>
+        <div class="alerta">Toque para copiar</div>
+      </div>
+      
+      <a href="https://wa.me/5538ALTERAR?text=Olá!%20Quero%20participar%20da%20rifa." class="btn-whatsapp" id="btn-zap">
         QUERO ESCOLHER MEU NÚMERO
       </a>
+      <p class="alerta">ALTERAR: Sorteio pela Loteria Federal | 100% do valor será destinado para...</p>
     </div>
 
     <div class="card">
       <h3 style="margin-bottom: 8px;">Números disponíveis</h3>
-      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 12px;">
-        Clique no WhatsApp acima pra reservar o seu
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="color: var(--text-muted); font-size: 14px;">Restam <b id="restantes">0</b> de 100</span>
+        <span style="color: var(--green); font-size: 14px; font-weight: 600;" id="porcentagem">0% vendido</span>
+      </div>
+      <div class="progresso">
+        <div class="progresso-bar" id="barra-progresso" style="width: 0%"></div>
+      </div>
+      <p style="color: var(--text-muted); font-size: 14px; margin: 12px 0;">
+        Clique no número desejado para reservar 👇
       </p>
       <div class="numeros-grid" id="numeros"></div>
       <div class="legenda">
@@ -144,10 +212,10 @@
     <div class="card">
       <h3 style="margin-bottom: 12px;">Regras</h3>
       <p style="color: var(--text-muted); font-size: 14px;">
-        1. Escolha o número no WhatsApp<br>
+        1. Clique no número e confirme no WhatsApp<br>
         2. Pagamento via Pix para garantir<br>
-        3. Sorteio ao vivo pelo Instagram @SEU-INSTA<br>
-        4. Entrega em Taiobeiras - MG
+        3. Sorteio ao vivo pelo Instagram @ALTERAR<br>
+        4. Entrega grátis em Taiobeiras - MG. Outras cidades: frete por conta do ganhador
       </p>
     </div>
 
@@ -157,17 +225,79 @@
 
   </div>
 
-<script>
-  // ATUALIZA AQUI OS NÚMEROS VENDIDOS
-  const numerosVendidos = [3, 8, 15, 22, 34, 47, 50, 61, 79, 88, 99]; 
-  const totalNumeros = 100;
+  <a href="https://wa.me/5538ALTERAR" class="btn-flutuante" id="zap-flutuante">💬</a>
 
+<script>
+  // ===== ALTERAR AQUI =====
+  const config = {
+    numerosVendidos: [3, 8, 15, 22, 34, 47, 50, 61, 79, 88, 99], // Coloca os vendidos
+    totalNumeros: 100,
+    whatsapp: '5538ALTERAR', // Seu número com DDD
+    nomePremio: 'ALTERAR: Nome do Prêmio',
+    dataSorteio: '2026-09-15T21:00:00', // Formato: AAAA-MM-DDTHH:MM:SS
+    chavePix: 'ALTERAR: 3899999-8888 - Seu Nome',
+    fotoPremio: 'ALTERAR: https://link-da-foto.jpg'
+  };
+  // ========================
+
+  // Atualiza infos da página
+  document.getElementById('chave-pix').textContent = config.chavePix;
+  document.getElementById('foto-premio').src = config.fotoPremio;
+  document.querySelector('h1').textContent = config.nomePremio;
+  
+  // Atualiza links do WhatsApp
+  const linkZap = `https://wa.me/${config.whatsapp}?text=Olá!%20Quero%20participar%20da%20rifa%20do%20${encodeURIComponent(config.nomePremio)}.`;
+  document.getElementById('btn-zap').href = linkZap;
+  document.getElementById('zap-flutuante').href = linkZap;
+
+  // Gera números
   let html = '';
-  for(let i = 1; i <= totalNumeros; i++) {
-    let classe = numerosVendidos.includes(i) ? 'numero vendido' : 'numero';
-    html += `<div class="${classe}">${i.toString().padStart(2, '0')}</div>`;
+  const vendidos = config.numerosVendidos.length;
+  const restantes = config.totalNumeros - vendidos;
+  const porcentagem = Math.round((vendidos / config.totalNumeros) * 100);
+  
+  document.getElementById('restantes').textContent = restantes;
+  document.getElementById('porcentagem').textContent = porcentagem + '% vendido';
+  document.getElementById('barra-progresso').style.width = porcentagem + '%';
+  
+  for(let i = 1; i <= config.totalNumeros; i++) {
+    if(config.numerosVendidos.includes(i)) {
+      html += `<div class="numero vendido">${i.toString().padStart(2, '0')}</div>`;
+    } else {
+      html += `<div class="numero" onclick="reservarNumero(${i})">${i.toString().padStart(2, '0')}</div>`;
+    }
   }
   document.getElementById('numeros').innerHTML = html;
+
+  // Função reservar número
+  function reservarNumero(num) {
+    const msg = `Olá! Quero reservar o número ${num} da rifa do ${config.nomePremio}. Ainda está disponível?`;
+    window.open(`https://wa.me/${config.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
+  }
+
+  // Função copiar Pix
+  function copiarPix() {
+    navigator.clipboard.writeText(config.chavePix.split(' - ')[0]);
+    alert('Chave Pix copiada! ✅');
+  }
+
+  // Timer pro sorteio
+  function atualizarTimer() {
+    const agora = new Date().getTime();
+    const sorteio = new Date(config.dataSorteio).getTime();
+    const diferenca = sorteio - agora;
+
+    if (diferenca > 0) {
+      const dias = Math.floor(diferenca / (1000 * 60 * 60 * 24));
+      const horas = Math.floor((diferenca % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      document.getElementById('timer').textContent = `Sorteio em ${dias}d ${horas}h`;
+    } else {
+      document.getElementById('timer').textContent = 'Sorteio realizado!';
+      document.getElementById('timer').style.background = 'var(--green)';
+    }
+  }
+  atualizarTimer();
+  setInterval(atualizarTimer, 60000); // Atualiza a cada minuto
 </script>
 
 </body>
