@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin | Rifa</title>
+  <title>Admin | RT-RIFAS</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -14,7 +14,6 @@
       --yellow: #eab308;
       --text: #f1f5f9;
       --text-muted: #94a3b8;
-      --sold: #334155;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -191,12 +190,10 @@
           <div><div class="dot vendido"></div> Vendido</div>
         </div>
 
-        <!-- BOTÃO DE SORTEIO -->
         <button class="btn btn-sortear" id="btn-sortear" onclick="executarSorteio()" disabled>
           🎲 Realizar Sorteio Agora
         </button>
 
-        <!-- RESULTADO DO SORTEIO -->
         <div class="resultado-sorteio" id="resultado-sorteio">
           <h3>🏆 Número Sorteado</h3>
           <div class="numero-ganhador" id="numero-ganhador">00</div>
@@ -210,10 +207,13 @@
 
   </div>
 
+<!-- IMPORTA O CONFIG COM A SENHA - TEM QUE VIR ANTES -->
+<script src="config.js"></script>
+
 <script>
-  // ===== CONFIGURAÇÃO DO LOGIN - TROQUE AQUI =====
-  const ADMIN_USER = 'admin';
-  const ADMIN_PASS = 'rifa123';
+  // ===== PEGA DADOS DO config.js =====
+  const ADMIN_USER = CONFIG.USER;
+  const ADMIN_PASS_HASH = CONFIG.PASS_HASH;
   const TOTAL_NUMEROS = 100;
   // ===============================================
 
@@ -221,21 +221,30 @@
   let rifaEncerrada = JSON.parse(localStorage.getItem('rifa_encerrada') || 'false');
   let dadosSorteio = JSON.parse(localStorage.getItem('rifa_dados_sorteio') || 'null');
 
-  // Verifica se já tá logado
   if (localStorage.getItem('rifa_admin_logado') === 'true') {
     mostrarPainel();
   }
 
-  function fazerLogin() {
+  async function fazerLogin() {
     const usuario = document.getElementById('usuario').value;
     const senha = document.getElementById('senha').value;
     
-    if (usuario === ADMIN_USER && senha === ADMIN_PASS) {
+    const hashDigitado = await gerarHash(senha);
+    
+    if (usuario === ADMIN_USER && hashDigitado === ADMIN_PASS_HASH) {
       localStorage.setItem('rifa_admin_logado', 'true');
       mostrarPainel();
     } else {
       document.getElementById('erro-login').style.display = 'block';
     }
+  }
+
+  async function gerarHash(texto) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(texto);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
   function sair() {
@@ -247,7 +256,6 @@
     document.getElementById('login').style.display = 'none';
     document.getElementById('painel').style.display = 'block';
     
-    // Se já foi sorteada, mostra resultado
     if (rifaEncerrada && dadosSorteio) {
       exibirResultadoSorteio();
     }
@@ -270,7 +278,6 @@
     }
     document.getElementById('numeros').innerHTML = html;
     
-    // Habilita/desabilita botão de sorteio
     const btnSortear = document.getElementById('btn-sortear');
     btnSortear.disabled = numerosVendidos.length === 0 || rifaEncerrada;
   }
@@ -305,7 +312,6 @@
     }
   }
 
-  // ===== FUNÇÃO DE SORTEIO IMPARCIAL =====
   function executarSorteio() {
     if (numerosVendidos.length === 0) {
       alert('Nenhum número foi vendido ainda!');
@@ -316,23 +322,20 @@
     
     if (!confirmar) return;
 
-    // Sorteio usando crypto.getRandomValues - criptograficamente seguro
     const array = new Uint32Array(1);
     crypto.getRandomValues(array);
     const indiceSorteado = array[0] % numerosVendidos.length;
     const numeroSorteado = numerosVendidos[indiceSorteado];
 
-    // Gera dados de auditoria
     const timestamp = new Date().toISOString();
-    const hashProva = gerarHashProva(numeroSorteado, numerosVendidos.length, timestamp);
+    const hashProva = btoa(`${numeroSorteado}-${numerosVendidos.length}-${timestamp}`);
 
-    // Salva resultado
     dadosSorteio = {
       numero: numeroSorteado,
       data: timestamp,
       hash: hashProva,
       totalParticipantes: numerosVendidos.length,
-      listaParticipantes: [...numerosVendidos] // guarda pra auditoria
+      listaParticipantes: [...numerosVendidos]
     };
 
     rifaEncerrada = true;
@@ -344,12 +347,6 @@
     atualizarStatusRifa();
   }
 
-  function gerarHashProva(numero, total, timestamp) {
-    // Gera hash simples pra provar integridade
-    const dados = `${numero}-${total}-${timestamp}`;
-    return btoa(dados); // Base64. Pra produção real use SHA-256
-  }
-
   function exibirResultadoSorteio() {
     document.getElementById('numero-ganhador').textContent = dadosSorteio.numero.toString().padStart(2, '0');
     document.getElementById('data-sorteio').textContent = new Date(dadosSorteio.data).toLocaleString('pt-BR');
@@ -358,7 +355,6 @@
     document.getElementById('btn-sortear').style.display = 'none';
   }
 
-  // Enter pra logar
   document.getElementById('senha').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') fazerLogin();
   });
