@@ -11,6 +11,7 @@
       --card: #1e293b;
       --green: #22c55e;
       --red: #ef4444;
+      --yellow: #eab308;
       --text: #f1f5f9;
       --text-muted: #94a3b8;
       --sold: #334155;
@@ -33,6 +34,7 @@
       padding: 24px;
       border: 1px solid #334155;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      margin-bottom: 16px;
     }
     .login-box input {
       width: 100%;
@@ -59,12 +61,24 @@
       font-family: 'Poppins', sans-serif;
     }
     .btn:hover { background: #16a34a; }
+    .btn:disabled { 
+      background: #334155; 
+      color: #64748b;
+      cursor: not-allowed; 
+    }
     .btn-sair {
       background: var(--red);
       color: white;
       margin-bottom: 16px;
     }
     .btn-sair:hover { background: #dc2626; }
+    .btn-sortear {
+      background: var(--yellow);
+      color: #000;
+      font-size: 18px;
+      margin-top: 20px;
+    }
+    .btn-sortear:hover { background: #ca8a04; }
     h1 { text-align: center; margin-bottom: 24px; }
     .stats {
       display: flex;
@@ -106,6 +120,41 @@
     .dot.vendido { background: var(--red); }
     .erro { color: var(--red); font-size: 14px; text-align: center; margin-top: 8px; display: none; }
     #painel { display: none; }
+    .resultado-sorteio {
+      background: var(--bg);
+      border: 2px solid var(--yellow);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+      text-align: center;
+      display: none;
+    }
+    .resultado-sorteio h3 {
+      color: var(--yellow);
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+    .numero-ganhador {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--yellow);
+      margin: 16px 0;
+    }
+    .info-sorteio {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 12px;
+      word-break: break-all;
+    }
+    .status-rifa {
+      text-align: center;
+      padding: 8px;
+      border-radius: 8px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .status-aberta { background: #14532d; color: var(--green); }
+    .status-encerrada { background: #7f1d1d; color: var(--red); }
   </style>
 </head>
 <body>
@@ -123,20 +172,38 @@
     <!-- PAINEL DE NÚMEROS -->
     <div id="painel">
       <button class="btn btn-sair" onclick="sair()">Sair do Painel</button>
+      
       <div class="card">
         <h1>Gerenciar Números</h1>
+        <div class="status-rifa" id="status-rifa">Status: Aberta</div>
+        
         <div class="stats">
           <span>Vendidos: <b id="qtd-vendidos">0</b></span>
           <span>Disponíveis: <b id="qtd-disponiveis">100</b></span>
           <span>Total: <b>100</b></span>
         </div>
-        <p style="color: var(--text-muted); font-size: 14px; text-align: center; margin-bottom: 8px;">
+        <p style="color: var(--text-muted); font-size: 14px; text-align: center; margin-bottom: 8px;" id="instrucao-clique">
           Clique para marcar como vendido/liberar
         </p>
         <div class="numeros-grid" id="numeros"></div>
         <div class="legenda">
           <div><div class="dot livre"></div> Disponível</div>
           <div><div class="dot vendido"></div> Vendido</div>
+        </div>
+
+        <!-- BOTÃO DE SORTEIO -->
+        <button class="btn btn-sortear" id="btn-sortear" onclick="executarSorteio()" disabled>
+          🎲 Realizar Sorteio Agora
+        </button>
+
+        <!-- RESULTADO DO SORTEIO -->
+        <div class="resultado-sorteio" id="resultado-sorteio">
+          <h3>🏆 Número Sorteado</h3>
+          <div class="numero-ganhador" id="numero-ganhador">00</div>
+          <p>Sorteado em: <span id="data-sorteio"></span></p>
+          <div class="info-sorteio">
+            Código de verificação: <br><code id="hash-prova"></code>
+          </div>
         </div>
       </div>
     </div>
@@ -151,6 +218,8 @@
   // ===============================================
 
   let numerosVendidos = JSON.parse(localStorage.getItem('rifa_vendidos') || '[]');
+  let rifaEncerrada = JSON.parse(localStorage.getItem('rifa_encerrada') || 'false');
+  let dadosSorteio = JSON.parse(localStorage.getItem('rifa_dados_sorteio') || 'null');
 
   // Verifica se já tá logado
   if (localStorage.getItem('rifa_admin_logado') === 'true') {
@@ -177,7 +246,14 @@
   function mostrarPainel() {
     document.getElementById('login').style.display = 'none';
     document.getElementById('painel').style.display = 'block';
+    
+    // Se já foi sorteada, mostra resultado
+    if (rifaEncerrada && dadosSorteio) {
+      exibirResultadoSorteio();
+    }
+    
     renderizarNumeros();
+    atualizarStatusRifa();
   }
 
   function renderizarNumeros() {
@@ -187,15 +263,24 @@
 
     for(let i = 1; i <= TOTAL_NUMEROS; i++) {
       if(numerosVendidos.includes(i)) {
-        html += `<div class="numero vendido" onclick="toggleNumero(${i})">${i.toString().padStart(2, '0')}</div>`;
+        html += `<div class="numero vendido" ${rifaEncerrada ? '' : `onclick="toggleNumero(${i})"`}>${i.toString().padStart(2, '0')}</div>`;
       } else {
-        html += `<div class="numero" onclick="toggleNumero(${i})">${i.toString().padStart(2, '0')}</div>`;
+        html += `<div class="numero" ${rifaEncerrada ? '' : `onclick="toggleNumero(${i})"`}>${i.toString().padStart(2, '0')}</div>`;
       }
     }
     document.getElementById('numeros').innerHTML = html;
+    
+    // Habilita/desabilita botão de sorteio
+    const btnSortear = document.getElementById('btn-sortear');
+    btnSortear.disabled = numerosVendidos.length === 0 || rifaEncerrada;
   }
 
   function toggleNumero(num) {
+    if (rifaEncerrada) {
+      alert('Rifa já foi encerrada. Não é possível alterar números.');
+      return;
+    }
+    
     if (numerosVendidos.includes(num)) {
       numerosVendidos = numerosVendidos.filter(n => n !== num);
     } else {
@@ -203,6 +288,74 @@
     }
     localStorage.setItem('rifa_vendidos', JSON.stringify(numerosVendidos));
     renderizarNumeros();
+  }
+
+  function atualizarStatusRifa() {
+    const statusEl = document.getElementById('status-rifa');
+    const instrucaoEl = document.getElementById('instrucao-clique');
+    
+    if (rifaEncerrada) {
+      statusEl.textContent = 'Status: Encerrada';
+      statusEl.className = 'status-rifa status-encerrada';
+      instrucaoEl.textContent = 'Rifa encerrada - números travados';
+    } else {
+      statusEl.textContent = 'Status: Aberta';
+      statusEl.className = 'status-rifa status-aberta';
+      instrucaoEl.textContent = 'Clique para marcar como vendido/liberar';
+    }
+  }
+
+  // ===== FUNÇÃO DE SORTEIO IMPARCIAL =====
+  function executarSorteio() {
+    if (numerosVendidos.length === 0) {
+      alert('Nenhum número foi vendido ainda!');
+      return;
+    }
+
+    const confirmar = confirm(`ATENÇÃO!\n\nVocê vai sortear entre ${numerosVendidos.length} números vendidos.\n\nEsta ação vai ENCERRAR a rifa e não pode ser desfeita.\n\nDeseja continuar?`);
+    
+    if (!confirmar) return;
+
+    // Sorteio usando crypto.getRandomValues - criptograficamente seguro
+    const array = new Uint32Array(1);
+    crypto.getRandomValues(array);
+    const indiceSorteado = array[0] % numerosVendidos.length;
+    const numeroSorteado = numerosVendidos[indiceSorteado];
+
+    // Gera dados de auditoria
+    const timestamp = new Date().toISOString();
+    const hashProva = gerarHashProva(numeroSorteado, numerosVendidos.length, timestamp);
+
+    // Salva resultado
+    dadosSorteio = {
+      numero: numeroSorteado,
+      data: timestamp,
+      hash: hashProva,
+      totalParticipantes: numerosVendidos.length,
+      listaParticipantes: [...numerosVendidos] // guarda pra auditoria
+    };
+
+    rifaEncerrada = true;
+    localStorage.setItem('rifa_encerrada', 'true');
+    localStorage.setItem('rifa_dados_sorteio', JSON.stringify(dadosSorteio));
+
+    exibirResultadoSorteio();
+    renderizarNumeros();
+    atualizarStatusRifa();
+  }
+
+  function gerarHashProva(numero, total, timestamp) {
+    // Gera hash simples pra provar integridade
+    const dados = `${numero}-${total}-${timestamp}`;
+    return btoa(dados); // Base64. Pra produção real use SHA-256
+  }
+
+  function exibirResultadoSorteio() {
+    document.getElementById('numero-ganhador').textContent = dadosSorteio.numero.toString().padStart(2, '0');
+    document.getElementById('data-sorteio').textContent = new Date(dadosSorteio.data).toLocaleString('pt-BR');
+    document.getElementById('hash-prova').textContent = dadosSorteio.hash;
+    document.getElementById('resultado-sorteio').style.display = 'block';
+    document.getElementById('btn-sortear').style.display = 'none';
   }
 
   // Enter pra logar
