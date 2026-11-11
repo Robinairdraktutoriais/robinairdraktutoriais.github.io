@@ -1,315 +1,402 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rifa | Prêmio Surpresa</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --green: #22c55e;
-      --green-dark: #16a34a;
-      --text: #f1f5f9;
-      --text-muted: #94a3b8;
-      --sold: #334155;
-      --red: #ef4444;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      padding: 16px 16px 80px 16px;
-      line-height: 1.6;
-    }
-  .container { max-width: 480px; margin: 0 auto; }
-  .card {
-      background: var(--card);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 16px;
-      border: 1px solid #334155;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-  .header { text-align: center; }
-  .badge {
-      display: inline-block;
-      background: var(--green);
-      color: #000;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
-  .timer {
-      background: var(--red);
-      color: white;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      margin: 12px 0;
-      display: inline-block;
-    }
-    h1 { font-size: 24px; margin-bottom: 8px; }
-  .preco {
-      font-size: 32px;
-      font-weight: 700;
-      color: var(--green);
-      margin: 12px 0;
-    }
-  .preco span { font-size: 16px; color: var(--text-muted); }
-    img.premio {
-      width: 100%;
-      border-radius: 12px;
-      margin: 16px 0;
-      border: 2px solid var(--green);
-      min-height: 200px;
-      background: var(--sold);
-      object-fit: cover;
-    }
-  .btn-whatsapp {
-      background: var(--green);
-      color: #000;
-      padding: 16px;
-      border-radius: 12px;
-      text-decoration: none;
-      display: block;
-      text-align: center;
-      font-weight: 700;
-      font-size: 16px;
-      margin-top: 16px;
-      transition: 0.2s;
-    }
-  .btn-whatsapp:hover { background: var(--green-dark); transform: scale(1.02); }
-  .btn-flutuante {
-      position: fixed;
-      bottom: 16px;
-      right: 16px;
-      background: var(--green);
-      color: #000;
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      text-decoration: none;
-      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
-      z-index: 999;
-    }
-  .info { display: flex; justify-content: space-between; margin: 12px 0; font-size: 14px; }
-  .info span { color: var(--text-muted); }
-  .pix-box {
-      background: var(--bg);
-      padding: 12px;
-      border-radius: 8px;
-      margin: 8px 0;
-      cursor: pointer;
-      border: 1px dashed var(--green);
-      text-align: center;
-    }
-  .pix-box:active { background: var(--sold); }
-  .progresso {
-      background: var(--bg);
-      border-radius: 8px;
-      height: 8px;
-      margin: 12px 0;
-      overflow: hidden;
-    }
-  .progresso-bar {
-      background: var(--green);
-      height: 100%;
-      transition: 0.3s;
-    }
-  .numeros-grid {
-      display: grid;
-      grid-template-columns: repeat(10, 1fr);
-      gap: 6px;
-      margin: 16px 0;
-    }
-  .numero {
-      background: var(--green);
-      color: #000;
-      aspect-ratio: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 12px;
-      cursor: pointer;
-      transition: 0.2s;
-      user-select: none;
-    }
-  .numero:hover { transform: scale(1.1); background: var(--green-dark); }
-  .vendido {
-      background: var(--sold);
-      color: var(--text-muted);
-      cursor: not-allowed;
-    }
-  .vendido:hover { transform: none; background: var(--sold); }
-  .legenda { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); margin-top: 8px; }
-  .legenda div { display: flex; align-items: center; gap: 6px; }
-  .dot { width: 12px; height: 12px; border-radius: 3px; }
-  .dot.livre { background: var(--green); }
-  .dot.vendido { background: var(--sold); }
-  .footer { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 24px; }
-  .alerta { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rifa Digital - João Paulo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:#0a0a0a;color:#e4e4e7;padding:20px}
+.container{max-width:1200px;margin:0 auto}
+.header{background:#18181b;border:1px solid #27272a;border-radius:12px;padding:24px;margin-bottom:24px}
+.header h1{font-size:28px;color:#22c55e;margin-bottom:8px}
+.header p{color:#a1a1aa;font-size:14px}
+.config{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px}
+.config-item{background:#0a0a0a;padding:12px;border-radius:8px;border:1px solid #27272a}
+.config-item span{display:block;color:#71717a;font-size:12px;margin-bottom:4px}
+.config-item strong{color:#22c55e;font-size:18px}
+.tabs{display:flex;gap:8px;margin-bottom:24px}
+.tab{padding:12px 24px;background:#18181b;border:1px solid #27272a;border-radius:8px;cursor:pointer;font-weight:600;transition:all .2s}
+.tab.active{background:#22c55e;color:#000;border-color:#22c55e}
+.numbers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:8px;margin-bottom:24px}
+.number{aspect-ratio:1;background:#18181b;border:2px solid #27272a;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;transition:all .2s;user-select:none}
+.number:hover{border-color:#22c55e;transform:scale(1.05)}
+.number.selected{background:#22c55e;color:#000;border-color:#22c55e}
+.number.reservado{background:#eab308;color:#000;border-color:#eab308;cursor:not-allowed}
+.number.pago{background:#ef4444;color:#fff;border-color:#ef4444;cursor:not-allowed}
+.cart{background:#18181b;border:1px solid #27272a;border-radius:12px;padding:24px;position:sticky;top:20px}
+.cart h3{margin-bottom:16px;color:#22c55e}
+.cart-items{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:40px}
+.cart-tag{background:#22c55e;color:#000;padding:6px 12px;border-radius:6px;font-weight:600;font-size:14px}
+.input{width:100%;padding:12px;background:#0a0a0a;border:1px solid #27272a;border-radius:8px;color:#e4e4e7;margin-bottom:12px;font-size:14px}
+.input:focus{outline:none;border-color:#22c55e}
+.btn{width:100%;padding:14px;background:#22c55e;color:#000;border:none;border-radius:8px;font-weight:700;font-size:16px;cursor:pointer;transition:all .2s}
+.btn:hover{background:#16a34a}
+.btn:disabled{background:#27272a;color:#71717a;cursor:not-allowed}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:1000;align-items:center;justify-content:center;padding:20px}
+.modal.active{display:flex}
+.modal-content{background:#18181b;border:1px solid #27272a;border-radius:12px;padding:32px;max-width:500px;width:100%}
+.modal-content h2{color:#22c55e;margin-bottom:16px}
+.pix-box{background:#0a0a0a;padding:16px;border-radius:8px;margin:16px 0;text-align:center}
+.pix-code{word-break:break-all;font-size:12px;color:#a1a1aa;margin:12px 0;padding:12px;background:#18181b;border-radius:6px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;font-size:14px}
+.legend-item{display:flex;align-items:center;gap:8px}
+.legend-box{width:20px;height:20px;border-radius:4px}
+.admin-login{max-width:400px;margin:100px auto;background:#18181b;padding:32px;border-radius:12px;border:1px solid #27272a}
+.admin-panel{display:none}
+.admin-panel.active{display:block}
+table{width:100%;border-collapse:collapse;margin-top:16px}
+th,td{padding:12px;text-align:left;border-bottom:1px solid #27272a;font-size:14px}
+th{color:#22c55e;font-weight:600}
+.badge{padding:4px 8px;border-radius:4px;font-size:12px;font-weight:600}
+.badge.reservado{background:#eab308;color:#000}
+.badge.pago{background:#ef4444;color:#fff}
+.actions{display:flex;gap:8px}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:6px;border:none;cursor:pointer;font-weight:600}
+.btn-green{background:#22c55e;color:#000}
+.btn-red{background:#ef4444;color:#fff}
+.grid-2{display:grid;grid-template-columns:2fr 1fr;gap:24px}
+@media(max-width:768px){.grid-2{grid-template-columns:1fr}.numbers-grid{grid-template-columns:repeat(auto-fill,minmax(50px,1fr))}}
+</style>
 </head>
 <body>
-  <div class="container">
-
-    <div class="card header">
-      <div class="badge">AÇÃO ENTRE AMIGOS</div>
-      <div class="timer" id="timer">Sorteio em breve</div>
-      <h1>ALTERAR: Nome do Prêmio Aqui</h1>
-      <div class="preco">R$ 5 <span>por número</span></div>
-      <img src="https://via.placeholder.com/400x300/1e293b/22c55e?text=Foto+do+Prêmio" alt="Prêmio" class="premio" id="foto-premio">
-
-      <div class="info">
-        <span>Sorteio:</span>
-        <b id="data-sorteio">ALTERAR: 15/09/2026 às 21h</b>
-      </div>
-
-      <div class="info">
-        <span>Pix - Clique para copiar:</span>
-      </div>
-      <div class="pix-box" onclick="copiarPix()">
-        <b id="chave-pix">ALTERAR: 3899146-4508 - Seu Nome</b>
-        <div class="alerta">Toque para copiar</div>
-      </div>
-
-      <a href="https://wa.me/+5538991464508?text=Olá!%20Quero%20participar%20da%20rifa." class="btn-whatsapp" id="btn-zap">
-        QUERO ESCOLHER MEU NÚMERO
-      </a>
-      <p class="alerta">ALTERAR: Sorteio pela Loteria Federal | 100% do valor será destinado para...</p>
+<div class="container">
+  <div class="header">
+    <h1 id="rifa-nome">Rifa Digital</h1>
+    <p>Escolha seus números da sorte e concorra!</p>
+    <div class="config">
+      <div class="config-item"><span>Total de números</span><strong id="total-nums">100</strong></div>
+      <div class="config-item"><span>Valor por número</span><strong id="valor-num">R$ 3,00</strong></div>
+      <div class="config-item"><span>Números disponíveis</span><strong id="disp-nums">100</strong></div>
     </div>
-
-    <div class="card">
-      <h3 style="margin-bottom: 8px;">Números disponíveis</h3>
-      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-        <span style="color: var(--text-muted); font-size: 14px;">Restam <b id="restantes">0</b> de 100</span>
-        <span style="color: var(--green); font-size: 14px; font-weight: 600;" id="porcentagem">0% vendido</span>
-      </div>
-      <div class="progresso">
-        <div class="progresso-bar" id="barra-progresso" style="width: 0%"></div>
-      </div>
-      <p style="color: var(--text-muted); font-size: 14px; margin: 12px 0;">
-        Clique no número desejado para reservar 👇
-      </p>
-      <div class="numeros-grid" id="numeros"></div>
-      <div class="legenda">
-        <div><div class="dot livre"></div> Disponível</div>
-        <div><div class="dot vendido"></div> Vendido</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3 style="margin-bottom: 12px;">Regras</h3>
-      <p style="color: var(--text-muted); font-size: 14px;">
-        1. Clique no número e confirme no WhatsApp<br>
-        2. Pagamento via Pix para garantir<br>
-        3. Sorteio ao vivo pelo Instagram @ALTERAR<br>
-        4. Entrega grátis em Taiobeiras - MG. Outras cidades: frete por conta do ganhador
-      </p>
-    </div>
-
-    <div class="footer">
-      Site seguro hospedado no GitHub | Dúvidas? Chama no Zap
-    </div>
-
   </div>
 
-  <a href="https://wa.me/5538991464508" class="btn-flutuante" id="zap-flutuante">💬</a>
+  <div class="tabs">
+    <div class="tab active" onclick="mostrarAba('cliente')">Comprar Números</div>
+    <div class="tab" onclick="mostrarAba('admin')">Admin</div>
+  </div>
+
+  <div id="aba-cliente">
+    <div class="legend">
+      <div class="legend-item"><div class="legend-box" style="background:#18181b;border:2px solid #27272a"></div>Disponível</div>
+      <div class="legend-item"><div class="legend-box" style="background:#22c55e"></div>Selecionado</div>
+      <div class="legend-item"><div class="legend-box" style="background:#eab308"></div>Reservado</div>
+      <div class="legend-item"><div class="legend-box" style="background:#ef4444"></div>Vendido</div>
+    </div>
+    
+    <div class="grid-2">
+      <div>
+        <div class="numbers-grid" id="numbers-grid"></div>
+      </div>
+      <div>
+        <div class="cart">
+          <h3>Seus números</h3>
+          <div class="cart-items" id="cart-items"><span style="color:#71717a">Nenhum número selecionado</span></div>
+          <div style="margin:16px 0;padding:16px 0;border-top:1px solid #27272a">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+              <span style="color:#a1a1aa">Total:</span>
+              <strong style="color:#22c55e;font-size:20px" id="total-valor">R$ 0,00</strong>
+            </div>
+          </div>
+          <input type="text" class="input" id="nome" placeholder="Seu nome completo">
+          <input type="text" class="input" id="whatsapp" placeholder="WhatsApp (DDD + número)">
+          <button class="btn" id="btn-reservar" onclick="reservar()" disabled>Reservar Números</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="aba-admin" style="display:none">
+    <div class="admin-login" id="admin-login">
+      <h2 style="color:#22c55e;margin-bottom:16px">Painel Admin</h2>
+      <input type="password" class="input" id="senha-admin" placeholder="Senha">
+      <button class="btn" onclick="loginAdmin()">Entrar</button>
+    </div>
+    
+    <div class="admin-panel" id="admin-panel">
+      <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap">
+        <button class="btn" style="width:auto;padding:10px 20px" onclick="abaAdmin('reservas')">Reservas</button>
+        <button class="btn" style="width:auto;padding:10px 20px" onclick="abaAdmin('config')">Configurações</button>
+        <button class="btn" style="width:auto;padding:10px 20px" onclick="sortear()">🎲 Sortear</button>
+        <button class="btn" style="width:auto;padding:10px 20px" onclick="exportar()">📥 Exportar CSV</button>
+      </div>
+      
+      <div id="admin-reservas">
+        <h3 style="color:#22c55e;margin-bottom:16px">Todas as Reservas</h3>
+        <table>
+          <thead><tr><th>Números</th><th>Cliente</th><th>WhatsApp</th><th>Valor</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody id="tabela-reservas"></tbody>
+        </table>
+      </div>
+      
+      <div id="admin-config" style="display:none">
+        <h3 style="color:#22c55e;margin-bottom:16px">Configurações da Rifa</h3>
+        <div style="max-width:500px">
+          <input type="text" class="input" id="cfg-nome" placeholder="Nome da rifa">
+          <input type="number" class="input" id="cfg-total" placeholder="Total de números">
+          <input type="number" class="input" id="cfg-valor" placeholder="Valor por número">
+          <input type="text" class="input" id="cfg-pix" placeholder="Chave PIX">
+          <input type="text" class="input" id="cfg-nomepix" placeholder="Nome no PIX">
+          <button class="btn" onclick="salvarConfig()">Salvar Configurações</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-pix">
+  <div class="modal-content">
+    <h2>Pagamento via PIX</h2>
+    <p style="color:#a1a1aa;margin-bottom:16px">Escaneie o QR Code ou copie o código abaixo:</p>
+    <div class="pix-box">
+      <img id="qr-code" src="" alt="QR Code PIX" style="width:200px;height:200px;margin:0 auto 16px;display:block">
+      <div class="pix-code" id="pix-copia-cola"></div>
+      <button class="btn" onclick="copiarPix()">Copiar Código PIX</button>
+    </div>
+    <p style="color:#eab308;font-size:14px;margin-top:16px">⚠️ Envie o comprovante no WhatsApp após pagar para confirmarmos seus números!</p>
+    <button class="btn" style="background:#27272a;color:#e4e4e7;margin-top:12px" onclick="fecharModal()">Fechar</button>
+  </div>
+</div>
 
 <script>
-  // ===== CONFIGURAÇÃO - ALTERAR AQUI =====
-  const config = {
-    totalNumeros: 100,
-    whatsapp: '5538991464508',
-    nomePremio: 'ALTERAR: Nome do Prêmio',
-    dataSorteio: '2026-09-15T21:00:00',
-    chavePix: 'ALTERAR: 3899146-4508 - Seu Nome',
-    fotoPremio: 'ALTERAR: https://link-da-foto.jpg',
-    dataSorteioTexto: 'ALTERAR: 15/09/2026 às 21h'
-  };
-  // ========================================
+const CONFIG_DEFAULT = {
+  nome: 'Rifa Digital',
+  total: 100,
+  valor: 3,
+  pix: '38991464508',
+  nomePix: 'João Paulo Ferreira Lopes',
+  senha: 'admin123'
+};
 
-  // Carrega números vendidos do localStorage - mesmos dados do admin
-  let numerosVendidos = JSON.parse(localStorage.getItem('rifa_vendidos') || '[]');
+let config = JSON.parse(localStorage.getItem('rifa-config')) || CONFIG_DEFAULT;
+let numeros = JSON.parse(localStorage.getItem('rifa-numeros')) || {};
+let reservas = JSON.parse(localStorage.getItem('rifa-reservas')) || [];
+let selecionados = [];
 
-  // Atualiza infos da página
-  document.getElementById('chave-pix').textContent = config.chavePix;
-  document.getElementById('foto-premio').src = config.fotoPremio;
-  document.querySelector('h1').textContent = config.nomePremio;
-  document.getElementById('data-sorteio').textContent = config.dataSorteioTexto;
-
-  // Atualiza links do WhatsApp
-  const linkZap = `https://wa.me/${config.whatsapp}?text=Olá!%20Quero%20participar%20da%20rifa%20do%20${encodeURIComponent(config.nomePremio)}.`;
-  document.getElementById('btn-zap').href = linkZap;
-  document.getElementById('zap-flutuante').href = linkZap;
-
-  function renderizarNumeros() {
-    let html = '';
-    const vendidos = numerosVendidos.length;
-    const restantes = config.totalNumeros - vendidos;
-    const porcentagem = Math.round((vendidos / config.totalNumeros) * 100);
-
-    document.getElementById('restantes').textContent = restantes;
-    document.getElementById('porcentagem').textContent = porcentagem + '% vendido';
-    document.getElementById('barra-progresso').style.width = porcentagem + '%';
-
-    for(let i = 1; i <= config.totalNumeros; i++) {
-      if(numerosVendidos.includes(i)) {
-        html += `<div class="numero vendido">${i.toString().padStart(2, '0')}</div>`;
-      } else {
-        html += `<div class="numero" onclick="reservarNumero(${i})">${i.toString().padStart(2, '0')}</div>`;
-      }
-    }
-    document.getElementById('numeros').innerHTML = html;
+function init() {
+  for(let i=1;i<=config.total;i++){
+    if(!numeros[i]) numeros[i] = {status:'disponivel'};
   }
+  salvarDados();
+  renderizar();
+}
 
-  function reservarNumero(num) {
-    const msg = `Olá! Quero reservar o número ${num} da rifa do ${config.nomePremio}. Ainda está disponível?`;
-    window.open(`https://wa.me/${config.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
-  }
+function salvarDados(){
+  localStorage.setItem('rifa-config',JSON.stringify(config));
+  localStorage.setItem('rifa-numeros',JSON.stringify(numeros));
+  localStorage.setItem('rifa-reservas',JSON.stringify(reservas));
+}
 
-  function copiarPix() {
-    navigator.clipboard.writeText(config.chavePix.split(' - ')[0]);
-    alert('Chave Pix copiada! ✅');
-  }
-
-  function atualizarTimer() {
-    const agora = new Date().getTime();
-    const sorteio = new Date(config.dataSorteio).getTime();
-    const diferenca = sorteio - agora;
-
-    if (diferenca > 0) {
-      const dias = Math.floor(diferenca / (1000 * 60 * 60 * 24));
-      const horas = Math.floor((diferenca % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      document.getElementById('timer').textContent = `Sorteio em ${dias}d ${horas}h`;
-    } else {
-      document.getElementById('timer').textContent = 'Sorteio realizado!';
-      document.getElementById('timer').style.background = 'var(--green)';
-    }
-  }
-
-  renderizarNumeros();
-  atualizarTimer();
-  setInterval(atualizarTimer, 60000);
+function renderizar(){
+  document.getElementById('rifa-nome').textContent = config.nome;
+  document.getElementById('total-nums').textContent = config.total;
+  document.getElementById('valor-num').textContent = `R$ ${config.valor.toFixed(2)}`;
   
-  // Atualiza números a cada 3s caso você marque no admin em outra aba
-  setInterval(() => {
-    numerosVendidos = JSON.parse(localStorage.getItem('rifa_vendidos') || '[]');
-    renderizarNumeros();
-  }, 3000);
-</script>
+  let disponiveis = 0;
+  const grid = document.getElementById('numbers-grid');
+  grid.innerHTML = '';
+  
+  for(let i=1;i<=config.total;i++){
+    const num = numeros[i];
+    if(num.status==='disponivel') disponiveis++;
+    
+    const div = document.createElement('div');
+    div.className = `number ${num.status}`;
+    if(selecionados.includes(i)) div.classList.add('selected');
+    div.textContent = String(i).padStart(3,'0');
+    if(num.status==='disponivel'){
+      div.onclick = ()=>toggleNumero(i);
+    }
+    grid.appendChild(div);
+  }
+  
+  document.getElementById('disp-nums').textContent = disponiveis;
+  atualizarCarrinho();
+}
 
+function toggleNumero(num){
+  const idx = selecionados.indexOf(num);
+  if(idx>-1) selecionados.splice(idx,1);
+  else selecionados.push(num);
+  renderizar();
+}
+
+function atualizarCarrinho(){
+  const cartItems = document.getElementById('cart-items');
+  const total = selecionados.length * config.valor;
+  
+  if(selecionados.length===0){
+    cartItems.innerHTML = '<span style="color:#71717a">Nenhum número selecionado</span>';
+    document.getElementById('btn-reservar').disabled = true;
+  }else{
+    cartItems.innerHTML = selecionados.sort((a,b)=>a-b).map(n=>`<div class="cart-tag">${String(n).padStart(3,'0')}</div>`).join('');
+    document.getElementById('btn-reservar').disabled = false;
+  }
+  document.getElementById('total-valor').textContent = `R$ ${total.toFixed(2)}`;
+}
+
+function reservar(){
+  const nome = document.getElementById('nome').value.trim();
+  const whatsapp = document.getElementById('whatsapp').value.trim();
+  
+  if(!nome || !whatsapp){
+    alert('Preencha nome e WhatsApp!');
+    return;
+  }
+  if(selecionados.length===0){
+    alert('Selecione pelo menos 1 número!');
+    return;
+  }
+  
+  const reserva = {
+    id: Date.now(),
+    numeros: [...selecionados],
+    nome, whatsapp,
+    valor: selecionados.length * config.valor,
+    status: 'reservado',
+    data: new Date().toLocaleString('pt-BR')
+  };
+  
+  selecionados.forEach(n=>numeros[n].status='reservado');
+  reservas.push(reserva);
+  salvarDados();
+  
+  gerarPix(reserva);
+  selecionados = [];
+  document.getElementById('nome').value = '';
+  document.getElementById('whatsapp').value = '';
+  renderizar();
+}
+
+function gerarPix(reserva){
+  const valor = reserva.valor.toFixed(2);
+  const payload = `00020126580014BR.GOV.BCB.PIX0136${config.pix}52040000530398654${String(valor.length).padStart(2,'0')}${valor}5802BR5913${config.nomePix}6008BRASILIA62070503***6304`;
+  
+  document.getElementById('qr-code').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(payload)}`;
+  document.getElementById('pix-copia-cola').textContent = payload;
+  document.getElementById('modal-pix').classList.add('active');
+}
+
+function copiarPix(){
+  const codigo = document.getElementById('pix-copia-cola').textContent;
+  navigator.clipboard.writeText(codigo);
+  alert('Código PIX copiado!');
+}
+
+function fecharModal(){
+  document.getElementById('modal-pix').classList.remove('active');
+}
+
+function mostrarAba(aba){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('aba-cliente').style.display = aba==='cliente'?'block':'none';
+  document.getElementById('aba-admin').style.display = aba==='admin'?'block':'none';
+}
+
+function loginAdmin(){
+  if(document.getElementById('senha-admin').value===config.senha){
+    document.getElementById('admin-login').style.display='none';
+    document.getElementById('admin-panel').classList.add('active');
+    carregarAdmin();
+  }else{
+    alert('Senha incorreta!');
+  }
+}
+
+function carregarAdmin(){
+  const tbody = document.getElementById('tabela-reservas');
+  tbody.innerHTML = reservas.map(r=>`
+    <tr>
+      <td>${r.numeros.map(n=>String(n).padStart(3,'0')).join(', ')}</td>
+      <td>${r.nome}</td>
+      <td>${r.whatsapp}</td>
+      <td>R$ ${r.valor.toFixed(2)}</td>
+      <td><span class="badge ${r.status}">${r.status.toUpperCase()}</span></td>
+      <td class="actions">
+        ${r.status==='reservado'?`<button class="btn-sm btn-green" onclick="confirmarPagamento(${r.id})">Confirmar</button>`:''}
+        <button class="btn-sm btn-red" onclick="cancelarReserva(${r.id})">Cancelar</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="6" style="text-align:center;color:#71717a">Nenhuma reserva</td></tr>';
+  
+  document.getElementById('cfg-nome').value = config.nome;
+  document.getElementById('cfg-total').value = config.total;
+  document.getElementById('cfg-valor').value = config.valor;
+  document.getElementById('cfg-pix').value = config.pix;
+  document.getElementById('cfg-nomepix').value = config.nomePix;
+}
+
+function abaAdmin(aba){
+  document.getElementById('admin-reservas').style.display = aba==='reservas'?'block':'none';
+  document.getElementById('admin-config').style.display = aba==='config'?'block':'none';
+}
+
+function confirmarPagamento(id){
+  const reserva = reservas.find(r=>r.id===id);
+  if(reserva){
+    reserva.status='pago';
+    reserva.numeros.forEach(n=>numeros[n].status='pago');
+    salvarDados();
+    carregarAdmin();
+    renderizar();
+    alert('Pagamento confirmado!');
+  }
+}
+
+function cancelarReserva(id){
+  if(confirm('Cancelar esta reserva?')){
+    const reserva = reservas.find(r=>r.id===id);
+    if(reserva){
+      reserva.numeros.forEach(n=>numeros[n].status='disponivel');
+      reservas = reservas.filter(r=>r.id!==id);
+      salvarDados();
+      carregarAdmin();
+      renderizar();
+    }
+  }
+}
+
+function salvarConfig(){
+  config.nome = document.getElementById('cfg-nome').value;
+  config.total = parseInt(document.getElementById('cfg-total').value);
+  config.valor = parseFloat(document.getElementById('cfg-valor').value);
+  config.pix = document.getElementById('cfg-pix').value;
+  config.nomePix = document.getElementById('cfg-nomepix').value;
+  init();
+  alert('Configurações salvas!');
+}
+
+function sortear(){
+  const pagos = [];
+  for(let i=1;i<=config.total;i++){
+    if(numeros[i].status==='pago') pagos.push(i);
+  }
+  if(pagos.length===0){
+    alert('Nenhum número pago para sortear!');
+    return;
+  }
+  const vencedor = pagos[Math.floor(Math.random()*pagos.length)];
+  const reserva = reservas.find(r=>r.numeros.includes(vencedor)&&r.status==='pago');
+  alert(`🎉 NÚMERO SORTEADO: ${String(vencedor).padStart(3,'0')}\n\nVencedor: ${reserva.nome}\nWhatsApp: ${reserva.whatsapp}`);
+}
+
+function exportar(){
+  let csv = 'Número,Nome,WhatsApp,Valor,Status,Data\n';
+  reservas.forEach(r=>{
+    r.numeros.forEach(n=>{
+      csv += `${String(n).padStart(3,'0')},${r.nome},${r.whatsapp},${r.valor},${r.status},${r.data}\n`;
+    });
+  });
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'rifa-reservas.csv';
+  a.click();
+}
+
+init();
+</script>
 </body>
 </html>
