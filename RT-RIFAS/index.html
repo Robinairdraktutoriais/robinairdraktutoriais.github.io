@@ -158,17 +158,11 @@ th{color:#22c55e;font-weight:600}
   </div>
 </div>
 
-<script>
-const CONFIG_DEFAULT = {
-  nome: 'Rifa Digital',
-  total: 100,
-  valor: 3,
-  pix: '38991464508',
-  nomePix: 'João Paulo Ferreira Lopes',
-  senha: 'admin123'
-};
+<!-- PUXA A SENHA E CONFIGS DO ARQUIVO OCULTO -->
+<script src="config.js"></script>
 
-let config = JSON.parse(localStorage.getItem('rifa-config')) || CONFIG_DEFAULT;
+<script>
+let config = JSON.parse(localStorage.getItem('rifa-config')) || CONFIG;
 let numeros = JSON.parse(localStorage.getItem('rifa-numeros')) || {};
 let reservas = JSON.parse(localStorage.getItem('rifa-reservas')) || [];
 let selecionados = [];
@@ -295,7 +289,7 @@ function mostrarAba(aba){
 }
 
 function loginAdmin(){
-  if(document.getElementById('senha-admin').value===config.senha){
+  if(document.getElementById('senha-admin').value===CONFIG.senhaAdmin){
     document.getElementById('admin-login').style.display='none';
     document.getElementById('admin-panel').classList.add('active');
     carregarAdmin();
