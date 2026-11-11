@@ -162,7 +162,8 @@ th{color:#22c55e;font-weight:600}
 <script src="config.js"></script>
 
 <script>
-let config = JSON.parse(localStorage.getItem('rifa-config')) || CONFIG;
+// MUDANÇA 1: Sempre usa o CONFIG do arquivo, ignora localStorage pra senha
+let config = CONFIG; 
 let numeros = JSON.parse(localStorage.getItem('rifa-numeros')) || {};
 let reservas = JSON.parse(localStorage.getItem('rifa-reservas')) || [];
 let selecionados = [];
@@ -288,8 +289,9 @@ function mostrarAba(aba){
   document.getElementById('aba-admin').style.display = aba==='admin'?'block':'none';
 }
 
+// MUDANÇA 2: Compara com CONFIG.senhaAdmin do config.js
 function loginAdmin(){
-  if(document.getElementById('senha-admin').value===CONFIG.senhaAdmin){
+  if(document.getElementById('senha-admin').value === CONFIG.senhaAdmin){
     document.getElementById('admin-login').style.display='none';
     document.getElementById('admin-panel').classList.add('active');
     carregarAdmin();
