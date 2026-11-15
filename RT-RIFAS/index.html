@@ -11,7 +11,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#0a0a0a;color:#e4
 .header{background:#18181b;border:1px solid #27272a;border-radius:12px;padding:24px;margin-bottom:24px}
 .header h1{font-size:28px;color:#22c55e;margin-bottom:8px}
 .header p{color:#a1a1aa;font-size:14px}
-/* NOVO: Estilo do prêmio */
 .premio-box{background:linear-gradient(135deg,#22c55e20,#22c55e10);border:1px solid #22c55e50;border-radius:8px;padding:16px;margin:16px 0;text-align:center}
 .premio-box h2{color:#22c55e;font-size:20px;margin-bottom:8px}
 .premio-box p{color:#e4e4e7;font-size:16px;font-weight:600}
@@ -69,10 +68,12 @@ th{color:#22c55e;font-weight:600}
     <h1 id="rifa-nome">Rifa Digital</h1>
     <p>Escolha seus números da sorte e concorra!</p>
     
-    <!-- NOVO: Box do Prêmio -->
+    <!-- Box do Prêmio com FOTO -->
     <div class="premio-box">
       <h2>🎁 PRÊMIO</h2>
-      <p id="premio-desc">iPhone 15 Pro Max 256GB</p>
+      <img id="premio-img" src="" alt="Foto do Prêmio" 
+           style="width:100%; max-width:280px; height:auto; border-radius:8px; margin:12px auto; display:none; border:2px solid #22c55e30;">
+      <p id="premio-desc">Carregando...</p>
     </div>
     
     <div class="config">
@@ -144,7 +145,8 @@ th{color:#22c55e;font-weight:600}
         <h3 style="color:#22c55e;margin-bottom:16px">Configurações da Rifa</h3>
         <div style="max-width:500px">
           <input type="text" class="input" id="cfg-nome" placeholder="Nome da rifa">
-          <input type="text" class="input" id="cfg-premio" placeholder="Descrição do prêmio"> <!-- NOVO -->
+          <input type="text" class="input" id="cfg-premio" placeholder="Descrição do prêmio">
+          <input type="text" class="input" id="cfg-imagem" placeholder="Link da imagem do prêmio">
           <input type="number" class="input" id="cfg-total" placeholder="Total de números">
           <input type="number" class="input" id="cfg-valor" placeholder="Valor por número">
           <input type="text" class="input" id="cfg-pix" placeholder="Chave PIX">
@@ -195,7 +197,17 @@ function salvarDados(){
 
 function renderizar(){
   document.getElementById('rifa-nome').textContent = config.nome;
-  document.getElementById('premio-desc').textContent = config.premio || 'Prêmio a definir'; // NOVO
+  
+  // ATUALIZADO: Carrega nome e foto do prêmio
+  document.getElementById('premio-desc').textContent = config.premio || 'Prêmio a definir';
+  const imgPremio = document.getElementById('premio-img');
+  if(config.imagemPremio) {
+    imgPremio.src = config.imagemPremio;
+    imgPremio.style.display = 'block';
+  } else {
+    imgPremio.style.display = 'none';
+  }
+  
   document.getElementById('total-nums').textContent = config.total;
   document.getElementById('valor-num').textContent = `R$ ${config.valor.toFixed(2)}`;
   
@@ -328,7 +340,8 @@ function carregarAdmin(){
   `).join('') || '<tr><td colspan="6" style="text-align:center;color:#71717a">Nenhuma reserva</td></tr>';
   
   document.getElementById('cfg-nome').value = config.nome;
-  document.getElementById('cfg-premio').value = config.premio || ''; // NOVO
+  document.getElementById('cfg-premio').value = config.premio || '';
+  document.getElementById('cfg-imagem').value = config.imagemPremio || ''; // ATUALIZADO
   document.getElementById('cfg-total').value = config.total;
   document.getElementById('cfg-valor').value = config.valor;
   document.getElementById('cfg-pix').value = config.pix;
@@ -367,7 +380,8 @@ function cancelarReserva(id){
 
 function salvarConfig(){
   config.nome = document.getElementById('cfg-nome').value;
-  config.premio = document.getElementById('cfg-premio').value; // NOVO
+  config.premio = document.getElementById('cfg-premio').value;
+  config.imagemPremio = document.getElementById('cfg-imagem').value; // ATUALIZADO
   config.total = parseInt(document.getElementById('cfg-total').value);
   config.valor = parseFloat(document.getElementById('cfg-valor').value);
   config.pix = document.getElementById('cfg-pix').value;
