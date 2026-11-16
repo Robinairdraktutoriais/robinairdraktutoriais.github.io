@@ -68,7 +68,6 @@ th{color:#22c55e;font-weight:600}
     <h1 id="rifa-nome">Rifa Digital</h1>
     <p>Escolha seus números da sorte e concorra!</p>
     
-    <!-- Box do Prêmio com FOTO -->
     <div class="premio-box">
       <h2>🎁 PRÊMIO</h2>
       <img id="premio-img" src="" alt="Foto do Prêmio" 
@@ -172,11 +171,11 @@ th{color:#22c55e;font-weight:600}
   </div>
 </div>
 
-<!-- PUXA A SENHA E CONFIGS DO ARQUIVO OCULTO -->
 <script src="config.js"></script>
 
 <script>
-let config = CONFIG; 
+// CORRIGIDO: Agora pega primeiro do localStorage, se não tiver usa o CONFIG
+let config = JSON.parse(localStorage.getItem('rifa-config')) || CONFIG; 
 let numeros = JSON.parse(localStorage.getItem('rifa-numeros')) || {};
 let reservas = JSON.parse(localStorage.getItem('rifa-reservas')) || [];
 let selecionados = [];
@@ -198,7 +197,6 @@ function salvarDados(){
 function renderizar(){
   document.getElementById('rifa-nome').textContent = config.nome;
   
-  // ATUALIZADO: Carrega nome e foto do prêmio
   document.getElementById('premio-desc').textContent = config.premio || 'Prêmio a definir';
   const imgPremio = document.getElementById('premio-img');
   if(config.imagemPremio) {
@@ -341,7 +339,7 @@ function carregarAdmin(){
   
   document.getElementById('cfg-nome').value = config.nome;
   document.getElementById('cfg-premio').value = config.premio || '';
-  document.getElementById('cfg-imagem').value = config.imagemPremio || ''; // ATUALIZADO
+  document.getElementById('cfg-imagem').value = config.imagemPremio || '';
   document.getElementById('cfg-total').value = config.total;
   document.getElementById('cfg-valor').value = config.valor;
   document.getElementById('cfg-pix').value = config.pix;
@@ -381,12 +379,14 @@ function cancelarReserva(id){
 function salvarConfig(){
   config.nome = document.getElementById('cfg-nome').value;
   config.premio = document.getElementById('cfg-premio').value;
-  config.imagemPremio = document.getElementById('cfg-imagem').value; // ATUALIZADO
+  config.imagemPremio = document.getElementById('cfg-imagem').value;
   config.total = parseInt(document.getElementById('cfg-total').value);
   config.valor = parseFloat(document.getElementById('cfg-valor').value);
   config.pix = document.getElementById('cfg-pix').value;
   config.nomePix = document.getElementById('cfg-nomepix').value;
-  init();
+  
+  salvarDados(); // CORRIGIDO: Salva no localStorage
+  renderizar(); // CORRIGIDO: Só atualiza a tela, não reseta os números
   alert('Configurações salvas!');
 }
 
