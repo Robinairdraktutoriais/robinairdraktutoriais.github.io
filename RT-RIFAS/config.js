@@ -6,6 +6,6 @@ const CONFIG = {
   total: 100,
   valor: 3.00,
   pix: "sua-chave-pix",
-  nomePix: "JOAO PAULO SILVA",
+  nomePix: "JOAO PAULO",
   senhaAdmin: "admin123"
 };
