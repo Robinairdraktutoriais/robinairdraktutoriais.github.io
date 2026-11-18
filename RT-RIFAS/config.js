@@ -5,7 +5,7 @@ const CONFIG = {
   imagemPremio: "https://i.imgur.com/seulink.jpg",
   total: 100,
   valor: 3.00,
-  pix: "sua-chave-pix",
+  pix: "38991464508",
   nomePix: "JOAO PAULO",
-  senhaAdmin: "admin123"
+  senhaAdmin: "rtmods"
 };
