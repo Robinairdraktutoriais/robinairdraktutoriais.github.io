@@ -252,6 +252,7 @@ let rifaId = null;
 let numerosVendidos = [];
 let dadosSorteio = null;
 let configRifa = {};
+let canalRealtime = null;
 
 window.fazerLogin = function() {
   const usuario = document.getElementById('usuario').value.trim();
@@ -267,6 +268,7 @@ window.fazerLogin = function() {
 
 window.sair = function() {
   localStorage.removeItem('rifa_admin_logado');
+  if (canalRealtime) canalRealtime.unsubscribe();
   location.reload();
 }
 
@@ -331,6 +333,16 @@ async function carregarDados() {
     
     renderizarNumeros();
     atualizarStatusRifa();
+    
+    // REALTIME: Atualiza o grid quando qualquer número mudar
+    if (!canalRealtime) {
+      canalRealtime = supabase.channel('numeros-admin')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'numeros' }, payload => {
+          carregarDados();
+        })
+        .subscribe();
+    }
+      
   } catch(e) {
     document.getElementById('status-rifa').textContent = 'Erro: ' + e.message;
     document.getElementById('erro-config').textContent = 'Erro: ' + e.message;
