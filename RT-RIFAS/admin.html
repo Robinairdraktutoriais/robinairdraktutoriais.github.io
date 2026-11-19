@@ -130,6 +130,11 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     .preview-img { width: 100%; border-radius: 8px; margin-top: 8px; }
+    .box-manual {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid #334155;
+    }
   </style>
   
   <script type="importmap">
@@ -185,6 +190,15 @@
           <button class="btn btn-salvar" onclick="salvarConfig()">💾 Salvar Configurações</button>
           <p class="sucesso" id="sucesso-config">Configurações salvas!</p>
           <p class="erro" id="erro-config"></p>
+
+          <div class="box-manual">
+            <h2>Marcar Número Manual</h2>
+            <p style="color:var(--text-muted);font-size:14px;margin-bottom:12px">Use pra vendas em dinheiro, fiado ou reservas antigas</p>
+            <input type="number" id="num-manual" placeholder="Número (ex: 42)">
+            <input type="text" id="nome-manual" placeholder="Nome do comprador">
+            <input type="text" id="whatsapp-manual" placeholder="WhatsApp do comprador">
+            <button class="btn" onclick="marcarManual()">Marcar como Vendido</button>
+          </div>
         </div>
 
         <div class="tab-content" id="tab-numeros">
@@ -230,7 +244,6 @@ import { createClient } from '@supabase/supabase-js';
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "rtmods";
 
-// TROCA A CHAVE AQUI 👇
 const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh';
 
@@ -238,6 +251,7 @@ let supabase = null;
 let rifaId = null;
 let numerosVendidos = [];
 let dadosSorteio = null;
+let configRifa = {};
 
 window.fazerLogin = function() {
   const usuario = document.getElementById('usuario').value.trim();
@@ -286,6 +300,10 @@ async function carregarDados() {
     
     if (rifa) {
       rifaId = rifa.id;
+      configRifa = {
+        total: rifa.total_numeros,
+        valor: rifa.valor_numero
+      };
       document.getElementById('premio').value = rifa.premio || '';
       document.getElementById('imagemPremio').value = rifa.imagem_premio || '';
       document.getElementById('valor').value = rifa.valor_numero || '';
@@ -308,7 +326,7 @@ async function carregarDados() {
       }
     }
 
-    const { data: vendidos } = await supabase.from('numeros_rifa').select('numero').eq('status', 'vendido');
+    const { data: vendidos } = await supabase.from('numeros').select('numero').eq('status', 'pago');
     numerosVendidos = vendidos ? vendidos.map(n => n.numero) : [];
     
     renderizarNumeros();
@@ -391,15 +409,15 @@ window.executarSorteio = async function() {
   const numeroSorteado = numerosVendidos[indiceSorteado];
 
   const { data: numeroData } = await supabase
-    .from('numeros_rifa')
+    .from('numeros')
     .select('pedido_id')
     .eq('numero', numeroSorteado)
     .single();
 
   const { data: pedidoData } = await supabase
-    .from('pedidos')
+    .from('reservas')
     .select('nome, whatsapp')
-    .eq('id', numeroData.pedido_id)
+    .eq('pedidoId', numeroData.pedido_id)
     .single();
 
   const timestamp = new Date().toISOString();
@@ -431,6 +449,56 @@ function exibirResultadoSorteio() {
   document.getElementById('whatsapp-ganhador').textContent = dadosSorteio.whatsapp || 'Não encontrado';
   document.getElementById('resultado-sorteio').style.display = 'block';
   document.querySelector('.btn-sortear').style.display = 'none';
+}
+
+window.marcarManual = async function(){
+  const numero = parseInt(document.getElementById('num-manual').value)
+  const nome = document.getElementById('nome-manual').value.trim()
+  const whatsapp = document.getElementById('whatsapp-manual').value.trim()
+  
+  if(!numero || !nome || !whatsapp){
+    alert('Preenche número, nome e WhatsApp!')
+    return
+  }
+  
+  if(numero < 1 || numero > configRifa.total){
+    alert(`Número inválido! Vai de 1 até ${configRifa.total}`)
+    return
+  }
+  
+  if(numerosVendidos.includes(numero)){
+    alert('Esse número já está vendido!')
+    return
+  }
+  
+  if(!confirm(`Marcar o número ${String(numero).padStart(3,'0')} como VENDIDO pra ${nome}?`)){
+    return
+  }
+  
+  const pedidoId = 'MANUAL-' + Date.now()
+  
+  await supabase.from('reservas').insert({
+    pedidoId: pedidoId,
+    numeros: [numero],
+    nome,
+    whatsapp,
+    valor: configRifa.valor,
+    valor_liquido: configRifa.valor,
+    status: 'pago'
+  })
+  
+  await supabase.from('numeros').upsert({ 
+    numero: numero, 
+    status: 'pago', 
+    pedido_id: pedidoId 
+  })
+  
+  document.getElementById('num-manual').value = ''
+  document.getElementById('nome-manual').value = ''
+  document.getElementById('whatsapp-manual').value = ''
+  
+  alert(`Número ${String(numero).padStart(3,'0')} marcado como vendido!`)
+  await carregarDados()
 }
 
 document.getElementById('imagemPremio').addEventListener('input', function(e) {
