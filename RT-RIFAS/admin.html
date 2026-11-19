@@ -34,7 +34,7 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
       margin-bottom: 16px;
     }
-    .login-box input, .form-group input, .form-group textarea {
+    .login-box input, .form-group input {
       width: 100%;
       padding: 14px;
       background: var(--bg);
@@ -144,6 +144,7 @@
       <input type="password" id="senha" placeholder="Senha" autocomplete="current-password">
       <button class="btn" onclick="fazerLogin()">Entrar</button>
       <p class="erro" id="erro-login">Usuário ou senha incorretos</p>
+      <p class="erro" id="erro-config" style="display:none;">Erro: config.js não encontrado!</p>
     </div>
 
     <!-- PAINEL COMPLETO -->
@@ -232,9 +233,23 @@
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   // =================================
 
-  // PUXA DO config.js
-  const ADMIN_USER = CONFIG.USER;
-  const ADMIN_PASS = CONFIG.PASS;
+  // VERIFICA SE CONFIG.JS CARREGOU
+  let ADMIN_USER = "admin";
+  let ADMIN_PASS = "rtmods";
+  
+  try {
+    if (typeof CONFIG !== 'undefined' && CONFIG.USER && CONFIG.PASS) {
+      ADMIN_USER = CONFIG.USER;
+      ADMIN_PASS = CONFIG.PASS;
+    } else {
+      console.error('CONFIG.js não encontrado ou sem USER/PASS. Usando login padrão.');
+      document.getElementById('erro-config').style.display = 'block';
+      document.getElementById('erro-config').textContent = 'Aviso: config.js não carregou. Use admin / rtmods';
+    }
+  } catch(e) {
+    console.error('Erro ao ler CONFIG:', e);
+    document.getElementById('erro-config').style.display = 'block';
+  }
   
   let rifaId = null;
   let numerosVendidos = [];
