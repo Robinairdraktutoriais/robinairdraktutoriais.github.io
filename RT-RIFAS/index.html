@@ -18,9 +18,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#0a0a0a;color:#e4
 .config-item{background:#0a0a0a;padding:12px;border-radius:8px;border:1px solid #27272a}
 .config-item span{display:block;color:#71717a;font-size:12px;margin-bottom:4px}
 .config-item strong{color:#22c55e;font-size:18px}
-.tabs{display:flex;gap:8px;margin-bottom:24px}
-.tab{padding:12px 24px;background:#18181b;border:1px solid #27272a;border-radius:8px;cursor:pointer;font-weight:600;transition:all .2s}
-.tab.active{background:#22c55e;color:#000;border-color:#22c55e}
 .numbers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:8px;margin-bottom:24px}
 .number{aspect-ratio:1;background:#18181b;border:2px solid #27272a;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;transition:all .2s;user-select:none}
 .number:hover{border-color:#22c55e;transform:scale(1.05)}
@@ -54,6 +51,7 @@ th{color:#22c55e;font-weight:600}
 .badge{padding:4px 8px;border-radius:4px;font-size:12px;font-weight:600}
 .badge.reservado{background:#eab308;color:#000}
 .badge.pago{background:#ef4444;color:#fff}
+.badge.aguardando_pagamento{background:#3b82f6;color:#fff}
 .actions{display:flex;gap:8px}
 .btn-sm{padding:6px 12px;font-size:12px;border-radius:6px;border:none;cursor:pointer;font-weight:600}
 .btn-green{background:#22c55e;color:#000}
@@ -80,11 +78,6 @@ th{color:#22c55e;font-weight:600}
       <div class="config-item"><span>Valor por número</span><strong id="valor-num">R$ 3,00</strong></div>
       <div class="config-item"><span>Números disponíveis</span><strong id="disp-nums">100</strong></div>
     </div>
-  </div>
-
-  <div class="tabs">
-    <div class="tab active" onclick="mostrarAba('cliente')">Comprar Números</div>
-    <div class="tab" onclick="mostrarAba('admin')">Admin</div>
   </div>
 
   <div id="aba-cliente">
@@ -166,7 +159,7 @@ th{color:#22c55e;font-weight:600}
       <div class="pix-code" id="pix-copia-cola"></div>
       <button class="btn" onclick="copiarPix()">Copiar Código PIX</button>
     </div>
-    <p style="color:#eab308;font-size:14px;margin-top:16px">⚠️ Envie o comprovante no WhatsApp após pagar para confirmarmos seus números!</p>
+    <p style="color:#3b82f6;font-size:14px;margin-top:16px">🔄 Assim que o pagamento for confirmado, seus números são liberados automaticamente!</p>
     <button class="btn" style="background:#27272a;color:#e4e4e7;margin-top:12px" onclick="fecharModal()">Fechar</button>
   </div>
 </div>
@@ -174,13 +167,21 @@ th{color:#22c55e;font-weight:600}
 <script src="config.js"></script>
 
 <script>
-// CORRIGIDO: Agora pega primeiro do localStorage, se não tiver usa o CONFIG
 let config = JSON.parse(localStorage.getItem('rifa-config')) || CONFIG; 
 let numeros = JSON.parse(localStorage.getItem('rifa-numeros')) || {};
 let reservas = JSON.parse(localStorage.getItem('rifa-reservas')) || [];
 let selecionados = [];
 
+// MOSTRA ADMIN SÓ SE TIVER ?admin NA URL
+const urlParams = new URLSearchParams(window.location.search);
+const isAdmin = urlParams.has('admin');
+
 function init() {
+  if(isAdmin) {
+    document.getElementById('aba-admin').style.display = 'block';
+    document.getElementById('aba-cliente').style.display = 'none';
+  }
+  
   for(let i=1;i<=config.total;i++){
     if(!numeros[i]) numeros[i] = {status:'disponivel'};
   }
@@ -265,12 +266,15 @@ function reservar(){
     return;
   }
   
+  const pedidoId = 'PED' + Date.now(); // ID único pro pagamento
+  
   const reserva = {
     id: Date.now(),
+    pedidoId: pedidoId, // USADO PRA CONECTAR COM GATEWAY
     numeros: [...selecionados],
     nome, whatsapp,
     valor: selecionados.length * config.valor,
-    status: 'reservado',
+    status: 'aguardando_pagamento', // NOVO STATUS
     data: new Date().toLocaleString('pt-BR')
   };
   
@@ -283,6 +287,23 @@ function reservar(){
   document.getElementById('nome').value = '';
   document.getElementById('whatsapp').value = '';
   renderizar();
+  
+  // AQUI VOCÊ CHAMA SUA API DE PAGAMENTO
+  // criarCobrancaMercadoPago(pedidoId, reserva.valor);
+}
+
+// FUNÇÃO PRA SER CHAMADA PELO WEBHOOK DO MERCADO PAGO/PAGSEGURO
+function webhookConfirmar(pedidoId){
+  const reserva = reservas.find(r=>r.pedidoId===pedidoId);
+  if(reserva && reserva.status==='aguardando_pagamento'){
+    reserva.status='pago';
+    reserva.numeros.forEach(n=>numeros[n].status='pago');
+    salvarDados();
+    renderizar();
+    console.log('Pagamento confirmado:', pedidoId);
+    return true;
+  }
+  return false;
 }
 
 function gerarPix(reserva){
@@ -304,13 +325,6 @@ function fecharModal(){
   document.getElementById('modal-pix').classList.remove('active');
 }
 
-function mostrarAba(aba){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('aba-cliente').style.display = aba==='cliente'?'block':'none';
-  document.getElementById('aba-admin').style.display = aba==='admin'?'block':'none';
-}
-
 function loginAdmin(){
   if(document.getElementById('senha-admin').value === CONFIG.senhaAdmin){
     document.getElementById('admin-login').style.display='none';
@@ -329,9 +343,9 @@ function carregarAdmin(){
       <td>${r.nome}</td>
       <td>${r.whatsapp}</td>
       <td>R$ ${r.valor.toFixed(2)}</td>
-      <td><span class="badge ${r.status}">${r.status.toUpperCase()}</span></td>
+      <td><span class="badge ${r.status}">${r.status.toUpperCase().replace('_',' ')}</span></td>
       <td class="actions">
-        ${r.status==='reservado'?`<button class="btn-sm btn-green" onclick="confirmarPagamento(${r.id})">Confirmar</button>`:''}
+        ${r.status==='aguardando_pagamento'||r.status==='reservado'?`<button class="btn-sm btn-green" onclick="confirmarPagamento(${r.id})">Confirmar</button>`:''}
         <button class="btn-sm btn-red" onclick="cancelarReserva(${r.id})">Cancelar</button>
       </td>
     </tr>
@@ -385,8 +399,8 @@ function salvarConfig(){
   config.pix = document.getElementById('cfg-pix').value;
   config.nomePix = document.getElementById('cfg-nomepix').value;
   
-  salvarDados(); // CORRIGIDO: Salva no localStorage
-  renderizar(); // CORRIGIDO: Só atualiza a tela, não reseta os números
+  salvarDados();
+  renderizar();
   alert('Configurações salvas!');
 }
 
