@@ -163,7 +163,6 @@ th{color:#22c55e;font-weight:600}
     <button class="btn" style="background:#27272a;color:#e4e4e7;margin-top:12px" onclick="fecharModal()">Fechar</button>
   </div>
 </div>
-
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/+esm'
 
@@ -185,7 +184,18 @@ const isAdmin = urlParams.has('admin');
 
 async function init() {
   const { data: cfgData } = await _supabase.from('rifas').select('*').eq('id', 1).single();
-  config = cfgData || {id:1,nome:'Rifa Digital',total:100,valor:3.00,pix:'',nomePix:'',senhaAdmin:'admin123'};
+  
+  config = {
+    id: cfgData?.id || 1,
+    nome: cfgData?.nome || 'Rifa Digital',
+    premio: cfgData?.premio || 'Prêmio a definir',
+    imagemPremio: cfgData?.imagem_premio || '',
+    total: cfgData?.total_numeros || 100,
+    valor: cfgData?.valor_numero || 3.00,
+    pix: cfgData?.pix || '',
+    nomePix: cfgData?.nomePix || '',
+    senhaAdmin: cfgData?.senhaAdmin || 'admin123'
+  };
   
   const { data: numsData } = await _supabase.from('numeros').select('*');
   numsData?.forEach(n => { numeros[n.numero] = { status: n.status }; });
@@ -209,29 +219,44 @@ function escutarTempoReal() {
       numeros[payload.new.numero] = { status: payload.new.status };
       renderizar();
     })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'rifas' }, payload => {
+      if(payload.new.id === 1) {
+        config.premio = payload.new.premio;
+        config.imagemPremio = payload.new.imagem_premio;
+        config.total = payload.new.total_numeros;
+        config.valor = payload.new.valor_numero;
+        config.nome = payload.new.nome;
+        renderizar();
+      }
+    })
     .subscribe();
 }
 
 function renderizar(){
   document.getElementById('rifa-nome').textContent = config.nome;
   document.getElementById('premio-desc').textContent = config.premio || 'Prêmio a definir';
+  
   const imgPremio = document.getElementById('premio-img');
   if(config.imagemPremio) {
     imgPremio.src = config.imagemPremio;
     imgPremio.style.display = 'block';
+    imgPremio.onerror = function() {
+      this.style.display = 'none';
+      console.log('Erro ao carregar imagem. Use Imgur ou Github.');
+    };
   } else {
     imgPremio.style.display = 'none';
   }
   
   document.getElementById('total-nums').textContent = config.total;
-  document.getElementById('valor-num').textContent = `R$ ${config.valor.toFixed(2)}`;
+  document.getElementById('valor-num').textContent = `R$ ${config.valor.toFixed(2).replace('.',',')}`;
   
   let disponiveis = 0;
   const grid = document.getElementById('numbers-grid');
   grid.innerHTML = '';
   
   for(let i=1;i<=config.total;i++){
-    const num = numeros[i];
+    const num = numeros[i] || {status:'disponivel'};
     if(num.status==='disponivel') disponiveis++;
     
     const div = document.createElement('div');
@@ -266,7 +291,7 @@ function atualizarCarrinho(){
     cartItems.innerHTML = selecionados.sort((a,b)=>a-b).map(n=>`<div class="cart-tag">${String(n).padStart(3,'0')}</div>`).join('');
     document.getElementById('btn-reservar').disabled = false;
   }
-  document.getElementById('total-valor').textContent = `R$ ${total.toFixed(2)}`;
+  document.getElementById('total-valor').textContent = `R$ ${total.toFixed(2).replace('.',',')}`;
 }
 
 window.reservar = async function(){
@@ -410,9 +435,9 @@ window.salvarConfig = async function(){
     id: 1,
     nome: document.getElementById('cfg-nome').value,
     premio: document.getElementById('cfg-premio').value,
-    imagemPremio: document.getElementById('cfg-imagem').value,
-    total: parseInt(document.getElementById('cfg-total').value),
-    valor: parseFloat(document.getElementById('cfg-valor').value),
+    imagem_premio: document.getElementById('cfg-imagem').value,
+    total_numeros: parseInt(document.getElementById('cfg-total').value),
+    valor_numero: parseFloat(document.getElementById('cfg-valor').value),
     pix: document.getElementById('cfg-pix').value,
     nomePix: document.getElementById('cfg-nomepix').value,
     senhaAdmin: config.senhaAdmin
