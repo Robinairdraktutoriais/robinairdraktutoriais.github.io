@@ -3,58 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin | RT-RIFAS</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <title>Teste Admin</title>
   <style>
-    :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --green: #22c55e;
-      --red: #ef4444;
-      --yellow: #eab308;
-      --blue: #3b82f6;
-      --text: #f1f5f9;
-      --text-muted: #94a3b8;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Poppins', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      padding: 16px;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       min-height: 100vh;
+      margin: 0;
     }
-    .container { max-width: 800px; width: 100%; margin: 0 auto; }
     .card {
-      background: var(--card);
-      border-radius: 16px;
+      background: #1e293b;
       padding: 24px;
-      border: 1px solid #334155;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      margin-bottom: 16px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 400px;
     }
-    .login-box input, .form-group input {
+    input {
       width: 100%;
       padding: 14px;
-      background: var(--bg);
+      background: #0f172a;
       border: 1px solid #334155;
       border-radius: 8px;
-      color: var(--text);
+      color: #f1f5f9;
       font-size: 16px;
       margin: 8px 0;
-      font-family: 'Poppins', sans-serif;
+      box-sizing: border-box;
     }
-    .form-group label {
-      display: block;
-      margin-top: 12px;
-      color: var(--text-muted);
-      font-size: 14px;
-    }
-    .btn {
+    button {
       width: 100%;
       padding: 14px;
-      background: var(--green);
+      background: #22c55e;
       color: #000;
       border: none;
       border-radius: 8px;
@@ -62,395 +44,49 @@
       font-size: 16px;
       cursor: pointer;
       margin-top: 12px;
-      font-family: 'Poppins', sans-serif;
     }
-    .btn:hover { background: #16a34a; }
-    .btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
-    .btn-sair { background: var(--red); color: white; margin-bottom: 16px; }
-    .btn-sortear { background: var(--yellow); color: #000; font-size: 18px; margin-top: 20px; }
-    .btn-salvar { background: var(--blue); color: white; }
-    h1 { text-align: center; margin-bottom: 24px; }
-    h2 { margin: 20px 0 12px; font-size: 18px; color: var(--blue); }
-    .stats { display: flex; justify-content: space-between; margin-bottom: 16px; font-size: 14px; }
-    .stats b { color: var(--green); }
-    .numeros-grid {
-      display: grid;
-      grid-template-columns: repeat(10, 1fr);
-      gap: 6px;
-      margin: 16px 0;
-    }
-    .numero {
-      background: var(--green);
-      color: #000;
-      aspect-ratio: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 12px;
-      cursor: pointer;
-      transition: 0.2s;
-      user-select: none;
-    }
-    .numero:hover { transform: scale(1.1); }
-    .vendido { background: var(--red); color: white; }
-    .legenda { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); margin-top: 12px; justify-content: center; }
-    .legenda div { display: flex; align-items: center; gap: 6px; }
-    .dot { width: 12px; height: 12px; border-radius: 3px; }
-    .dot.livre { background: var(--green); }
-    .dot.vendido { background: var(--red); }
-    .erro { color: var(--red); font-size: 14px; text-align: center; margin-top: 8px; display: none; }
-    .sucesso { color: var(--green); font-size: 14px; text-align: center; margin-top: 8px; display: none; }
-    #painel { display: none; }
-    .resultado-sorteio {
-      background: var(--bg);
-      border: 2px solid var(--yellow);
-      border-radius: 12px;
-      padding: 20px;
-      margin-top: 20px;
-      text-align: center;
-      display: none;
-    }
-    .resultado-sorteio h3 { color: var(--yellow); font-size: 20px; margin-bottom: 12px; }
-    .numero-ganhador { font-size: 48px; font-weight: 700; color: var(--yellow); margin: 16px 0; }
-    .status-rifa { text-align: center; padding: 8px; border-radius: 8px; font-weight: 600; margin-bottom: 16px; }
-    .status-aberta { background: #14532d; color: var(--green); }
-    .status-encerrada { background: #7f1d1d; color: var(--red); }
-    .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-    .tab {
-      flex: 1;
-      padding: 12px;
-      background: var(--bg);
-      border: 1px solid #334155;
-      border-radius: 8px;
-      text-align: center;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    .tab.active { background: var(--blue); color: white; border-color: var(--blue); }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .preview-img { width: 100%; border-radius: 8px; margin-top: 8px; }
+    .erro { color: #ef4444; display: none; text-align: center; margin-top: 8px; }
+    #painel { display: none; text-align: center; }
   </style>
 </head>
 <body>
-  <div class="container">
-    
-    <!-- TELA DE LOGIN -->
-    <div class="card login-box" id="login">
-      <h1>Painel Admin 🔐</h1>
-      <input type="text" id="usuario" placeholder="Usuário" autocomplete="username">
-      <input type="password" id="senha" placeholder="Senha" autocomplete="current-password">
-      <button class="btn" onclick="fazerLogin()">Entrar</button>
-      <p class="erro" id="erro-login">Usuário ou senha incorretos</p>
-      <p class="erro" id="erro-config" style="display:none;">Erro: config.js não encontrado!</p>
-    </div>
-
-    <!-- PAINEL COMPLETO -->
-    <div id="painel">
-      <button class="btn btn-sair" onclick="sair()">Sair do Painel</button>
-      
-      <div class="card">
-        <h1>Painel RT-RIFAS</h1>
-        
-        <div class="tabs">
-          <div class="tab active" onclick="mudarAba('config')">Configurações</div>
-          <div class="tab" onclick="mudarAba('numeros')">Números</div>
-          <div class="tab" onclick="mudarAba('sorteio')">Sorteio</div>
-        </div>
-
-        <!-- ABA CONFIGURAÇÕES -->
-        <div class="tab-content active" id="tab-config">
-          <h2>Editar Rifa</h2>
-          <div class="form-group">
-            <label>Nome do Prêmio</label>
-            <input type="text" id="premio" placeholder="iPhone 15 Pro Max 256GB">
-          </div>
-          <div class="form-group">
-            <label>URL da Imagem do Prêmio</label>
-            <input type="text" id="imagemPremio" placeholder="https://i.imgur.com/...">
-            <img id="preview-img" class="preview-img" style="display:none;">
-          </div>
-          <div class="form-group">
-            <label>Valor por Número (R$)</label>
-            <input type="number" id="valor" step="0.01" placeholder="3.00">
-          </div>
-          <div class="form-group">
-            <label>Total de Números</label>
-            <input type="number" id="total" placeholder="100">
-          </div>
-          <button class="btn btn-salvar" onclick="salvarConfig()">💾 Salvar Configurações</button>
-          <p class="sucesso" id="sucesso-config">Configurações salvas!</p>
-        </div>
-
-        <!-- ABA NÚMEROS -->
-        <div class="tab-content" id="tab-numeros">
-          <h2>Gerenciar Números</h2>
-          <div class="status-rifa" id="status-rifa">Status: Aberta</div>
-          <div class="stats">
-            <span>Vendidos: <b id="qtd-vendidos">0</b></span>
-            <span>Disponíveis: <b id="qtd-disponiveis">100</b></span>
-            <span>Total: <b id="qtd-total">100</b></span>
-          </div>
-          <div class="numeros-grid" id="numeros"></div>
-          <div class="legenda">
-            <div><div class="dot livre"></div> Disponível</div>
-            <div><div class="dot vendido"></div> Vendido</div>
-          </div>
-        </div>
-
-        <!-- ABA SORTEIO -->
-        <div class="tab-content" id="tab-sorteio">
-          <h2>Sorteio</h2>
-          <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">
-            Clique abaixo para sortear entre os números vendidos. A rifa será encerrada automaticamente.
-          </p>
-          <button class="btn btn-sortear" id="btn-sortear" onclick="executarSorteio()" disabled>
-            🎲 Realizar Sorteio Agora
-          </button>
-          <div class="resultado-sorteio" id="resultado-sorteio">
-            <h3>🏆 Número Sorteado</h3>
-            <div class="numero-ganhador" id="numero-ganhador">00</div>
-            <p>Sorteado em: <span id="data-sorteio"></span></p>
-            <p>Ganhador: <span id="nome-ganhador"></span></p>
-            <p>WhatsApp: <span id="whatsapp-ganhador"></span></p>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
+  <div class="card" id="login">
+    <h1>Teste Login</h1>
+    <input type="text" id="usuario" placeholder="Usuário">
+    <input type="password" id="senha" placeholder="Senha">
+    <button onclick="fazerLogin()">Entrar</button>
+    <p class="erro" id="erro-login">Usuário ou senha incorretos</p>
   </div>
 
-<!-- IMPORTA O CONFIG COM A SENHA -->
-<script src="config.js"></script>
+  <div class="card" id="painel">
+    <h1>✅ Logou!</h1>
+    <p>Se você viu isso, o login funciona.</p>
+    <button onclick="sair()">Sair</button>
+  </div>
 
 <script>
-  // ===== CONFIGURAÇÃO SUPABASE =====
-  const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[STRIPPED 127 bytes].O1c7QkW2zQlKxRzL7kJ8mN6pQ4sT3vY2xZ5wE8rF1gH';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  // =================================
-
-  // VERIFICA SE CONFIG.JS CARREGOU
-  let ADMIN_USER = "admin";
-  let ADMIN_PASS = "rtmods";
-  
-  try {
-    if (typeof CONFIG !== 'undefined' && CONFIG.USER && CONFIG.PASS) {
-      ADMIN_USER = CONFIG.USER;
-      ADMIN_PASS = CONFIG.PASS;
-    } else {
-      console.error('CONFIG.js não encontrado ou sem USER/PASS. Usando login padrão.');
-      document.getElementById('erro-config').style.display = 'block';
-      document.getElementById('erro-config').textContent = 'Aviso: config.js não carregou. Use admin / rtmods';
-    }
-  } catch(e) {
-    console.error('Erro ao ler CONFIG:', e);
-    document.getElementById('erro-config').style.display = 'block';
-  }
-  
-  let rifaId = null;
-  let numerosVendidos = [];
-  let dadosSorteio = null;
-
-  if (localStorage.getItem('rifa_admin_logado') === 'true') {
-    mostrarPainel();
-  }
+  const ADMIN_USER = "admin";
+  const ADMIN_PASS = "rtmods";
 
   function fazerLogin() {
+    alert('Botão clicou!'); // Debug
     const usuario = document.getElementById('usuario').value;
     const senha = document.getElementById('senha').value;
     
+    console.log('Tentando logar:', usuario, senha);
+    
     if (usuario === ADMIN_USER && senha === ADMIN_PASS) {
-      localStorage.setItem('rifa_admin_logado', 'true');
-      mostrarPainel();
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('painel').style.display = 'block';
     } else {
       document.getElementById('erro-login').style.display = 'block';
     }
   }
 
   function sair() {
-    localStorage.removeItem('rifa_admin_logado');
-    location.reload();
+    document.getElementById('login').style.display = 'block';
+    document.getElementById('painel').style.display = 'none';
   }
-
-  async function mostrarPainel() {
-    document.getElementById('login').style.display = 'none';
-    document.getElementById('painel').style.display = 'block';
-    await carregarDados();
-  }
-
-  function mudarAba(aba) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
-    document.getElementById('tab-' + aba).classList.add('active');
-  }
-
-  async function carregarDados() {
-    // 1. Busca a rifa
-    const { data: rifa } = await supabase.from('rifas').select('*').eq('id', 1).single();
-    if (rifa) {
-      rifaId = rifa.id;
-      document.getElementById('premio').value = rifa.premio || '';
-      document.getElementById('imagemPremio').value = rifa.imagem_premio || '';
-      document.getElementById('valor').value = rifa.valor_numero || '';
-      document.getElementById('total').value = rifa.total_numeros || '';
-      document.getElementById('qtd-total').textContent = rifa.total_numeros || 0;
-      
-      if (rifa.imagem_premio) {
-        document.getElementById('preview-img').src = rifa.imagem_premio;
-        document.getElementById('preview-img').style.display = 'block';
-      }
-
-      if (rifa.status === 'encerrada') {
-        dadosSorteio = {
-          numero: rifa.numero_ganhador,
-          data: rifa.data_sorteio,
-          nome: rifa.nome_ganhador,
-          whatsapp: rifa.whatsapp_ganhador
-        };
-        exibirResultadoSorteio();
-      }
-    }
-
-    // 2. Busca números vendidos
-    const { data: vendidos } = await supabase.from('numeros_rifa').select('numero').eq('status', 'vendido');
-    numerosVendidos = vendidos ? vendidos.map(n => n.numero) : [];
-    
-    renderizarNumeros();
-    atualizarStatusRifa();
-  }
-
-  async function salvarConfig() {
-    const premio = document.getElementById('premio').value;
-    const imagemPremio = document.getElementById('imagemPremio').value;
-    const valor = parseFloat(document.getElementById('valor').value);
-    const total = parseInt(document.getElementById('total').value);
-
-    const { error } = await supabase.from('rifas').update({
-      premio,
-      imagem_premio: imagemPremio,
-      valor_numero: valor,
-      total_numeros: total
-    }).eq('id', rifaId);
-
-    if (!error) {
-      document.getElementById('sucesso-config').style.display = 'block';
-      setTimeout(() => {
-        document.getElementById('sucesso-config').style.display = 'none';
-      }, 3000);
-      await carregarDados();
-    } else {
-      alert('Erro ao salvar: ' + error.message);
-    }
-  }
-
-  function renderizarNumeros() {
-    const total = parseInt(document.getElementById('total').value) || 100;
-    let html = '';
-    document.getElementById('qtd-vendidos').textContent = numerosVendidos.length;
-    document.getElementById('qtd-disponiveis').textContent = total - numerosVendidos.length;
-
-    for(let i = 1; i <= total; i++) {
-      if(numerosVendidos.includes(i)) {
-        html += `<div class="numero vendido">${i.toString().padStart(2, '0')}</div>`;
-      } else {
-        html += `<div class="numero">${i.toString().padStart(2, '0')}</div>`;
-      }
-    }
-    document.getElementById('numeros').innerHTML = html;
-    
-    const btnSortear = document.getElementById('btn-sortear');
-    btnSortear.disabled = numerosVendidos.length === 0 || dadosSorteio;
-  }
-
-  function atualizarStatusRifa() {
-    const statusEl = document.getElementById('status-rifa');
-    if (dadosSorteio) {
-      statusEl.textContent = 'Status: Encerrada';
-      statusEl.className = 'status-rifa status-encerrada';
-    } else {
-      statusEl.textContent = 'Status: Aberta';
-      statusEl.className = 'status-rifa status-aberta';
-    }
-  }
-
-  async function executarSorteio() {
-    if (numerosVendidos.length === 0) {
-      alert('Nenhum número foi vendido ainda!');
-      return;
-    }
-
-    const confirmar = confirm(`ATENÇÃO!\n\nVocê vai sortear entre ${numerosVendidos.length} números vendidos.\n\nEsta ação vai ENCERRAR a rifa e não pode ser desfeita.\n\nDeseja continuar?`);
-    if (!confirmar) return;
-
-    const array = new Uint32Array(1);
-    crypto.getRandomValues(array);
-    const indiceSorteado = array[0] % numerosVendidos.length;
-    const numeroSorteado = numerosVendidos[indiceSorteado];
-
-    // Busca dados do ganhador
-    const { data: numeroData } = await supabase
-      .from('numeros_rifa')
-      .select('pedido_id')
-      .eq('numero', numeroSorteado)
-      .single();
-
-    const { data: pedidoData } = await supabase
-      .from('pedidos')
-      .select('nome, whatsapp')
-      .eq('id', numeroData.pedido_id)
-      .single();
-
-    const timestamp = new Date().toISOString();
-
-    // Salva no banco
-    await supabase.from('rifas').update({
-      status: 'encerrada',
-      numero_ganhador: numeroSorteado,
-      data_sorteio: timestamp,
-      nome_ganhador: pedidoData.nome,
-      whatsapp_ganhador: pedidoData.whatsapp
-    }).eq('id', rifaId);
-
-    dadosSorteio = {
-      numero: numeroSorteado,
-      data: timestamp,
-      nome: pedidoData.nome,
-      whatsapp: pedidoData.whatsapp
-    };
-
-    exibirResultadoSorteio();
-    renderizarNumeros();
-    atualizarStatusRifa();
-  }
-
-  function exibirResultadoSorteio() {
-    document.getElementById('numero-ganhador').textContent = dadosSorteio.numero.toString().padStart(2, '0');
-    document.getElementById('data-sorteio').textContent = new Date(dadosSorteio.data).toLocaleString('pt-BR');
-    document.getElementById('nome-ganhador').textContent = dadosSorteio.nome || 'Não encontrado';
-    document.getElementById('whatsapp-ganhador').textContent = dadosSorteio.whatsapp || 'Não encontrado';
-    document.getElementById('resultado-sorteio').style.display = 'block';
-    document.getElementById('btn-sortear').style.display = 'none';
-  }
-
-  document.getElementById('imagemPremio').addEventListener('input', function(e) {
-    const url = e.target.value;
-    const img = document.getElementById('preview-img');
-    if (url) {
-      img.src = url;
-      img.style.display = 'block';
-    } else {
-      img.style.display = 'none';
-    }
-  });
-
-  document.getElementById('senha').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') fazerLogin();
-  });
 </script>
 
 </body>
