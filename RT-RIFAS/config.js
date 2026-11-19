@@ -7,5 +7,10 @@ const CONFIG = {
   valor: 3.00,
   pix: "38991464508",
   nomePix: "JOAO PAULO",
-  senhaAdmin: "rtmods"
+  
+  // LOGIN DO PAINEL ADMIN
+  USER: "admin",        // ← Adiciona isso
+  PASS: "rtmods",       // ← E isso
+  
+  senhaAdmin: "rtmods" // Pode deixar ou apagar, não tá sendo usado
 };
