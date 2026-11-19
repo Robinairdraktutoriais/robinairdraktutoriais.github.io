@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin | RT-RIFAS</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #0f172a;
@@ -18,7 +17,7 @@
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Poppins', sans-serif;
+      font-family: Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
       padding: 16px;
@@ -42,7 +41,7 @@
       color: var(--text);
       font-size: 16px;
       margin: 8px 0;
-      font-family: 'Poppins', sans-serif;
+      box-sizing: border-box;
     }
     .form-group label {
       display: block;
@@ -61,7 +60,6 @@
       font-size: 16px;
       cursor: pointer;
       margin-top: 12px;
-      font-family: 'Poppins', sans-serif;
     }
     .btn:hover { background: #16a34a; }
     .btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
@@ -128,7 +126,6 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     .preview-img { width: 100%; border-radius: 8px; margin-top: 8px; }
-    .loading { text-align: center; color: var(--text-muted); padding: 20px; }
   </style>
 </head>
 <body>
@@ -138,20 +135,20 @@
       <h1>Painel Admin 🔐</h1>
       <input type="text" id="usuario" placeholder="Usuário" autocomplete="username">
       <input type="password" id="senha" placeholder="Senha" autocomplete="current-password">
-      <button id="btn-entrar">Entrar</button>
+      <button class="btn" id="btn-entrar">Entrar</button>
       <p class="erro" id="erro-login">Usuário ou senha incorretos</p>
     </div>
 
     <div id="painel">
-      <button class="btn btn-sair" onclick="sair()">Sair do Painel</button>
+      <button class="btn btn-sair" id="btn-sair">Sair do Painel</button>
       
       <div class="card">
         <h1>Painel RT-RIFAS</h1>
         
         <div class="tabs">
-          <div class="tab active" onclick="mudarAba('config')">Configurações</div>
-          <div class="tab" onclick="mudarAba('numeros')">Números</div>
-          <div class="tab" onclick="mudarAba('sorteio')">Sorteio</div>
+          <div class="tab active" data-aba="config">Configurações</div>
+          <div class="tab" data-aba="numeros">Números</div>
+          <div class="tab" data-aba="sorteio">Sorteio</div>
         </div>
 
         <div class="tab-content active" id="tab-config">
@@ -173,7 +170,7 @@
             <label>Total de Números</label>
             <input type="number" id="total">
           </div>
-          <button class="btn btn-salvar" onclick="salvarConfig()">💾 Salvar Configurações</button>
+          <button class="btn btn-salvar" id="btn-salvar">💾 Salvar Configurações</button>
           <p class="sucesso" id="sucesso-config">Configurações salvas!</p>
           <p class="erro" id="erro-config"></p>
         </div>
@@ -186,7 +183,7 @@
             <span>Disponíveis: <b id="qtd-disponiveis">0</b></span>
             <span>Total: <b id="qtd-total">0</b></span>
           </div>
-          <div class="numeros-grid" id="numeros"><div class="loading">Carregando números...</div></div>
+          <div class="numeros-grid" id="numeros"><div class="loading">Carregando...</div></div>
           <div class="legenda">
             <div><div class="dot livre"></div> Disponível</div>
             <div><div class="dot vendido"></div> Vendido</div>
@@ -198,7 +195,7 @@
           <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">
             Clique abaixo para sortear entre os números vendidos. A rifa será encerrada automaticamente.
           </p>
-          <button class="btn btn-sortear" id="btn-sortear" onclick="executarSorteio()" disabled>
+          <button class="btn btn-sortear" id="btn-sortear" disabled>
             🎲 Realizar Sorteio Agora
           </button>
           <div class="resultado-sorteio" id="resultado-sorteio">
@@ -217,11 +214,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ===== LOGIN FIXO - SEM CONFIG.JS =====
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "rtmods";
 
-// ===== SUPABASE COM PROTEÇÃO =====
 let supabase = null;
 try {
   const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co';
@@ -229,15 +224,38 @@ try {
   supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 } catch(e) {
   console.error('Erro Supabase:', e);
-  alert('Erro ao conectar com banco de dados');
 }
-// =================================
 
 let rifaId = null;
 let numerosVendidos = [];
 let dadosSorteio = null;
 
+// EVENTOS
 document.getElementById('btn-entrar').addEventListener('click', fazerLogin);
+document.getElementById('btn-sair').addEventListener('click', sair);
+document.getElementById('btn-salvar').addEventListener('click', salvarConfig);
+document.getElementById('btn-sortear').addEventListener('click', executarSorteio);
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    mudarAba(this.dataset.aba);
+  });
+});
+
+document.getElementById('imagemPremio').addEventListener('input', function(e) {
+  const url = e.target.value;
+  const img = document.getElementById('preview-img');
+  if (url) {
+    img.src = url;
+    img.style.display = 'block';
+  } else {
+    img.style.display = 'none';
+  }
+});
+
+document.getElementById('senha').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') fazerLogin();
+});
 
 if (localStorage.getItem('rifa_admin_logado') === 'true') {
   mostrarPainel();
@@ -269,13 +287,13 @@ async function mostrarPainel() {
 function mudarAba(aba) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
+  document.querySelector(`[data-aba="${aba}"]`).classList.add('active');
   document.getElementById('tab-' + aba).classList.add('active');
 }
 
 async function carregarDados() {
   if (!supabase) {
-    document.getElementById('status-rifa').textContent = 'Erro: Sem conexão';
+    document.getElementById('status-rifa').textContent = 'Erro: Sem conexão com banco';
     return;
   }
   try {
@@ -428,21 +446,6 @@ function exibirResultadoSorteio() {
   document.getElementById('resultado-sorteio').style.display = 'block';
   document.getElementById('btn-sortear').style.display = 'none';
 }
-
-document.getElementById('imagemPremio').addEventListener('input', function(e) {
-  const url = e.target.value;
-  const img = document.getElementById('preview-img');
-  if (url) {
-    img.src = url;
-    img.style.display = 'block';
-  } else {
-    img.style.display = 'none';
-  }
-});
-
-document.getElementById('senha').addEventListener('keypress', function(e) {
-  if (e.key === 'Enter') fazerLogin();
-});
 </script>
 
 </body>
