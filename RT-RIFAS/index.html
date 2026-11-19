@@ -60,12 +60,12 @@ th{color:#22c55e;font-weight:600}
 @media(max-width:768px){.grid-2{grid-template-columns:1fr}.numbers-grid{grid-template-columns:repeat(auto-fill,minmax(50px,1fr))}}
 </style>
 </head>
+
 <body>
 <div class="container">
   <div class="header">
     <h1 id="rifa-nome">Rifa Digital</h1>
     <p>Escolha seus números da sorte e concorra!</p>
-    
     <div class="premio-box">
       <h2>🎁 PRÊMIO</h2>
       <img id="premio-img" src="" alt="Foto do Prêmio" 
@@ -356,10 +356,37 @@ window.reservar = async function(){
   document.getElementById('btn-reservar').textContent = 'Reservar Números';
 }
 
-window.copiarPix = function(){
+// FUNÇÃO COPIAR PIX CORRIGIDA - AGORA FUNCIONA NO CELULAR
+window.copiarPix = async function(){
   const codigo = document.getElementById('pix-copia-cola').textContent;
-  navigator.clipboard.writeText(codigo);
-  alert('Código PIX copiado!');
+  const btn = event.target;
+  const textoOriginal = btn.textContent;
+  
+  try {
+    await navigator.clipboard.writeText(codigo);
+    btn.textContent = 'Copiado! ✅';
+  } catch (err) {
+    const textArea = document.createElement("textarea");
+    textArea.value = codigo;
+    textArea.style.position = "fixed";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      document.execCommand('copy');
+      btn.textContent = 'Copiado! ✅';
+    } catch (err) {
+      btn.textContent = 'Erro ao copiar';
+      alert('Não consegui copiar. Segura o dedo no código e copia manual.');
+    }
+    
+    document.body.removeChild(textArea);
+  }
+  
+  setTimeout(() => {
+    btn.textContent = textoOriginal;
+  }, 2000);
 }
 
 window.fecharModal = function(){
