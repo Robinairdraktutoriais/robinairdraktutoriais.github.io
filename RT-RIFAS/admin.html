@@ -132,7 +132,6 @@
     .preview-img { width: 100%; border-radius: 8px; margin-top: 8px; }
   </style>
   
-  <!-- SUPABASE VIA ES MODULES - NÃO BLOQUEIA -->
   <script type="importmap">
     {
       "imports": {
@@ -231,8 +230,9 @@ import { createClient } from '@supabase/supabase-js';
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "rtmods";
 
+// TROCA A CHAVE AQUI 👇
 const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[STRIPPED 127 bytes].O1c7QkW2zQlKxRzL7kJ8mN6pQ4sT3vY2xZ5wE8rF1gH';
+const SUPABASE_ANON_KEY = 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh';
 
 let supabase = null;
 let rifaId = null;
@@ -267,8 +267,7 @@ function iniciarSupabase() {
     supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     carregarDados();
   } catch(e) {
-    alert('Erro ao iniciar Supabase: ' + e.message);
-    document.getElementById('status-rifa').textContent = 'Erro: ' + e.message;
+    document.getElementById('status-rifa').textContent = 'Erro Supabase: ' + e.message;
   }
 }
 
@@ -315,8 +314,9 @@ async function carregarDados() {
     renderizarNumeros();
     atualizarStatusRifa();
   } catch(e) {
-    console.error('Erro ao carregar:', e);
     document.getElementById('status-rifa').textContent = 'Erro: ' + e.message;
+    document.getElementById('erro-config').textContent = 'Erro: ' + e.message;
+    document.getElementById('erro-config').style.display = 'block';
   }
 }
 
