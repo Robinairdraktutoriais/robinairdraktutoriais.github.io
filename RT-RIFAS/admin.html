@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin | RT-RIFAS</title>
   <style>
-    body { font-family: Arial; background: #0f172a; color: #f1f5f9; padding: 16px; }
-    .card { background: #1e293b; padding: 24px; border-radius: 16px; margin: 0 auto; max-width: 800px; }
+    body { font-family: Arial; background: #0f172a; color: #f1f5f9; padding: 16px; min-height: 100vh; margin: 0; }
+    .container { max-width: 800px; width: 100%; margin: 0 auto; }
+    .card { background: #1e293b; padding: 24px; border-radius: 16px; border: 1px solid #334155; margin-bottom: 16px; }
     input { width: 100%; padding: 14px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9; font-size: 16px; margin: 8px 0; box-sizing: border-box; }
     button { width: 100%; padding: 14px; background: #22c55e; color: #000; border: none; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 12px; }
     .erro { color: #ef4444; display: none; text-align: center; margin-top: 8px; }
@@ -15,83 +16,53 @@
   </style>
 </head>
 <body>
-  <div class="card" id="login">
-    <h1>Painel Admin 🔐</h1>
-    <input type="text" id="usuario" placeholder="Usuário">
-    <input type="password" id="senha" placeholder="Senha">
-    <button id="btn-entrar">Entrar</button>
-    <p class="erro" id="erro-login">Usuário ou senha incorretos</p>
-    <div id="debug">Debug: Iniciando...</div>
-  </div>
+  <div class="container">
+    <div class="card" id="login">
+      <h1>Painel Admin 🔐</h1>
+      <input type="text" id="usuario" placeholder="Usuário">
+      <input type="password" id="senha" placeholder="Senha">
+      <button id="btn-entrar">Entrar</button>
+      <p class="erro" id="erro-login">Usuário ou senha incorretos</p>
+      <div id="debug">Debug: Iniciando...</div>
+    </div>
 
-  <div class="card" id="painel">
-    <h1>✅ Logou no Painel!</h1>
-    <p>Se você vê isso, o login funcionou.</p>
-    <button onclick="sair()">Sair</button>
+    <div class="card" id="painel">
+      <h1>✅ Logou no Painel!</h1>
+      <p>Login funcionando. Agora vou adicionar o Supabase.</p>
+      <button onclick="sair()">Sair</button>
+    </div>
   </div>
-
-<script src="config.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
+// DEBUG
 const debug = (msg) => {
   document.getElementById('debug').textContent += '\n' + msg;
   console.log(msg);
 };
 
-debug('1. Script iniciado');
+debug('1. JS Carregado');
 
-// Pega login
-let ADMIN_USER = "admin";
-let ADMIN_PASS = "rtmods";
+// LOGIN DIRETO - SEM config.js
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "rtmods";
 
-try {
-  debug('2. Tentando ler CONFIG...');
-  if (typeof CONFIG !== 'undefined') {
-    debug('CONFIG existe: ' + JSON.stringify(CONFIG));
-    if (CONFIG.USER) ADMIN_USER = CONFIG.USER;
-    if (CONFIG.PASS) ADMIN_PASS = CONFIG.PASS;
-  } else {
-    debug('CONFIG não encontrado, usando padrão');
-  }
-} catch(e) {
-  debug('ERRO ao ler CONFIG: ' + e.message);
-}
+debug('2. Login definido: ' + ADMIN_USER);
 
-debug('3. Login final: ' + ADMIN_USER + ' / ' + ADMIN_PASS);
-
-// Tenta Supabase
-let supabase = null;
-try {
-  debug('4. Tentando carregar Supabase...');
-  if (typeof window.supabase !== 'undefined') {
-    const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[STRIPPED 127 bytes].O1c7QkW2zQlKxRzL7kJ8mN6pQ4sT3vY2xZ5wE8rF1gH';
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    debug('Supabase OK');
-  } else {
-    debug('window.supabase não existe');
-  }
-} catch(e) {
-  debug('ERRO Supabase: ' + e.message);
-}
-
-debug('5. Registrando evento do botão...');
-
-// Evento do botão
+// EVENTO DO BOTÃO
 document.getElementById('btn-entrar').addEventListener('click', function() {
-  debug('6. Botão clicado!');
+  debug('3. Botão clicado!');
   const usuario = document.getElementById('usuario').value;
   const senha = document.getElementById('senha').value;
   
-  debug('Comparando: ' + usuario + ' === ' + ADMIN_USER + ' && ' + senha + ' === ' + ADMIN_PASS);
+  debug('4. Digitado: ' + usuario + ' / ' + senha);
+  debug('5. Comparando com: ' + ADMIN_USER + ' / ' + ADMIN_PASS);
   
   if (usuario === ADMIN_USER && senha === ADMIN_PASS) {
-    debug('7. Login OK!');
+    debug('6. LOGIN OK!');
     localStorage.setItem('rifa_admin_logado', 'true');
     mostrarPainel();
   } else {
-    debug('7. Login FALHOU');
+    debug('6. LOGIN FALHOU');
     document.getElementById('erro-login').style.display = 'block';
   }
 });
@@ -101,7 +72,7 @@ if (localStorage.getItem('rifa_admin_logado') === 'true') {
 }
 
 function mostrarPainel() {
-  debug('8. Mostrando painel');
+  debug('7. Mostrando painel');
   document.getElementById('login').style.display = 'none';
   document.getElementById('painel').style.display = 'block';
 }
@@ -111,7 +82,7 @@ function sair() {
   location.reload();
 }
 
-debug('9. Script carregado completo');
+debug('8. Script finalizado');
 </script>
 
 </body>
