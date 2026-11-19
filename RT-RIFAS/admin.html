@@ -130,8 +130,16 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     .preview-img { width: 100%; border-radius: 8px; margin-top: 8px; }
-    .loading { text-align: center; color: var(--text-muted); padding: 40px; }
   </style>
+  
+  <!-- SUPABASE VIA ES MODULES - NÃO BLOQUEIA -->
+  <script type="importmap">
+    {
+      "imports": {
+        "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm"
+      }
+    }
+  </script>
 </head>
 <body>
   <div class="container">
@@ -188,7 +196,7 @@
             <span>Disponíveis: <b id="qtd-disponiveis">0</b></span>
             <span>Total: <b id="qtd-total">0</b></span>
           </div>
-          <div class="numeros-grid" id="numeros"><div class="loading">Carregando números...</div></div>
+          <div class="numeros-grid" id="numeros"><div class="loading">Carregando...</div></div>
           <div class="legenda">
             <div><div class="dot livre"></div> Disponível</div>
             <div><div class="dot vendido"></div> Vendido</div>
@@ -217,16 +225,21 @@
 
   </div>
 
-<script>
+<script type="module">
+import { createClient } from '@supabase/supabase-js';
+
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "rtmods";
+
+const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[STRIPPED 127 bytes].O1c7QkW2zQlKxRzL7kJ8mN6pQ4sT3vY2xZ5wE8rF1gH';
 
 let supabase = null;
 let rifaId = null;
 let numerosVendidos = [];
 let dadosSorteio = null;
 
-function fazerLogin() {
+window.fazerLogin = function() {
   const usuario = document.getElementById('usuario').value.trim();
   const senha = document.getElementById('senha').value.trim();
   
@@ -238,7 +251,7 @@ function fazerLogin() {
   }
 }
 
-function sair() {
+window.sair = function() {
   localStorage.removeItem('rifa_admin_logado');
   location.reload();
 }
@@ -246,31 +259,20 @@ function sair() {
 function mostrarPainel() {
   document.getElementById('login').style.display = 'none';
   document.getElementById('painel').style.display = 'block';
-  carregarSupabase();
+  iniciarSupabase();
 }
 
-function carregarSupabase() {
-  // Tenta unpkg primeiro, depois jsdelivr como fallback
-  const script = document.createElement('script');
-  script.src = 'https://unpkg.com/@supabase/supabase-js@2';
-  script.onload = function() {
-    try {
-      const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co';
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[STRIPPED 127 bytes].O1c7QkW2zQlKxRzL7kJ8mN6pQ4sT3vY2xZ5wE8rF1gH';
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      carregarDados();
-    } catch(e) {
-      alert('Erro ao iniciar Supabase: ' + e.message);
-    }
-  };
-  script.onerror = function() {
-    alert('Erro: Não foi possível carregar o Supabase. Verifica sua internet ou tente em aba anônima.');
-    document.getElementById('status-rifa').textContent = 'Erro: CDN bloqueado';
-  };
-  document.head.appendChild(script);
+function iniciarSupabase() {
+  try {
+    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    carregarDados();
+  } catch(e) {
+    alert('Erro ao iniciar Supabase: ' + e.message);
+    document.getElementById('status-rifa').textContent = 'Erro: ' + e.message;
+  }
 }
 
-function mudarAba(aba) {
+window.mudarAba = function(aba) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelector(`[onclick="mudarAba('${aba}')"]`).classList.add('active');
@@ -278,10 +280,7 @@ function mudarAba(aba) {
 }
 
 async function carregarDados() {
-  if (!supabase) {
-    document.getElementById('status-rifa').textContent = 'Erro: Supabase não carregou';
-    return;
-  }
+  if (!supabase) return;
   try {
     const { data: rifa, error } = await supabase.from('rifas').select('*').eq('id', 1).single();
     if (error) throw error;
@@ -321,7 +320,7 @@ async function carregarDados() {
   }
 }
 
-async function salvarConfig() {
+window.salvarConfig = async function() {
   if (!supabase) return alert('Sem conexão com banco');
   const premio = document.getElementById('premio').value;
   const imagemPremio = document.getElementById('imagemPremio').value;
@@ -378,7 +377,7 @@ function atualizarStatusRifa() {
   }
 }
 
-async function executarSorteio() {
+window.executarSorteio = async function() {
   if (numerosVendidos.length === 0) {
     alert('Nenhum número foi vendido ainda!');
     return;
