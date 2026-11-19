@@ -164,40 +164,56 @@ th{color:#22c55e;font-weight:600}
   </div>
 </div>
 
-<script src="config.js"></script>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/+esm'
 
-<script>
-let config = JSON.parse(localStorage.getItem('rifa-config')) || CONFIG; 
-let numeros = JSON.parse(localStorage.getItem('rifa-numeros')) || {};
-let reservas = JSON.parse(localStorage.getItem('rifa-reservas')) || [];
+const SUPABASE_URL = 'https://niedwjyzvmkgwfdwhacf.supabase.co'
+const SUPABASE_ANON_KEY = 'sb_publishable_izTWyBI32u5erxhM0vzxeQ_4O7v92Yh'
+const SUPABASE_FUNCTION_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[STRIPPED 127 bytes].pIr6g27ClVzWQhVbcnpH4nvkVskzUJOCzzX14xWEhKg'
+const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+const TAXA_FIXA = 0.40
+const TAXA_PERCENT = 0.0099
+
+let config = {};
+let numeros = {};
+let reservas = [];
 let selecionados = [];
 
-// MOSTRA ADMIN SÓ SE TIVER ?admin NA URL
 const urlParams = new URLSearchParams(window.location.search);
 const isAdmin = urlParams.has('admin');
 
-function init() {
+async function init() {
+  const { data: cfgData } = await _supabase.from('rifas').select('*').eq('id', 1).single();
+  config = cfgData || {id:1,nome:'Rifa Digital',total:100,valor:3.00,pix:'',nomePix:'',senhaAdmin:'admin123'};
+  
+  const { data: numsData } = await _supabase.from('numeros').select('*');
+  numsData?.forEach(n => { numeros[n.numero] = { status: n.status }; });
+  
+  for(let i=1;i<=config.total;i++){
+    if(!numeros[i]) numeros[i] = {status:'disponivel'};
+  }
+  
   if(isAdmin) {
     document.getElementById('aba-admin').style.display = 'block';
     document.getElementById('aba-cliente').style.display = 'none';
   }
   
-  for(let i=1;i<=config.total;i++){
-    if(!numeros[i]) numeros[i] = {status:'disponivel'};
-  }
-  salvarDados();
   renderizar();
+  escutarTempoReal();
 }
 
-function salvarDados(){
-  localStorage.setItem('rifa-config',JSON.stringify(config));
-  localStorage.setItem('rifa-numeros',JSON.stringify(numeros));
-  localStorage.setItem('rifa-reservas',JSON.stringify(reservas));
+function escutarTempoReal() {
+  _supabase.channel('numeros-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'numeros' }, payload => {
+      numeros[payload.new.numero] = { status: payload.new.status };
+      renderizar();
+    })
+    .subscribe();
 }
 
 function renderizar(){
   document.getElementById('rifa-nome').textContent = config.nome;
-  
   document.getElementById('premio-desc').textContent = config.premio || 'Prêmio a definir';
   const imgPremio = document.getElementById('premio-img');
   if(config.imagemPremio) {
@@ -253,7 +269,7 @@ function atualizarCarrinho(){
   document.getElementById('total-valor').textContent = `R$ ${total.toFixed(2)}`;
 }
 
-function reservar(){
+window.reservar = async function(){
   const nome = document.getElementById('nome').value.trim();
   const whatsapp = document.getElementById('whatsapp').value.trim();
   
@@ -266,76 +282,79 @@ function reservar(){
     return;
   }
   
-  const pedidoId = 'PED' + Date.now(); // ID único pro pagamento
+  document.getElementById('btn-reservar').disabled = true;
+  document.getElementById('btn-reservar').textContent = 'Gerando PIX...';
   
-  const reserva = {
-    id: Date.now(),
-    pedidoId: pedidoId, // USADO PRA CONECTAR COM GATEWAY
-    numeros: [...selecionados],
+  const pedidoId = 'PED' + Date.now();
+  const valorBruto = selecionados.length * config.valor;
+  const valorLiquido = valorBruto - TAXA_FIXA - (valorBruto * TAXA_PERCENT);
+  
+  const { data, error } = await _supabase.functions.invoke('criar-cobranca', {
+    body: { 
+      pedidoId,
+      valor: valorBruto,
+      nome,
+      whatsapp,
+      numeros: selecionados
+    },
+    headers: { Authorization: `Bearer ${SUPABASE_FUNCTION_KEY}` }
+  });
+  
+  if(error) {
+    alert('Erro ao gerar PIX: ' + error.message);
+    document.getElementById('btn-reservar').disabled = false;
+    document.getElementById('btn-reservar').textContent = 'Reservar Números';
+    return;
+  }
+  
+  await _supabase.from('reservas').insert({
+    pedidoId: pedidoId,
+    numeros: selecionados,
     nome, whatsapp,
-    valor: selecionados.length * config.valor,
-    status: 'aguardando_pagamento', // NOVO STATUS
-    data: new Date().toLocaleString('pt-BR')
-  };
+    valor: valorBruto,
+    valor_liquido: valorLiquido,
+    status: 'aguardando_pagamento'
+  });
   
-  selecionados.forEach(n=>numeros[n].status='reservado');
-  reservas.push(reserva);
-  salvarDados();
+  for(let n of selecionados) {
+    await _supabase.from('numeros').upsert({ numero: n, status: 'reservado', pedidoId });
+  }
   
-  gerarPix(reserva);
+  document.getElementById('qr-code').src = data.qr_code_base64;
+  document.getElementById('pix-copia-cola').textContent = data.pix_copia_cola;
+  document.getElementById('modal-pix').classList.add('active');
+  
   selecionados = [];
   document.getElementById('nome').value = '';
   document.getElementById('whatsapp').value = '';
-  renderizar();
-  
-  // AQUI VOCÊ CHAMA SUA API DE PAGAMENTO
-  // criarCobrancaMercadoPago(pedidoId, reserva.valor);
+  document.getElementById('btn-reservar').disabled = false;
+  document.getElementById('btn-reservar').textContent = 'Reservar Números';
 }
 
-// FUNÇÃO PRA SER CHAMADA PELO WEBHOOK DO MERCADO PAGO/PAGSEGURO
-function webhookConfirmar(pedidoId){
-  const reserva = reservas.find(r=>r.pedidoId===pedidoId);
-  if(reserva && reserva.status==='aguardando_pagamento'){
-    reserva.status='pago';
-    reserva.numeros.forEach(n=>numeros[n].status='pago');
-    salvarDados();
-    renderizar();
-    console.log('Pagamento confirmado:', pedidoId);
-    return true;
-  }
-  return false;
-}
-
-function gerarPix(reserva){
-  const valor = reserva.valor.toFixed(2);
-  const payload = `00020126580014BR.GOV.BCB.PIX0136${config.pix}52040000530398654${String(valor.length).padStart(2,'0')}${valor}5802BR5913${config.nomePix}6008BRASILIA62070503***6304`;
-  
-  document.getElementById('qr-code').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(payload)}`;
-  document.getElementById('pix-copia-cola').textContent = payload;
-  document.getElementById('modal-pix').classList.add('active');
-}
-
-function copiarPix(){
+window.copiarPix = function(){
   const codigo = document.getElementById('pix-copia-cola').textContent;
   navigator.clipboard.writeText(codigo);
   alert('Código PIX copiado!');
 }
 
-function fecharModal(){
+window.fecharModal = function(){
   document.getElementById('modal-pix').classList.remove('active');
 }
 
-function loginAdmin(){
-  if(document.getElementById('senha-admin').value === CONFIG.senhaAdmin){
+window.loginAdmin = async function(){
+  if(document.getElementById('senha-admin').value === config.senhaAdmin){
     document.getElementById('admin-login').style.display='none';
     document.getElementById('admin-panel').classList.add('active');
-    carregarAdmin();
+    await carregarAdmin();
   }else{
     alert('Senha incorreta!');
   }
 }
 
-function carregarAdmin(){
+async function carregarAdmin(){
+  const { data: reservasData } = await _supabase.from('reservas').select('*').order('created_at', { ascending: false });
+  reservas = reservasData || [];
+  
   const tbody = document.getElementById('tabela-reservas');
   tbody.innerHTML = reservas.map(r=>`
     <tr>
@@ -345,8 +364,8 @@ function carregarAdmin(){
       <td>R$ ${r.valor.toFixed(2)}</td>
       <td><span class="badge ${r.status}">${r.status.toUpperCase().replace('_',' ')}</span></td>
       <td class="actions">
-        ${r.status==='aguardando_pagamento'||r.status==='reservado'?`<button class="btn-sm btn-green" onclick="confirmarPagamento(${r.id})">Confirmar</button>`:''}
-        <button class="btn-sm btn-red" onclick="cancelarReserva(${r.id})">Cancelar</button>
+        ${r.status==='aguardando_pagamento'?`<button class="btn-sm btn-green" onclick="confirmarPagamento('${r.pedidoId}')">Confirmar</button>`:''}
+        <button class="btn-sm btn-red" onclick="cancelarReserva('${r.pedidoId}')">Cancelar</button>
       </td>
     </tr>
   `).join('') || '<tr><td colspan="6" style="text-align:center;color:#71717a">Nenhuma reserva</td></tr>';
@@ -360,69 +379,68 @@ function carregarAdmin(){
   document.getElementById('cfg-nomepix').value = config.nomePix;
 }
 
-function abaAdmin(aba){
+window.abaAdmin = function(aba){
   document.getElementById('admin-reservas').style.display = aba==='reservas'?'block':'none';
   document.getElementById('admin-config').style.display = aba==='config'?'block':'none';
 }
 
-function confirmarPagamento(id){
-  const reserva = reservas.find(r=>r.id===id);
-  if(reserva){
-    reserva.status='pago';
-    reserva.numeros.forEach(n=>numeros[n].status='pago');
-    salvarDados();
-    carregarAdmin();
-    renderizar();
-    alert('Pagamento confirmado!');
+window.confirmarPagamento = async function(pedidoId){
+  await _supabase.from('reservas').update({ status: 'pago' }).eq('pedidoId', pedidoId);
+  const reserva = reservas.find(r=>r.pedidoId===pedidoId);
+  for(let n of reserva.numeros) {
+    await _supabase.from('numeros').update({ status: 'pago' }).eq('numero', n);
   }
+  await carregarAdmin();
+  alert('Pagamento confirmado!');
 }
 
-function cancelarReserva(id){
+window.cancelarReserva = async function(pedidoId){
   if(confirm('Cancelar esta reserva?')){
-    const reserva = reservas.find(r=>r.id===id);
-    if(reserva){
-      reserva.numeros.forEach(n=>numeros[n].status='disponivel');
-      reservas = reservas.filter(r=>r.id!==id);
-      salvarDados();
-      carregarAdmin();
-      renderizar();
+    const reserva = reservas.find(r=>r.pedidoId===pedidoId);
+    for(let n of reserva.numeros) {
+      await _supabase.from('numeros').update({ status: 'disponivel', pedidoId: null }).eq('numero', n);
     }
+    await _supabase.from('reservas').delete().eq('pedidoId', pedidoId);
+    await carregarAdmin();
   }
 }
 
-function salvarConfig(){
-  config.nome = document.getElementById('cfg-nome').value;
-  config.premio = document.getElementById('cfg-premio').value;
-  config.imagemPremio = document.getElementById('cfg-imagem').value;
-  config.total = parseInt(document.getElementById('cfg-total').value);
-  config.valor = parseFloat(document.getElementById('cfg-valor').value);
-  config.pix = document.getElementById('cfg-pix').value;
-  config.nomePix = document.getElementById('cfg-nomepix').value;
+window.salvarConfig = async function(){
+  const novoConfig = {
+    id: 1,
+    nome: document.getElementById('cfg-nome').value,
+    premio: document.getElementById('cfg-premio').value,
+    imagemPremio: document.getElementById('cfg-imagem').value,
+    total: parseInt(document.getElementById('cfg-total').value),
+    valor: parseFloat(document.getElementById('cfg-valor').value),
+    pix: document.getElementById('cfg-pix').value,
+    nomePix: document.getElementById('cfg-nomepix').value,
+    senhaAdmin: config.senhaAdmin
+  };
   
-  salvarDados();
+  await _supabase.from('rifas').upsert(novoConfig);
+  config = novoConfig;
   renderizar();
   alert('Configurações salvas!');
 }
 
-function sortear(){
-  const pagos = [];
-  for(let i=1;i<=config.total;i++){
-    if(numeros[i].status==='pago') pagos.push(i);
-  }
-  if(pagos.length===0){
+window.sortear = async function(){
+  const { data: pagos } = await _supabase.from('numeros').select('numero').eq('status', 'pago');
+  if(!pagos || pagos.length===0){
     alert('Nenhum número pago para sortear!');
     return;
   }
-  const vencedor = pagos[Math.floor(Math.random()*pagos.length)];
-  const reserva = reservas.find(r=>r.numeros.includes(vencedor)&&r.status==='pago');
+  const vencedor = pagos[Math.floor(Math.random()*pagos.length)].numero;
+  const { data: reserva } = await _supabase.from('reservas').select('*').contains('numeros', [vencedor]).eq('status','pago').single();
   alert(`🎉 NÚMERO SORTEADO: ${String(vencedor).padStart(3,'0')}\n\nVencedor: ${reserva.nome}\nWhatsApp: ${reserva.whatsapp}`);
 }
 
-function exportar(){
+window.exportar = async function(){
+  const { data } = await _supabase.from('reservas').select('*');
   let csv = 'Número,Nome,WhatsApp,Valor,Status,Data\n';
-  reservas.forEach(r=>{
+  data.forEach(r=>{
     r.numeros.forEach(n=>{
-      csv += `${String(n).padStart(3,'0')},${r.nome},${r.whatsapp},${r.valor},${r.status},${r.data}\n`;
+      csv += `${String(n).padStart(3,'0')},${r.nome},${r.whatsapp},${r.valor},${r.status},${r.created_at}\n`;
     });
   });
   const blob = new Blob([csv],{type:'text/csv'});
