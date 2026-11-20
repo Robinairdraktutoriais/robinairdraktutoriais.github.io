@@ -328,13 +328,13 @@ async function carregarDados() {
       }
     }
 
-    const { data: vendidos } = await supabase.from('numeros').select('numero').eq('status', 'pago');
+    const { data: vendidos, error: erroNumeros } = await supabase.from('numeros').select('numero').eq('status', 'pago');
+    if (erroNumeros) throw erroNumeros;
     numerosVendidos = vendidos ? vendidos.map(n => n.numero) : [];
     
     renderizarNumeros();
     atualizarStatusRifa();
     
-    // REALTIME: Atualiza o grid quando qualquer número mudar
     if (!canalRealtime) {
       canalRealtime = supabase.channel('numeros-admin')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'numeros' }, payload => {
@@ -347,6 +347,7 @@ async function carregarDados() {
     document.getElementById('status-rifa').textContent = 'Erro: ' + e.message;
     document.getElementById('erro-config').textContent = 'Erro: ' + e.message;
     document.getElementById('erro-config').style.display = 'block';
+    console.error('Erro carregarDados:', e);
   }
 }
 
@@ -489,7 +490,7 @@ window.marcarManual = async function(){
   
   const pedidoId = 'MANUAL-' + Date.now()
   
-  await supabase.from('reservas').insert({
+  const { error: erroReserva } = await supabase.from('reservas').insert({
     pedidoId: pedidoId,
     numeros: [numero],
     nome,
@@ -499,11 +500,23 @@ window.marcarManual = async function(){
     status: 'pago'
   })
   
-  await supabase.from('numeros').upsert({ 
+  if (erroReserva) {
+    alert('ERRO ao salvar reserva: ' + erroReserva.message)
+    console.error(erroReserva)
+    return
+  }
+  
+  const { error: erroNumero } = await supabase.from('numeros').upsert({ 
     numero: numero, 
     status: 'pago', 
     pedido_id: pedidoId 
   })
+  
+  if (erroNumero) {
+    alert('ERRO ao marcar número: ' + erroNumero.message)
+    console.error(erroNumero)
+    return
+  }
   
   document.getElementById('num-manual').value = ''
   document.getElementById('nome-manual').value = ''
