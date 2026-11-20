@@ -430,7 +430,7 @@ window.executarSorteio = async function() {
   const { data: pedidoData } = await supabase
     .from('reservas')
     .select('nome, whatsapp')
-    .eq('pedidoId', numeroData.pedido_id)
+    .eq('pedido_id', numeroData.pedido_id)
     .single();
 
   const timestamp = new Date().toISOString();
@@ -491,7 +491,7 @@ window.marcarManual = async function(){
   const pedidoId = 'MANUAL-' + Date.now()
   
   const { error: erroReserva } = await supabase.from('reservas').insert({
-    pedidoId: pedidoId,
+    pedido_id: pedidoId,
     numeros: [numero],
     nome,
     whatsapp,
