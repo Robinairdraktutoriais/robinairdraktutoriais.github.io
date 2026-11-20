@@ -314,7 +314,7 @@ window.reservar = async function(){
   const valorBruto = selecionados.length * config.valor;
   const valorLiquido = valorBruto - TAXA_FIXA - (valorBruto * TAXA_PERCENT);
   
-  const { data, error } = await _supabase.functions.invoke('hyper-function', {
+  const { data, error } = await _supabase.functions.invoke('criar-cobranca', {
     body: { 
       pedidoId,
       valor: valorBruto,
