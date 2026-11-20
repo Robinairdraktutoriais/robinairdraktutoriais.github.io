@@ -504,11 +504,10 @@ window.marcarManual = async function(){
     return
   }
   
-  // 2. Marca o número usando o ID da reserva
+  // 2. Marca o número só com numero + status - sem pedido_id
   const { error: erroNumero } = await supabase.from('numeros').upsert({ 
     numero: numero, 
-    status: 'pago', 
-    pedido_id: reservaData.id 
+    status: 'pago'
   })
   
   if (erroNumero) {
