@@ -430,7 +430,7 @@ window.executarSorteio = async function() {
   const { data: pedidoData } = await supabase
     .from('reservas')
     .select('nome, whatsapp')
-    .eq('pedido_id', numeroData.pedido_id)
+    .eq('id', numeroData.pedido_id)
     .single();
 
   const timestamp = new Date().toISOString();
@@ -488,17 +488,15 @@ window.marcarManual = async function(){
     return
   }
   
-  const pedidoId = 'MANUAL-' + Date.now()
-  
-  const { error: erroReserva } = await supabase.from('reservas').insert({
-    pedido_id: pedidoId,
+  // 1. Insere reserva e pega o ID gerado automaticamente
+  const { data: reservaData, error: erroReserva } = await supabase.from('reservas').insert({
     numeros: [numero],
     nome,
     whatsapp,
     valor: configRifa.valor,
     valor_liquido: configRifa.valor,
     status: 'pago'
-  })
+  }).select('id').single()
   
   if (erroReserva) {
     alert('ERRO ao salvar reserva: ' + erroReserva.message)
@@ -506,10 +504,11 @@ window.marcarManual = async function(){
     return
   }
   
+  // 2. Marca o número usando o ID da reserva
   const { error: erroNumero } = await supabase.from('numeros').upsert({ 
     numero: numero, 
     status: 'pago', 
-    pedido_id: pedidoId 
+    pedido_id: reservaData.id 
   })
   
   if (erroNumero) {
