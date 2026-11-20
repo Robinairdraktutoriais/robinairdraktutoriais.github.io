@@ -307,20 +307,29 @@ window.reservar = async function(){
     return;
   }
   
+  // IMPORTANTE: Por enquanto só aceita 1 número por vez
+  if(selecionados.length > 1){
+    alert('Por enquanto só é possível comprar 1 número por vez. Selecione apenas 1.');
+    return;
+  }
+  
   document.getElementById('btn-reservar').disabled = true;
   document.getElementById('btn-reservar').textContent = 'Gerando PIX...';
   
   const pedidoId = 'PED' + Date.now();
-  const valorBruto = selecionados.length * config.valor;
+  const numeroEscolhido = selecionados[0];
+  const valorBruto = config.valor;
   const valorLiquido = valorBruto - TAXA_FIXA - (valorBruto * TAXA_PERCENT);
   
+  // CORRIGIDO: Nomes dos campos batendo com a Edge Function
   const { data, error } = await _supabase.functions.invoke('hyper-function', {
     body: { 
-      pedidoId,
+      numero: String(numeroEscolhido).padStart(3, '0'), // CORRIGIDO
       valor: valorBruto,
-      nome,
-      whatsapp,
-      numeros: selecionados
+      external_reference: pedidoId, // CORRIGIDO
+      cliente_nome: nome, // CORRIGIDO
+      cliente_tel: whatsapp, // CORRIGIDO
+      descricao: `Rifa - Número ${String(numeroEscolhido).padStart(3, '0')}`
     },
     headers: { Authorization: `Bearer ${SUPABASE_FUNCTION_KEY}` }
   });
@@ -345,8 +354,9 @@ window.reservar = async function(){
     await _supabase.from('numeros').upsert({ numero: n, status: 'reservado', pedidoId });
   }
   
-  document.getElementById('qr-code').src = data.qr_code_base64;
-  document.getElementById('pix-copia-cola').textContent = data.pix_copia_cola;
+  // CORRIGIDO: Nomes dos campos que voltam da função
+  document.getElementById('qr-code').src = data.qr_code;
+  document.getElementById('pix-copia-cola').textContent = data.copia_cola;
   document.getElementById('modal-pix').classList.add('active');
   
   selecionados = [];
@@ -356,7 +366,6 @@ window.reservar = async function(){
   document.getElementById('btn-reservar').textContent = 'Reservar Números';
 }
 
-// FUNÇÃO COPIAR PIX CORRIGIDA - AGORA FUNCIONA NO CELULAR
 window.copiarPix = async function(){
   const codigo = document.getElementById('pix-copia-cola').textContent;
   const btn = event.target;
