@@ -60,7 +60,6 @@ th{color:#22c55e;font-weight:600}
 @media(max-width:768px){.grid-2{grid-template-columns:1fr}.numbers-grid{grid-template-columns:repeat(auto-fill,minmax(50px,1fr))}}
 </style>
 </head>
-
 <body>
 <div class="container">
   <div class="header">
@@ -307,29 +306,22 @@ window.reservar = async function(){
     return;
   }
   
-  // IMPORTANTE: Por enquanto só aceita 1 número por vez
-  if(selecionados.length > 1){
-    alert('Por enquanto só é possível comprar 1 número por vez. Selecione apenas 1.');
-    return;
-  }
-  
   document.getElementById('btn-reservar').disabled = true;
   document.getElementById('btn-reservar').textContent = 'Gerando PIX...';
   
   const pedidoId = 'PED' + Date.now();
-  const numeroEscolhido = selecionados[0];
-  const valorBruto = config.valor;
+  const valorBruto = selecionados.length * config.valor;
   const valorLiquido = valorBruto - TAXA_FIXA - (valorBruto * TAXA_PERCENT);
   
-  // CORRIGIDO: Nomes dos campos batendo com a Edge Function
+  // CORRIGIDO: Enviando os nomes certos pra Edge Function
   const { data, error } = await _supabase.functions.invoke('hyper-function', {
     body: { 
-      numero: String(numeroEscolhido).padStart(3, '0'), // CORRIGIDO
+      numeros: selecionados, // array de números
       valor: valorBruto,
-      external_reference: pedidoId, // CORRIGIDO
-      cliente_nome: nome, // CORRIGIDO
-      cliente_tel: whatsapp, // CORRIGIDO
-      descricao: `Rifa - Número ${String(numeroEscolhido).padStart(3, '0')}`
+      external_reference: pedidoId,
+      cliente_nome: nome,
+      cliente_tel: whatsapp,
+      descricao: `Rifa - Números: ${selecionados.map(n => String(n).padStart(3,'0')).join(', ')}`
     },
     headers: { Authorization: `Bearer ${SUPABASE_FUNCTION_KEY}` }
   });
@@ -341,22 +333,16 @@ window.reservar = async function(){
     return;
   }
   
-  await _supabase.from('reservas').insert({
-    pedidoId: pedidoId,
-    numeros: selecionados,
-    nome, whatsapp,
-    valor: valorBruto,
-    valor_liquido: valorLiquido,
-    status: 'aguardando_pagamento'
-  });
-  
-  for(let n of selecionados) {
-    await _supabase.from('numeros').upsert({ numero: n, status: 'reservado', pedidoId });
+  if(!data.success) {
+    alert('Erro ao gerar PIX: ' + (data.error || 'Erro desconhecido'));
+    document.getElementById('btn-reservar').disabled = false;
+    document.getElementById('btn-reservar').textContent = 'Reservar Números';
+    return;
   }
   
-  // CORRIGIDO: Nomes dos campos que voltam da função
-  document.getElementById('qr-code').src = data.qr_code;
-  document.getElementById('pix-copia-cola').textContent = data.copia_cola;
+  // CORRIGIDO: Agora usa os nomes certos que voltam da Edge Function
+  document.getElementById('qr-code').src = 'data:image/png;base64,' + data.qr_code_base64;
+  document.getElementById('pix-copia-cola').textContent = data.qr_code;
   document.getElementById('modal-pix').classList.add('active');
   
   selecionados = [];
@@ -419,14 +405,14 @@ async function carregarAdmin(){
   const tbody = document.getElementById('tabela-reservas');
   tbody.innerHTML = reservas.map(r=>`
     <tr>
-      <td>${r.numeros.map(n=>String(n).padStart(3,'0')).join(', ')}</td>
-      <td>${r.nome}</td>
-      <td>${r.whatsapp}</td>
-      <td>R$ ${r.valor.toFixed(2)}</td>
+      <td>${r.numero}</td>
+      <td>${r.cliente_nome || r.nome}</td>
+      <td>${r.cliente_tel || r.whatsapp}</td>
+      <td>R$ ${Number(r.valor).toFixed(2)}</td>
       <td><span class="badge ${r.status}">${r.status.toUpperCase().replace('_',' ')}</span></td>
       <td class="actions">
-        ${r.status==='aguardando_pagamento'?`<button class="btn-sm btn-green" onclick="confirmarPagamento('${r.pedidoId}')">Confirmar</button>`:''}
-        <button class="btn-sm btn-red" onclick="cancelarReserva('${r.pedidoId}')">Cancelar</button>
+        ${r.status==='aguardando_pagamento'?`<button class="btn-sm btn-green" onclick="confirmarPagamento('${r.pedidoid}')">Confirmar</button>`:''}
+        <button class="btn-sm btn-red" onclick="cancelarReserva('${r.pedidoid}')">Cancelar</button>
       </td>
     </tr>
   `).join('') || '<tr><td colspan="6" style="text-align:center;color:#71717a">Nenhuma reserva</td></tr>';
@@ -446,22 +432,18 @@ window.abaAdmin = function(aba){
 }
 
 window.confirmarPagamento = async function(pedidoId){
-  await _supabase.from('reservas').update({ status: 'pago' }).eq('pedidoId', pedidoId);
-  const reserva = reservas.find(r=>r.pedidoId===pedidoId);
-  for(let n of reserva.numeros) {
-    await _supabase.from('numeros').update({ status: 'pago' }).eq('numero', n);
-  }
+  await _supabase.from('reservas').update({ status: 'pago' }).eq('pedidoid', pedidoId);
+  const reserva = reservas.find(r=>r.pedidoid===pedidoId);
+  await _supabase.from('numeros').update({ status: 'pago' }).eq('numero', reserva.numero);
   await carregarAdmin();
   alert('Pagamento confirmado!');
 }
 
 window.cancelarReserva = async function(pedidoId){
   if(confirm('Cancelar esta reserva?')){
-    const reserva = reservas.find(r=>r.pedidoId===pedidoId);
-    for(let n of reserva.numeros) {
-      await _supabase.from('numeros').update({ status: 'disponivel', pedidoId: null }).eq('numero', n);
-    }
-    await _supabase.from('reservas').delete().eq('pedidoId', pedidoId);
+    const reserva = reservas.find(r=>r.pedidoid===pedidoId);
+    await _supabase.from('numeros').update({ status: 'disponivel', pedidoid: null }).eq('numero', reserva.numero);
+    await _supabase.from('reservas').delete().eq('pedidoid', pedidoId);
     await carregarAdmin();
   }
 }
@@ -492,17 +474,15 @@ window.sortear = async function(){
     return;
   }
   const vencedor = pagos[Math.floor(Math.random()*pagos.length)].numero;
-  const { data: reserva } = await _supabase.from('reservas').select('*').contains('numeros', [vencedor]).eq('status','pago').single();
-  alert(`🎉 NÚMERO SORTEADO: ${String(vencedor).padStart(3,'0')}\n\nVencedor: ${reserva.nome}\nWhatsApp: ${reserva.whatsapp}`);
+  const { data: reserva } = await _supabase.from('reservas').select('*').eq('numero', vencedor).eq('status','pago').single();
+  alert(`🎉 NÚMERO SORTEADO: ${String(vencedor).padStart(3,'0')}\n\nVencedor: ${reserva.cliente_nome || reserva.nome}\nWhatsApp: ${reserva.cliente_tel || reserva.whatsapp}`);
 }
 
 window.exportar = async function(){
   const { data } = await _supabase.from('reservas').select('*');
   let csv = 'Número,Nome,WhatsApp,Valor,Status,Data\n';
   data.forEach(r=>{
-    r.numeros.forEach(n=>{
-      csv += `${String(n).padStart(3,'0')},${r.nome},${r.whatsapp},${r.valor},${r.status},${r.created_at}\n`;
-    });
+    csv += `${String(r.numero).padStart(3,'0')},${r.cliente_nome || r.nome},${r.cliente_tel || r.whatsapp},${r.valor},${r.status},${r.created_at}\n`;
   });
   const blob = new Blob([csv],{type:'text/csv'});
   const url = URL.createObjectURL(blob);
